@@ -8,18 +8,6 @@
       name="description"
       content="Pose Photobooth brings professional-quality photos to weddings, birthdays, and events. Book your photobooth today!"
     />
-    <meta
-      property="og:title"
-      content="Pose Photobooth | Capture Every Moment"
-    />
-    <meta
-      property="og:description"
-      content="Professional photobooth services for weddings, birthdays, and corporate events."
-    />
-    <meta
-      property="og:image"
-      content="https://images.unsplash.com/photo-1504198453319-5ce911bafcde?auto=format&fit=crop&w=1400&q=80"
-    />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
       rel="stylesheet"
@@ -36,13 +24,12 @@
         font-family: "Montserrat", sans-serif;
       }
       body {
-        color: #333;
         line-height: 1.6;
         background: linear-gradient(135deg, #fff0f6, #f0f9ff);
         scroll-behavior: smooth;
+        color: #333;
       }
 
-      /* HEADER */
       header {
         background: linear-gradient(90deg, #ff4ecd, #ff7a18);
         color: #fff;
@@ -67,7 +54,6 @@
         opacity: 0.8;
       }
 
-      /* HERO */
       .hero {
         display: flex;
         flex-direction: column;
@@ -108,173 +94,46 @@
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
       }
 
-      /* FEATURES */
-      .features {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        padding: 4rem 2rem;
+      .package-group {
         max-width: 1200px;
-        margin: 0 auto;
+        margin: 2rem auto;
+        padding: 0 2rem;
       }
-      .feature {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 16px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        transform: translateY(50px);
-        opacity: 0;
-        transition: 0.8s;
-      }
-      .feature.show {
-        transform: translateY(0);
-        opacity: 1;
-      }
-      .feature h3 {
+      .package-group h2 {
         margin-bottom: 1rem;
         color: #ff4ecd;
       }
-      .feature p {
-        color: #666;
-      }
-      .feature:hover {
-        transform: translateY(-10px) scale(1.02);
-      }
-
-      /* PACKAGES */
-      #packages {
-        padding: 4rem 2rem;
-        background: #fff7ed;
-        text-align: center;
-      }
-      #packages h2 {
-        color: #ff4ecd;
-        margin-bottom: 2rem;
-      }
-      .package-grid {
+      .packages {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 2rem;
-        max-width: 1200px;
-        margin: auto;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
       }
       .package {
         background: #fff;
-        padding: 2rem;
+        padding: 1.5rem;
         border-radius: 16px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        text-align: left;
       }
       .package h3 {
         margin-bottom: 0.5rem;
         color: #ff4ecd;
       }
       .package p {
-        margin: 0.5rem 0;
-        font-size: 0.95rem;
-        color: #555;
-        white-space: pre-line;
+        margin-bottom: 0.5rem;
       }
-
-      /* BOOKING */
-      .booking {
-        background: linear-gradient(135deg, #fff7ed, #f0fdf4);
-        padding: 4rem 2rem;
-        text-align: center;
+      .package ul {
+        margin-left: 1rem;
+        margin-bottom: 0.5rem;
       }
-      .booking h2 {
-        margin-bottom: 1rem;
-        color: #ff4ecd;
-      }
-
-      /* CTA */
-      .cta {
-        background: linear-gradient(90deg, #ff4ecd, #ff7a18);
-        color: #fff;
-        text-align: center;
-        padding: 4rem 2rem;
-      }
-      .cta a {
-        display: inline-block;
-        margin-top: 1rem;
-        padding: 1rem 2rem;
-        background: #fff;
-        color: #ff4ecd;
-        font-weight: 700;
-        border-radius: 50px;
-        text-decoration: none;
-        transition: 0.3s;
-      }
-      .cta a:hover {
-        background: #ffe259;
-        color: #333;
-      }
-
-      /* FOOTER */
-      footer {
-        background: #222;
-        color: #fff;
-        text-align: center;
-        padding: 2rem;
-      }
-      footer a {
-        color: #ffe259;
-        text-decoration: none;
-      }
-      .social-icons a {
-        margin: 0 0.5rem;
-        color: #fff;
+      .package .price {
         font-size: 1.5rem;
-      }
-      .social-icons a:hover {
-        color: #ffe259;
-      }
-
-      /* MOBILE */
-      @media (max-width: 768px) {
-        .hero h2 {
-          font-size: 2.2rem;
-        }
-        .hero p {
-          font-size: 1rem;
-        }
+        font-weight: bold;
+        color: #ff4ecd;
+        margin-bottom: 0.5rem;
       }
 
-      /* CAROUSEL */
-      .carousel {
-        position: relative;
-        max-width: 900px;
-        margin: auto;
-        overflow: hidden;
-      }
-      .carousel-track img {
-        cursor: grab;
-      }
-      .carousel img {
-        width: 100%;
-        border-radius: 12px;
-      }
-      .carousel button {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #ff4ecd;
-        color: #fff;
-        border: none;
-        padding: 10px 15px;
-        cursor: pointer;
-        border-radius: 50%;
-      }
-      .prev {
-        left: 10px;
-      }
-      .next {
-        right: 10px;
-      }
-
-      /* STICKY BOOK BUTTON */
-      .sticky-book {
+      .sticky-book,
+      .messenger-chat {
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -285,31 +144,33 @@
         text-decoration: none;
         font-weight: bold;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        z-index: 998;
+        z-index: 999;
+        transition: 0.3s;
       }
-      .sticky-book:hover {
+      .sticky-book:hover,
+      .messenger-chat:hover {
         opacity: 0.9;
       }
-
-      /* MESSENGER IFRAME CONTAINER */
-      #messenger-iframe {
-        position: fixed;
+      .messenger-chat {
         bottom: 80px;
-        right: 20px;
-        width: 350px;
-        height: 500px;
-        border: none;
-        border-radius: 12px;
-        z-index: 999;
+      } /* avoids overlapping with book now */
+
+      footer {
+        background: #222;
+        color: #fff;
+        text-align: center;
+        padding: 2rem;
+      }
+      footer a {
+        color: #ffe259;
+        text-decoration: none;
       }
     </style>
   </head>
-
   <body>
     <header>
       <h1>Pose Photobooth</h1>
       <nav>
-        <a href="#features">Features</a>
         <a href="#packages">Packages</a>
         <a href="#booking">Book Now</a>
         <a href="#contact">Contact</a>
@@ -322,102 +183,171 @@
         Pose Photobooth brings fun, professional-quality photos to your events.
         Perfect for weddings, birthdays, corporate events, and more!
       </p>
-      <a href="#booking" class="btn">Book Your Booth</a>
+      <a href="#packages" class="btn">See Packages</a>
     </section>
 
-    <section id="features" class="features">
-      <div class="feature">
-        <h3>Instant Prints</h3>
-        <p>
-          Get your photos instantly printed for you and your guests to take
-          home.
-        </p>
-      </div>
-      <div class="feature">
-        <h3>Digital Sharing</h3>
-        <p>
-          Share your photos directly to social media with just a few clicks.
-        </p>
-      </div>
-      <div class="feature">
-        <h3>Custom Backdrops</h3>
-        <p>
-          Choose from a variety of backdrops or create your own unique design.
-        </p>
-      </div>
-      <div class="feature">
-        <h3>Fun Props</h3>
-        <p>
-          Add a playful touch to every photo with our wide selection of props.
-        </p>
-      </div>
-    </section>
-
-    <!-- PACKAGES SECTION -->
-    <section id="packages">
-      <h2>Packages</h2>
-      <div class="package-grid">
-        <!-- Example: PB Basic -->
+    <!-- PACKAGES -->
+    <section id="packages" class="package-group">
+      <h2>PHOTOBOOTH</h2>
+      <div class="packages">
+        <!-- Basic -->
         <div class="package">
-          <h3>PB Basic</h3>
-          <p style="font-size: 2rem; color: #ff4ecd">₱3,000</p>
-          <p><strong>Duration:</strong> 2 hours</p>
-          <p>
-            - Unlimited photo sessions - Four (4) high-res shots per session -
-            One (1) premium 4x6 print per session - Customized layout design -
-            Touchscreen live view monitor - Elegant sequin backdrop - Assorted
-            fun props - Soft copies uploaded to Facebook Gallery - Downloadable
-            high-quality copies via Google Drive - Two (2) professional on-site
-            booth attendants
-          </p>
-          <p>
-            <strong>Optional Add-Ons:</strong> Extension ₱1,000, Magnet ₱500
-          </p>
+          <h3>Basic</h3>
+          <p class="price">₱3,000</p>
+          <p>Duration: 2 Hours</p>
+          <ul>
+            <li>Unlimited photo sessions</li>
+            <li>Four (4) high-res shots per session</li>
+            <li>One (1) premium 4x6 print per session</li>
+            <li>Customized layout design</li>
+            <li>Touchscreen live view monitor</li>
+            <li>Elegant sequin backdrop</li>
+            <li>Assorted fun props</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>Downloadable high-quality copies via Google Drive</li>
+            <li>Two (2) professional on-site booth attendants</li>
+          </ul>
         </div>
-
-        <!-- Repeat other packages using same structure, copy content from your PACKAGES dict -->
-        <!-- PB Strip, PB Dedication, PB Polaroid, PM Polaroid, PM 4R, 360 Basic, 360 VIP -->
-      </div>
-    </section>
-
-    <section style="padding: 4rem 2rem; text-align: center; background: #fff">
-      <h2 style="color: #ff4ecd; margin-bottom: 2rem">Event Highlights</h2>
-      <div class="carousel">
-        <button class="prev">&#10094;</button>
-        <div class="carousel-track">
-          <img
-            src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=800&q=80"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1541592106381-7c2e9f7b5b57?auto=format&fit=crop&w=800&q=80"
-          />
+        <!-- Strip -->
+        <div class="package">
+          <h3>Strip</h3>
+          <p class="price">₱3,500</p>
+          <p>Duration: 2 Hours</p>
+          <ul>
+            <li>Unlimited photo sessions</li>
+            <li>Three (3) high-res shots per session</li>
+            <li>Two (2) premium 2x6 prints per session</li>
+            <li>Customized layout design</li>
+            <li>Touchscreen live view monitor</li>
+            <li>Elegant sequin backdrop</li>
+            <li>Assorted fun props</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>Downloadable high-quality copies via Google Drive</li>
+            <li>Two (2) professional on-site booth attendants</li>
+          </ul>
         </div>
-        <button class="next">&#10095;</button>
+        <!-- Dedication -->
+        <div class="package">
+          <h3>Dedication</h3>
+          <p class="price">₱3,500</p>
+          <p>Duration: 2 Hours</p>
+          <ul>
+            <li>Unlimited photo sessions</li>
+            <li>Three (3) high-res shots per session</li>
+            <li>Two (2) premium 2x6 prints per session</li>
+            <li>One keepsake strip for the celebrant</li>
+            <li>One three-photo strip for guests</li>
+            <li>Customized layout design</li>
+            <li>Touchscreen live view monitor</li>
+            <li>Elegant sequin backdrop</li>
+            <li>Assorted fun props</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>Downloadable high-quality copies via Google Drive</li>
+            <li>Two (2) professional on-site booth attendants</li>
+          </ul>
+        </div>
+        <!-- Polaroid -->
+        <div class="package">
+          <h3>Polaroid</h3>
+          <p class="price">₱4,000</p>
+          <p>Duration: 2 Hours</p>
+          <ul>
+            <li>Unlimited photo sessions</li>
+            <li>Two (2) high-res shots per session</li>
+            <li>Two (2) premium 3x4 prints per session</li>
+            <li>Customized layout design</li>
+            <li>Touchscreen live view monitor</li>
+            <li>Elegant sequin backdrop</li>
+            <li>Assorted fun props</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>Downloadable high-quality copies via Google Drive</li>
+            <li>Two (2) professional on-site booth attendants</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>PHOTOMAN</h2>
+      <div class="packages">
+        <!-- Polaroid -->
+        <div class="package">
+          <h3>Polaroid</h3>
+          <p class="price">₱5,000</p>
+          <p>Duration: 2 Hours</p>
+          <ul>
+            <li>Unlimited photo sessions</li>
+            <li>One (1) high-res shot per session</li>
+            <li>One (1) premium 3x4 print per session</li>
+            <li>Customized layout design</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>Downloadable high-quality copies via Google Drive</li>
+            <li>Two (2) professional on-site booth attendants</li>
+          </ul>
+        </div>
+        <!-- 4R -->
+        <div class="package">
+          <h3>4R</h3>
+          <p class="price">₱6,000</p>
+          <p>Duration: 2 Hours</p>
+          <ul>
+            <li>Unlimited photo sessions</li>
+            <li>One (1) high-res shot per session</li>
+            <li>One (1) premium 4x6 print per session</li>
+            <li>Customized layout design</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>Downloadable high-quality copies via Google Drive</li>
+            <li>Two (2) professional on-site booth attendants</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>360 VIDEO BOOTH</h2>
+      <div class="packages">
+        <!-- Basic -->
+        <div class="package">
+          <h3>Basic</h3>
+          <p class="price">₱12,000</p>
+          <p>Duration: 3 Hours</p>
+          <ul>
+            <li>Unlimited video sessions</li>
+            <li>Customized overlay design</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>
+              Downloadable high-quality copies via Air drop and/or QR Code
+            </li>
+            <li>Two (4) professional on-site booth attendants</li>
+          </ul>
+        </div>
+        <!-- VIP -->
+        <div class="package">
+          <h3>VIP</h3>
+          <p class="price">₱20,000</p>
+          <p>Duration: 3 Hours</p>
+          <ul>
+            <li>Unlimited video sessions</li>
+            <li>Customized overlay design</li>
+            <li>Enclosed 360 platform</li>
+            <li>Soft copies uploaded to Facebook Gallery</li>
+            <li>
+              Downloadable high-quality copies via Air drop and/or QR Code
+            </li>
+            <li>Two (4) professional on-site booth attendants</li>
+          </ul>
+        </div>
       </div>
     </section>
 
-    <!-- Booking Section -->
-    <section id="booking" class="booking">
-      <h2>Book Your Photobooth</h2>
-      <div style="max-width: 800px; margin: auto">
-        <iframe
-          src="https://docs.google.com/forms/d/e/1FAIpQLSfX6GWL-YnQIHVN4T17VyJQ8sYj8QDcOvieD5F9w1Khzv5gTg/viewform?embedded=true"
-          style="width: 100%; height: 1200px; border: none"
-          >Loading…</iframe
-        >
-      </div>
-    </section>
-
-    <section class="cta">
-      <h2>Make Your Event Unforgettable</h2>
-      <p>Contact us to customize your photobooth experience!</p>
-      <a href="mailto:booking@posephotobooth.com">Contact Now</a>
+    <!-- Booking Section with Google Form -->
+    <section
+      id="booking"
+      style="padding: 4rem 2rem; text-align: center; background: #fff7ed"
+    >
+      <h2 style="color: #ff4ecd; margin-bottom: 2rem">Book Your Photobooth</h2>
+      <iframe
+        src="https://docs.google.com/forms/d/e/1FAIpQLSfX6GWL-YnQIHVN4T17VyJQ8sYj8QDcOvieD5F9w1Khzv5gTg/viewform?embedded=true"
+        style="width: 100%; height: 1200px; border: none"
+      >
+        Loading…
+      </iframe>
     </section>
 
     <footer id="contact">
@@ -428,50 +358,15 @@
         >
         | Phone: +63 917 876 0929
       </p>
-      <div class="social-icons">
-        <a href="https://www.facebook.com/pose.photobooth.2017" target="_blank"
-          ><i class="fab fa-facebook"></i
-        ></a>
-      </div>
     </footer>
 
-    <a href="#booking" class="sticky-book"> Book Now </a>
-
-    <!-- Messenger in-page -->
-    <iframe id="messenger-iframe" src="https://m.me/1708390602527798"></iframe>
-
-    <script>
-      // Features scroll animation
-      const features = document.querySelectorAll(".feature");
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("show");
-            }
-          });
-        },
-        { threshold: 0.3 },
-      );
-      features.forEach((feature) => observer.observe(feature));
-
-      // Carousel
-      const track = document.querySelector(".carousel-track");
-      const slides = document.querySelectorAll(".carousel img");
-      let index = 0;
-      function moveSlide(dir) {
-        index = (index + dir + slides.length) % slides.length;
-        track.style.transform = `translateX(-${index * 100}%)`;
-      }
-      document.querySelector(".next").onclick = () => moveSlide(1);
-      document.querySelector(".prev").onclick = () => moveSlide(-1);
-      setInterval(() => moveSlide(1), 3000);
-
-      // Confetti
-      setTimeout(() => {
-        confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
-      }, 1000);
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Fixed Buttons -->
+    <a href="#booking" class="sticky-book">Book Now</a>
+    <a
+      href="https://m.me/1708390602527798"
+      target="_blank"
+      class="messenger-chat"
+      >💬 Messenger</a
+    >
   </body>
 </html>
