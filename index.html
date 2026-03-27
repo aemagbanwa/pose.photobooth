@@ -420,21 +420,12 @@
     <a href="#booking" class="sticky-book"> Book Now </a>
     <!-- Messenger Chat Plugin -->
     <div id="fb-root"></div>
-
     <div id="fb-customer-chat" class="fb-customerchat"></div>
 
     <script>
       var chatbox = document.getElementById("fb-customer-chat");
-      chatbox.setAttribute("page_id", "1708390602527798"); // replace this
+      chatbox.setAttribute("page_id", "1708390602527798");
       chatbox.setAttribute("attribution", "biz_inbox");
-      chatbox.setAttribute(
-        "logged_in_greeting",
-        "Hi! How can we help you today?",
-      );
-      chatbox.setAttribute(
-        "logged_out_greeting",
-        "Hi! Message us for booking inquiries 🎉",
-      );
     </script>
 
     <script>
@@ -446,13 +437,11 @@
       };
 
       (function (d, s, id) {
-        var js,
-          fjs = d.getElementsByTagName(s)[0];
         if (d.getElementById(id)) return;
-        js = d.createElement(s);
+        var js = d.createElement(s);
         js.id = id;
         js.src = "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
-        fjs.parentNode.insertBefore(js, fjs);
+        document.body.appendChild(js);
       })(document, "script", "facebook-jssdk");
     </script>
     <script>
