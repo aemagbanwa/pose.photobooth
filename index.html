@@ -4,253 +4,197 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pose Photobooth | Capture Every Moment</title>
-
+    <meta
+      name="description"
+      content="Pose Photobooth brings professional-quality photos to weddings, birthdays, and events. Book your photobooth today!"
+    />
+    <meta
+      property="og:title"
+      content="Pose Photobooth | Capture Every Moment"
+    />
+    <meta
+      property="og:description"
+      content="Professional photobooth services for weddings, birthdays, and corporate events."
+    />
+    <meta
+      property="og:image"
+      content="https://images.unsplash.com/photo-1504198453319-5ce911bafcde?auto=format&fit=crop&w=1400&q=80"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"
       rel="stylesheet"
     />
-
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Montserrat", sans-serif;
-      }
-
-      body {
-        background: linear-gradient(135deg, #fff0f6, #f0f9ff);
-      }
-
-      section {
-        scroll-margin-top: 80px;
-      }
-
-      /* HEADER */
-      header {
-        background: linear-gradient(90deg, #ff4ecd, #ff7a18);
-        color: #fff;
-        padding: 1.5rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        position: sticky;
-        top: 0;
-        z-index: 100;
-      }
-
-      /* HERO */
-      .hero {
-        padding: 6rem 2rem;
-        text-align: center;
-        background:
-          linear-gradient(rgba(255, 78, 205, 0.6), rgba(255, 122, 24, 0.6)),
-          url("https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=70")
-            no-repeat center/cover;
-        color: #fff;
-      }
-
-      .hero h2 {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-      }
-      .hero .btn {
-        background: linear-gradient(90deg, #ffe259, #ffa751);
-        padding: 1rem 2rem;
-        border-radius: 50px;
-        text-decoration: none;
-        font-weight: bold;
-        color: #333;
-      }
-
-      /* FEATURES */
-      .features {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2rem;
-        padding: 4rem 2rem;
-      }
-
-      .feature {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 16px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        transition: 0.5s;
-      }
-
-      .feature:hover {
-        transform: translateY(-10px);
-      }
-
-      /* PRICING */
-      .packages {
-        padding: 4rem 2rem;
-        text-align: center;
-      }
-
-      .card {
-        background: #fff;
-        padding: 2rem;
-        border-radius: 16px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      .card a {
-        display: inline-block;
-        margin-top: 15px;
-        padding: 10px 20px;
-        background: #ff4ecd;
-        color: #fff;
-        border-radius: 25px;
-        text-decoration: none;
-      }
-
-      /* CAROUSEL */
-      .carousel {
-        max-width: 900px;
-        margin: auto;
-        overflow: hidden;
-      }
-      .carousel-track {
-        display: flex;
-        transition: transform 0.5s ease;
-      }
-      .carousel img {
-        width: 100%;
-        border-radius: 12px;
-      }
-      .carousel button {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #ff4ecd;
-        color: #fff;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-      }
-
-      /* STICKY BUTTON */
-      .sticky-book {
+      * {margin:0;padding:0;box-sizing:border-box;font-family:"Montserrat",sans-serif;}
+      body {color:#333;line-height:1.6;background:linear-gradient(135deg,#fff0f6,#f0f9ff);scroll-behavior:smooth;}
+      header {background:linear-gradient(90deg,#ff4ecd,#ff7a18);color:#fff;padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+      header h1 {font-size:1.8rem;}
+      nav a {color:#fff;text-decoration:none;margin-left:1.5rem;font-weight:500;}
+      nav a:hover {opacity:0.8;}
+      .hero {display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 2rem;background:linear-gradient(rgba(255,78,205,0.6),rgba(255,122,24,0.6)),url("https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1400&q=80") no-repeat center/cover;}
+      .hero h2 {font-size:3rem;color:#fff;margin-bottom:1rem;text-shadow:2px 2px 10px rgba(0,0,0,0.4);}
+      .hero p {color:#fff;font-size:1.2rem;max-width:600px;margin-bottom:2rem;}
+      .hero .btn {background:linear-gradient(90deg,#ffe259,#ffa751);color:#333;padding:1rem 2rem;font-size:1.1rem;font-weight:700;border-radius:50px;text-decoration:none;box-shadow:0 4px 15px rgba(0,0,0,0.2);transition:0.3s;}
+      .hero .btn:hover {transform:scale(1.05);box-shadow:0 6px 20px rgba(0,0,0,0.3);}
+      .features {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;padding:4rem 2rem;max-width:1200px;margin:0 auto;}
+      .feature {background:#fff;padding:2rem;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,0.1);text-align:center;transform:translateY(50px);opacity:0;transition:0.8s;}
+      .feature.show {transform:translateY(0);opacity:1;}
+      .feature h3 {margin-bottom:1rem;color:#ff4ecd;}
+      .feature p {color:#666;}
+      .feature:hover {transform:translateY(-10px) scale(1.02);}
+      .booking {background:linear-gradient(135deg,#fff7ed,#f0fdf4);padding:4rem 2rem;text-align:center;}
+      .booking h2 {margin-bottom:1rem;color:#ff4ecd;}
+      .cta {background:linear-gradient(90deg,#ff4ecd,#ff7a18);color:#fff;text-align:center;padding:4rem 2rem;}
+      .cta a {display:inline-block;margin-top:1rem;padding:1rem 2rem;background:#fff;color:#ff4ecd;font-weight:700;border-radius:50px;text-decoration:none;transition:0.3s;}
+      .cta a:hover {background:#ffe259;color:#333;}
+      footer {background:#222;color:#fff;text-align:center;padding:2rem;}
+      footer a {color:#ffe259;text-decoration:none;}
+      .social-icons a {margin:0 0.5rem;color:#fff;font-size:1.5rem;}
+      .social-icons a:hover {color:#ffe259;}
+      @media (max-width:768px) {.hero h2 {font-size:2.2rem;}.hero p {font-size:1rem;}}
+      .carousel {position:relative;max-width:900px;margin:auto;overflow:hidden;}
+      .carousel-track img {cursor:grab;}
+      .carousel img {width:100%;border-radius:12px;}
+      .carousel button {position:absolute;top:50%;transform:translateY(-50%);background:#ff4ecd;color:#fff;border:none;padding:10px 15px;cursor:pointer;border-radius:50%;}
+      .prev {left:10px;}
+      .next {right:10px;}
+      .sticky-book, .messenger-btn {
         position: fixed;
         bottom: 20px;
-        left: 20px;
-        background: #ff4ecd;
-        color: #fff;
-        padding: 12px 18px;
+        right: 20px;
+        padding: 14px 20px;
         border-radius: 50px;
+        font-weight: bold;
         text-decoration: none;
-      }
-
-      /* FOOTER */
-      footer {
-        background: #222;
+        box-shadow: 0 4px 12px rgba(0,0,0,.3);
+        z-index: 999;
         color: #fff;
-        text-align: center;
-        padding: 2rem;
       }
+      .sticky-book {background: linear-gradient(90deg,#ff4ecd,#ff7a18);}
+      .sticky-book:hover {opacity:0.9;}
+      .messenger-btn {background:#0084ff; margin-bottom:10px;}
+      .messenger-btn:hover {opacity:0.9;}
     </style>
   </head>
-
   <body>
     <header>
       <h1>Pose Photobooth</h1>
       <nav>
         <a href="#features">Features</a>
-        <a href="#booking">Book</a>
+        <a href="#booking">Book Now</a>
+        <a href="#contact">Contact</a>
       </nav>
     </header>
 
     <section class="hero">
-      <h2>Capture Every Moment</h2>
-      <p>Fun, vibrant photobooth experience 🎉</p>
-      <a href="#booking" class="btn">Book Now</a>
+      <h2>Capture Every Moment in Style</h2>
+      <p>Pose Photobooth brings fun, professional-quality photos to your events. Perfect for weddings, birthdays, corporate events, and more!</p>
+      <a href="#booking" class="btn">Book Your Booth</a>
     </section>
 
     <section id="features" class="features">
-      <div class="feature">Instant Prints</div>
-      <div class="feature">Digital Sharing</div>
-      <div class="feature">Custom Backdrops</div>
-      <div class="feature">Fun Props</div>
-    </section>
-
-    <section class="packages">
-      <h2>Packages</h2>
-
-      <div class="card">
-        <h3>Basic</h3>
-        <p>₱3,999</p>
-        <a href="#booking">Book Now</a>
+      <div class="feature">
+        <h3>Instant Prints</h3>
+        <p>Get your photos instantly printed for you and your guests to take home.</p>
       </div>
-
-      <div class="card">
-        <h3>Standard</h3>
-        <p>₱5,999</p>
-        <a href="#booking">Book Now</a>
+      <div class="feature">
+        <h3>Digital Sharing</h3>
+        <p>Share your photos directly to social media with just a few clicks.</p>
       </div>
-
-      <div class="card">
-        <h3>Premium</h3>
-        <p>₱8,999</p>
-        <a href="#booking">Book Now</a>
+      <div class="feature">
+        <h3>Custom Backdrops</h3>
+        <p>Choose from a variety of backdrops or create your own unique design.</p>
+      </div>
+      <div class="feature">
+        <h3>Fun Props</h3>
+        <p>Add a playful touch to every photo with our wide selection of props.</p>
       </div>
     </section>
 
-    <section>
-      <div class="carousel">
-        <div class="carousel-track">
-          <img
-            src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=70"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=70"
-          />
+    <section style="padding:4rem 2rem;background:#fff7ed;text-align:center">
+      <h2 style="color:#ff4ecd;margin-bottom:2rem">Packages</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;max-width:1000px;margin:auto">
+        <div style="background:#fff;padding:2rem;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,0.1)">
+          <h3>Basic</h3>
+          <p style="font-size:2rem;color:#ff4ecd">₱3,999</p>
+          <p>2 Hours Coverage<br>Unlimited Shots<br>Digital Copies</p>
+        </div>
+        <div style="background:linear-gradient(135deg,#ff4ecd,#ff7a18);color:#fff;padding:2rem;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,0.2)">
+          <h3>Standard</h3>
+          <p style="font-size:2rem">₱5,999</p>
+          <p>3 Hours Coverage<br>Unlimited Prints<br>Backdrop + Props</p>
+        </div>
+        <div style="background:#fff;padding:2rem;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,0.1)">
+          <h3>Premium</h3>
+          <p style="font-size:2rem;color:#ff4ecd">₱8,999</p>
+          <p>4 Hours Coverage<br>Custom Template<br>All Features Included</p>
         </div>
       </div>
     </section>
 
-    <section id="booking">
-      <iframe
-        src="https://docs.google.com/forms/d/e/1FAIpQLSfX6GWL-YnQIHVN4T17VyJQ8sYj8QDcOvieD5F9w1Khzv5gTg/viewform?embedded=true"
-        style="width: 100%; height: 100vh; border: none"
-      >
-      </iframe>
+    <section style="padding:4rem 2rem;text-align:center;background:#fff">
+      <h2 style="color:#ff4ecd;margin-bottom:2rem">Event Highlights</h2>
+      <div class="carousel">
+        <button class="prev">&#10094;</button>
+        <div class="carousel-track">
+          <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80" />
+          <img src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80" />
+          <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=800&q=80" />
+          <img src="https://images.unsplash.com/photo-1541592106381-7c2e9f7b5b57?auto=format&fit=crop&w=800&q=80" />
+        </div>
+        <button class="next">&#10095;</button>
+      </div>
     </section>
 
-    <footer>
-      <p>Pose Photobooth | pose.photobooth.2017@gmail.com</p>
+    <section id="booking" class="booking">
+      <h2>Book Your Photobooth</h2>
+      <div style="max-width:800px;margin:auto">
+        <iframe
+          src="https://docs.google.com/forms/d/e/1FAIpQLSfX6GWL-YnQIHVN4T17VyJQ8sYj8QDcOvieD5F9w1Khzv5gTg/viewform?embedded=true"
+          style="width:100%;height:1200px;border:none">
+          Loading…
+        </iframe>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h2>Make Your Event Unforgettable</h2>
+      <p>Contact us to customize your photobooth experience!</p>
+      <a href="mailto:booking@posephotobooth.com">Contact Now</a>
+    </section>
+
+    <footer id="contact">
+      <p>&copy; 2026 Pose Photobooth | Email:
+        <a href="mailto:pose.photobooth.2017@gmail.com">pose.photobooth.2017@gmail.com</a> | Phone: +63 917 876 0929</p>
+      <div class="social-icons">
+        <a href="https://www.facebook.com/pose.photobooth.2017" target="_blank"><i class="fab fa-facebook"></i></a>
+      </div>
     </footer>
 
+    <!-- Fixed Buttons -->
     <a href="#booking" class="sticky-book">Book Now</a>
+    <a href="https://m.me/1708390602527798" target="_blank" class="messenger-btn">💬 Chat with us</a>
 
-    <!-- Messenger Plugin -->
-    <div id="fb-root"></div>
-    <div id="fb-customer-chat" class="fb-customerchat"></div>
-
+    <!-- JavaScript -->
     <script>
-      window.fbAsyncInit = function () {
-        FB.init({ xfbml: true, version: "v18.0" });
-        document
-          .getElementById("fb-customer-chat")
-          .setAttribute("page_id", "1708390602527798");
-      };
+      const features = document.querySelectorAll(".feature");
+      const observer = new IntersectionObserver(
+        (entries) => { entries.forEach((entry) => { if(entry.isIntersecting){ entry.target.classList.add("show"); }}); },
+        { threshold:0.3 }
+      );
+      features.forEach((feature) => observer.observe(feature));
 
-      (function (d, s, id) {
-        if (d.getElementById(id)) return;
-        let js = d.createElement(s);
-        js.id = id;
-        js.src = "https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js";
-        d.body.appendChild(js);
-      })(document, "script", "facebook-jssdk");
-    </script>
-
-    <script>
       const track = document.querySelector(".carousel-track");
+      const slides = document.querySelectorAll(".carousel img");
       let index = 0;
-      setInterval(() => {
-        index = (index + 1) % 2;
-        track.style.transform = `translateX(-${index * 100}%)`;
-      }, 3000);
+      function moveSlide(dir){ index = (index+dir+slides.length)%slides.length; track.style.transform=`translateX(-${index*100}%)`; }
+      document.querySelector(".next").onclick = () => moveSlide(1);
+      document.querySelector(".prev").onclick = () => moveSlide(-1);
+      setInterval(()=>moveSlide(1),3000);
     </script>
   </body>
 </html>
