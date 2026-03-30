@@ -1,28 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- Homepage -->
   <url>
     <loc>https://aemagbanwa.github.io/pose.photobooth/</loc>
     <priority>1.0</priority>
     <changefreq>weekly</changefreq>
   </url>
 
-  <!-- Packages Section -->
   <url>
     <loc>https://aemagbanwa.github.io/pose.photobooth/#packages</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
 
-  <!-- Booking Section -->
   <url>
     <loc>https://aemagbanwa.github.io/pose.photobooth/#booking</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
 
-  <!-- Contact / Footer -->
   <url>
     <loc>https://aemagbanwa.github.io/pose.photobooth/#contact</loc>
     <priority>0.6</priority>
