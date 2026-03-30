@@ -8,11 +8,13 @@
 
     <meta
       name="description"
-      content="Affordable photobooth rental in Binangonan, Philippines for weddings, birthdays, and corporate events. Unlimited prints, custom layouts, and instant sharing. Book Pose Photobooth today!"
+      content="Affordable photobooth rental in Pililia, Tanay, Baras, Teresa, Morong, Cardona,
+        Binangonan, Angono, Taytay, Cainta, Antipolo, Pasig, Quezon City,
+        Makkati and Pasay, Philippines for weddings, birthdays, and corporate events. Unlimited prints, custom layouts, and instant sharing. Book Pose Photobooth today!"
     />
     <meta
       name="keywords"
-      content="photobooth rental Binangonan, photobooth philippines, wedding photobooth philippines, birthday photobooth, corporate photobooth"
+      content="photobooth, photoman, 360 videobooth, rental Binangonan, photobooth philippines, wedding photobooth, birthday photobooth, corporate photobooth"
     />
     <meta name="author" content="Pose Photobooth" />
     <meta name="robots" content="index, follow" />
@@ -174,47 +176,85 @@
         bottom: 20px;
       }
       .messenger-chat {
-        bottom: 80px;
+        bottom: 20px;
+      }
+      /* Step container */
+      .step h3 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: #ff4ecd;
+        text-align: center;
+      }
+
+      /* Inputs & selects */
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        font-size: 1rem;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #ff7a18;
+        box-shadow: 0 0 5px rgba(255, 122, 24, 0.5);
+      }
+
+      /* Checkbox labels */
+      .checkbox-label {
+        display: block;
+        font-size: 1rem;
+        margin-bottom: 8px;
+        cursor: pointer;
+      }
+
+      .checkbox-label input {
+        margin-right: 10px;
+      }
+
+      /* Buttons hover effect */
+      button:hover {
+        opacity: 0.9;
       }
     </style>
   </head>
 
   <body>
     <header>
-      <h1>Pose Photobooth</h1>
+      <h1>POSE Photobooth</h1>
       <nav>
         <a href="#packages">Packages</a>
         <a href="#booking">Book Now</a>
         <a href="#contact">Contact</a>
       </nav>
     </header>
-
     <!-- HERO -->
     <section class="hero">
-      <h1>Photobooth Rental in Manila, Philippines</h1>
-      <h2>Capture Every Moment in Style</h2>
+      <h1>Photobooth Rental in Rizal and Manila | POSE Photobooth</h1>
+      <h2>Capture Moments. Create Experiences.</h2>
       <p>
-        Affordable photobooth rental for weddings, birthdays, and corporate
-        events. Unlimited prints, fun props, and instant sharing included.
+        Make your event unforgettable with Pose Photobooth. Enjoy unlimited
+        prints, premium backdrops, fun props, and instant photo sharing —
+        perfect for weddings, birthdays, and corporate events.
       </p>
-
-      <a href="#packages" class="btn">See Packages</a><br /><br />
-
-      <a href="https://m.me/1708390602527798" class="btn">
-        💬 Chat & Book Instantly
-      </a>
+      <a href="#packages" class="btn">See Packages</a><br /><br /><br />
     </section>
 
     <!-- SEO TEXT -->
     <section style="padding: 3rem 2rem; max-width: 900px; margin: auto">
       <h2>
-        Affordable and Quality Photobooth, 360 Videobooth, and Photoman Services
-        in Binangonan, Rizal and Metro Manila
+        Photobooth, 360 Videobooth & Photoman Services in Rizal & Metro Manila
       </h2>
       <p>
-        Pose Photobooth offers professional photobooth, 360 videobooth, and
-        photoman services across Binangonan, Rizal and Metro Manila. Perfect for
-        weddings, birthdays, debuts, and corporate events.
+        Pose Photobooth offers photobooth rental in Manila, Rizal, and nearby
+        areas including Pililia, Tanay, Baras, Teresa, Morong, Cardona,
+        Binangonan, Angono, Taytay, Cainta, Antipolo, Pasig, Quezon City,
+        Makkati and Pasay. We provide affordable packages for weddings,
+        birthdays, and corporate events with unlimited prints and instant
+        sharing.
       </p>
     </section>
 
@@ -369,16 +409,283 @@
     </section>
 
     <!-- BOOKING -->
-    <section id="booking" style="padding: 4rem 2rem; text-align: center">
-      <h2>Book Your Photobooth</h2>
+    <section
+      id="booking"
+      style="padding: 4rem 2rem; max-width: 700px; margin: auto"
+    >
+      <h2 style="text-align: center">Reserve Your Event Date</h2>
+      <p style="text-align: center">
+        Secure your slot — we’ll confirm availability shortly.
+      </p>
 
-      <iframe
-        src="https://docs.google.com/forms/d/e/1FAIpQLSfX6GWL-YnQIHVN4T17VyJQ8sYj8QDcOvieD5F9w1Khzv5gTg/viewform?embedded=true"
-        style="width: 100%; height: 1000px; border: none"
+      <form id="bookingForm">
+        <!-- STEP 1 -->
+        <div class="step" id="step1">
+          <h3>Event Details</h3>
+
+          <input
+            type="date"
+            name="event_date"
+            required
+            style="width: 100%; padding: 10px; margin-bottom: 10px"
+          />
+
+          <input
+            type="time"
+            name="event_time"
+            required
+            style="width: 100%; padding: 10px; margin-bottom: 10px"
+          />
+
+          <select
+            name="event_type"
+            required
+            style="width: 100%; padding: 10px; margin-bottom: 10px"
+          >
+            <option value="">Select Event Type</option>
+            <option>Anniversary</option>
+            <option>Wedding</option>
+            <option>Birthday</option>
+            <option>Debut</option>
+            <option>Corporate Event</option>
+          </select>
+
+          <input
+            type="text"
+            name="location"
+            placeholder="Event Location"
+            required
+            style="width: 100%; padding: 10px; margin-bottom: 10px"
+          />
+
+          <div>
+            <input
+              type="text"
+              name="name"
+              placeholder="Celebrant or Company Name or Couple Name"
+              required
+              style="width: 100%; padding: 10px; margin-bottom: 10px"
+            />
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div
+            style="
+              margin-top: 20px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            <button
+              type="button"
+              onclick="nextStep(2)"
+              style="
+                background: linear-gradient(90deg, #ff4ecd, #ff7a18);
+                color: #fff;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 50px;
+                cursor: pointer;
+              "
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="step" id="step2" style="display: none">
+          <h3>Select Your Package & Add-ons</h3>
+
+          <!-- Package Selection -->
+          <div class="form-group">
+            <label for="packageSelect">Choose Package</label>
+            <select
+              id="packageSelect"
+              name="package"
+              required
+              style="
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid #ccc;
+                margin-bottom: 20px;
+              "
+            >
+              <option value="">Select Package</option>
+              <option>Photobooth - Basic Package</option>
+              <option>Photobooth - Strip Package</option>
+              <option>Photobooth - Dedication Package</option>
+              <option>Photobooth - Polaroid Package</option>
+              <option>Photoman - Polaroid Package</option>
+              <option>Photoman - 44 Package</option>
+              <option>360 Videobooth - Basic Package</option>
+              <option>360 Videobooth - VIP Package</option>
+            </select>
+          </div>
+
+          <!-- Add-ons -->
+          <div class="form-group">
+            <label>Add-ons</label><br />
+
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                name="addons"
+                value="Extra Hour"
+                id="extraHourCheckbox"
+              />
+              Extra Hour
+            </label>
+
+            <div
+              id="extraHourInput"
+              style="display: none; margin: 10px 0 20px 0"
+            >
+              <input
+                type="number"
+                name="extra_hours"
+                placeholder="Enter number of extra hours"
+                min="1"
+                style="
+                  width: 100%;
+                  padding: 10px;
+                  border-radius: 8px;
+                  border: 1px solid #ccc;
+                "
+              />
+            </div>
+
+            <label class="checkbox-label">
+              <input type="checkbox" name="addons" value="Magnet Prints" />
+              Magnet Prints
+            </label>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div
+            style="
+              margin-top: 20px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            <button
+              type="button"
+              onclick="prevStep(1)"
+              style="
+                background: #ccc;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 50px;
+                cursor: pointer;
+              "
+            >
+              ← Back
+            </button>
+            <button
+              type="button"
+              onclick="nextStep(3)"
+              style="
+                background: linear-gradient(90deg, #ff4ecd, #ff7a18);
+                color: #fff;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 50px;
+                cursor: pointer;
+              "
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step" id="step3" style="display: none">
+          <h3>Your Details</h3>
+
+          <div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Contact Email Address (e.g., juan.delacruz@example.com)"
+              required
+              style="width: 100%; padding: 10px; margin-bottom: 10px"
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              name="phone"
+              placeholder="Contact Number (e.g. +63 917 876 0929)"
+              required
+              style="width: 100%; padding: 10px; margin-bottom: 10px"
+            />
+          </div>
+
+          <div>
+            <input
+              type="text"
+              name="contact"
+              placeholder="Juan Dela Cruz (Contact Person)"
+              required
+              style="width: 100%; padding: 10px; margin-bottom: 10px"
+            />
+          </div>
+
+          <div>
+            <textarea
+              name="notes"
+              placeholder="Additional Notes"
+              style="width: 100%; padding: 10px"
+            ></textarea>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div
+            style="
+              margin-top: 20px;
+              display: flex;
+              justify-content: space-between;
+            "
+          >
+            <button
+              type="button"
+              onclick="prevStep(2)"
+              style="
+                background: #ccc;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 50px;
+                cursor: pointer;
+              "
+            >
+              ← Back
+            </button>
+            <button
+              type="submit"
+              style="
+                background: linear-gradient(90deg, #ff4ecd, #ff7a18);
+                color: #fff;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 50px;
+                cursor: pointer;
+              "
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <p
+        id="successMsg"
+        style="display: none; text-align: center; margin-top: 20px"
       >
-      </iframe>
+        🎉 Thank you! We’ll confirm your booking within 1–2 hours.
+      </p>
     </section>
-
     <footer id="contact">
       <p>
         © 2026 Pose Photobooth | pose.photobooth.2017@gmail.com | +63 917 876
@@ -386,12 +693,92 @@
       </p>
     </footer>
 
-    <a href="#booking" class="sticky-book">Book Now</a>
     <a
       href="https://m.me/1708390602527798"
       target="_blank"
       class="messenger-chat"
-      >💬 Messenger</a
+      >💬 Chat with us on Messenger</a
     >
   </body>
+  <script>
+    // Step navigation
+    function showStep(step) {
+      document
+        .querySelectorAll(".step")
+        .forEach((s) => (s.style.display = "none"));
+      document.getElementById("step" + step).style.display = "block";
+    }
+
+    function nextStep(step) {
+      showStep(step);
+    }
+
+    function prevStep(step) {
+      showStep(step);
+    }
+
+    // Extra Hour checkbox logic
+    const extraCheckbox = document.getElementById("extraHourCheckbox");
+    const extraInput = document.getElementById("extraHourInput");
+
+    extraCheckbox.addEventListener("change", function () {
+      if (this.checked) {
+        extraInput.style.display = "block";
+      } else {
+        extraInput.style.display = "none";
+        extraInput.querySelector("input").value = ""; // reset value
+      }
+    });
+
+    // Form submission
+    const bookingForm = document.getElementById("bookingForm");
+    bookingForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(bookingForm);
+
+      // Collect data
+      let addonsArray = formData.getAll("addons");
+      const extraHours = formData.get("extra_hours") || "0";
+      if (extraHours !== "0" && !addonsArray.includes("Extra Hour")) {
+        addonsArray.push(`Extra Hour (${extraHours}h)`);
+      }
+
+      const data = {
+        event_date: formData.get("event_date"),
+        event_time: formData.get("event_time"),
+        event_type: formData.get("event_type"),
+        event_location: formData.get("location"),
+        name: formData.get("name"),
+        package: formData.get("package"),
+        addons: addonsArray.join(", "),
+        extra_hours: extraHours,
+        email: formData.get("email"),
+        phone: formData.get("phone"),
+        contact: formData.get("contact"),
+        notes: formData.get("notes"),
+      };
+
+      // Send to Google Script
+      fetch(
+        "https://script.google.com/macros/s/AKfycbwnXDAOoU1NJrdcuP-tcWQ2RCYifdbm6bCvuO6lJPYiVRIDr-jXrGP0blt31_TFeEmR/exec",
+        {
+          method: "POST",
+          body: JSON.stringify(data),
+        },
+      )
+        .then((res) => res.json())
+        .then(() => {
+          bookingForm.style.display = "none";
+          document.getElementById("successMsg").style.display = "block";
+        })
+        .catch((err) => {
+          alert("Something went wrong. Please try again.");
+          console.error(err);
+        });
+    });
+
+    // Initialize first step
+    showStep(1);
+  </script>
 </html>
