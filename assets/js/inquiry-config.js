@@ -1,4 +1,4 @@
 window.POSE_INQUIRY = {
   endpoint:
-    "https://script.google.com/macros/s/AKfycbyg1ThAKVpmsJz27MC4wrqpguQN6QybpKzau97Bm8faEwRIOch80pR9pnO4ZvZY_duQ/exec",
+    "https://script.google.com/macros/s/AKfycbygLcbHGJ_aaHnmoEd1kNjhlCZ3TScMuOcbCeOxsUL2WQrxh2raInzekjNm_YWUS8c-/exec",
 };
