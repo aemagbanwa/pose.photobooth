@@ -1,0 +1,17 @@
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local configuration and generated files
+.env
+.env.*
+*.log
+*.tmp
+*.bak
+
+# Private deployment code
+google-apps-script/
+START_LOCAL_PREVIEW.bat
