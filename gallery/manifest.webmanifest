@@ -1,0 +1,9 @@
+{
+  "name": "POSE Photobooth Gallery",
+  "short_name": "POSE Gallery",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#100f11",
+  "theme_color": "#e9ff52",
+  "icons": []
+}
