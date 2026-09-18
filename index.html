@@ -164,137 +164,160 @@
           </p>
         </div>
 
-        <div
-          class="wrap price-grid price-grid-four package-carousel"
-          aria-label="All POSE packages"
-        >
-          <article class="price-card">
-            <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
-            <h3>Basic</h3>
-            <p class="price">₱3,000</p>
-            <p class="muted">2 hours</p>
-            <ul>
-              <li>Unlimited photo sessions</li>
-              <li>Classic 4R layout</li>
-              <li>Custom event design</li>
-              <li>Props + backdrop choices</li>
-              <li>Online gallery</li>
-            </ul>
-            <a class="pill block" href="#availability">Choose Basic</a>
-          </article>
-          <article class="price-card">
-            <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
-            <h3>Strip</h3>
-            <p class="price">₱3,500</p>
-            <p class="muted">2 hours</p>
-            <ul>
-              <li>Unlimited photo sessions</li>
-              <li>2×6 strip prints</li>
-              <li>Custom strip layout</li>
-              <li>Fun props</li>
-              <li>Online gallery</li>
-            </ul>
-            <a class="pill block" href="#availability">Choose Strip</a>
-          </article>
-          <article class="price-card">
-            <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
-            <h3>Dedication</h3>
-            <p class="price">₱3,500</p>
-            <p class="muted">2 hours</p>
-            <ul>
-              <li>Unlimited photo sessions</li>
-              <li>Strip + guest message</li>
-              <li>1 strip with 3 shots + 1 message strip</li>
-              <li>Custom layout</li>
-              <li>Fun props</li>
-            </ul>
-            <a class="pill block" href="#availability">Choose Dedication</a>
-          </article>
-          <article class="price-card">
-            <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
-            <h3>Polaroid</h3>
-            <p class="price">₱4,000</p>
-            <p class="muted">2 hours</p>
-            <ul>
-              <li>Unlimited photo sessions</li>
-              <li>Polaroid-style prints</li>
-              <li>Custom design</li>
-              <li>Fun props</li>
-              <li>Online gallery</li>
-            </ul>
-            <a class="pill block" href="#availability">Choose Polaroid</a>
-          </article>
-          <article class="price-card popular">
-            <div class="badge">POPULAR</div>
-            <p class="eyebrow">ROAMING PHOTOBOOTH</p>
-            <h3>Roaming Basic</h3>
-            <p class="price">₱4,500</p>
-            <p class="muted">2 hours</p>
-            <ul>
-              <li>Sony ZV-E10 + Tamron 17-70mm f/2.8</li>
-              <li>Guests photographed around the venue</li>
-              <li>Up to 100 instant 4R prints</li>
-              <li>Printing station</li>
-              <li>Online gallery</li>
-            </ul>
-            <a class="pill block pink" href="#availability">Choose Roaming</a>
-          </article>
-          <article class="price-card">
-            <p class="eyebrow">ROAMING PHOTOBOOTH</p>
-            <h3>Roaming Premium</h3>
-            <p class="price">₱6,000</p>
-            <p class="muted">2 hours</p>
-            <ul>
-              <li>Sony ZV-E10 + Tamron 17-70mm f/2.8</li>
-              <li>Unlimited photos taken</li>
-              <li>Up to 100–120 instant 4R prints</li>
-              <li>On-site sharing station</li>
-              <li>Premium print quality</li>
-            </ul>
-            <a class="pill block" href="#availability">Choose Premium</a>
-          </article>
-          <article class="price-card">
-            <p class="eyebrow">PREMIUM PHOTOBOOTH</p>
-            <h3>Signature Booth</h3>
-            <p class="price">₱7,500</p>
-            <p class="muted">2 hours</p>
-            <ul>
-              <li>Unlimited photo sessions</li>
-              <li>DNP professional 4R prints</li>
-              <li>Dedicated sharing station</li>
-              <li>AirDrop + QR sharing</li>
-              <li>Premium studio lighting</li>
-            </ul>
-            <a class="pill block" href="#availability">Choose Signature</a>
-          </article>
-          <article class="price-card">
-            <p class="eyebrow">360 VIDEO BOOTH</p>
-            <h3>360 Package</h3>
-            <p class="price">₱12,000</p>
-            <p class="muted">3 hours</p>
-            <ul>
-              <li>Unlimited 360° sessions</li>
-              <li>Custom branded overlay</li>
-              <li>AirDrop + QR sharing</li>
-              <li>Professional lighting</li>
-              <li>On-site attendant</li>
-            </ul>
-            <a class="pill block" href="#availability">Choose 360</a>
-          </article>
-          <article class="price-card">
-            <p class="eyebrow">360 VIDEO BOOTH</p>
-            <h3>360 + Photobooth</h3>
-            <p class="price">₱18,000</p>
-            <p class="muted">3 hours</p>
-            <ul>
-              <li>Everything in the 360 Package</li>
-              <li>Unlimited photobooth sessions</li>
-              <li>Custom photobooth layout</li>
-              <li>Props and fun accessories</li>
-              <li>Instant prints during the event</li>
-            </ul>
-            <a class="pill block pink" href="#availability">Choose Combo</a>
-          </article>
+        <div class="wrap package-carousel-shell">
+          <div
+            class="package-carousel-controls"
+            aria-label="Package carousel controls"
+          >
+            <button
+              class="carousel-button"
+              type="button"
+              data-carousel-direction="prev"
+              aria-label="Previous package"
+            >
+              &larr;
+            </button>
+            <button
+              class="carousel-button"
+              type="button"
+              data-carousel-direction="next"
+              aria-label="Next package"
+            >
+              &rarr;
+            </button>
+          </div>
+          <div
+            class="price-grid price-grid-four package-carousel"
+            aria-label="All POSE packages"
+          >
+            <article class="price-card">
+              <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
+              <h3>Basic</h3>
+              <p class="price">₱3,000</p>
+              <p class="muted">2 hours</p>
+              <ul>
+                <li>Unlimited photo sessions</li>
+                <li>Classic 4R layout</li>
+                <li>Custom event design</li>
+                <li>Props + backdrop choices</li>
+                <li>Online gallery</li>
+              </ul>
+              <a class="pill block" href="#availability">Choose Basic</a>
+            </article>
+            <article class="price-card">
+              <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
+              <h3>Strip</h3>
+              <p class="price">₱3,500</p>
+              <p class="muted">2 hours</p>
+              <ul>
+                <li>Unlimited photo sessions</li>
+                <li>2×6 strip prints</li>
+                <li>Custom strip layout</li>
+                <li>Fun props</li>
+                <li>Online gallery</li>
+              </ul>
+              <a class="pill block" href="#availability">Choose Strip</a>
+            </article>
+            <article class="price-card">
+              <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
+              <h3>Dedication</h3>
+              <p class="price">₱3,500</p>
+              <p class="muted">2 hours</p>
+              <ul>
+                <li>Unlimited photo sessions</li>
+                <li>Strip + guest message</li>
+                <li>1 strip with 3 shots + 1 message strip</li>
+                <li>Custom layout</li>
+                <li>Fun props</li>
+              </ul>
+              <a class="pill block" href="#availability">Choose Dedication</a>
+            </article>
+            <article class="price-card">
+              <p class="eyebrow">BIRTHDAY PHOTOBOOTH</p>
+              <h3>Polaroid</h3>
+              <p class="price">₱4,000</p>
+              <p class="muted">2 hours</p>
+              <ul>
+                <li>Unlimited photo sessions</li>
+                <li>Polaroid-style prints</li>
+                <li>Custom design</li>
+                <li>Fun props</li>
+                <li>Online gallery</li>
+              </ul>
+              <a class="pill block" href="#availability">Choose Polaroid</a>
+            </article>
+            <article class="price-card popular">
+              <div class="badge">POPULAR</div>
+              <p class="eyebrow">ROAMING PHOTOBOOTH</p>
+              <h3>Roaming Basic</h3>
+              <p class="price">₱4,500</p>
+              <p class="muted">2 hours</p>
+              <ul>
+                <li>Sony ZV-E10 + Tamron 17-70mm f/2.8</li>
+                <li>Guests photographed around the venue</li>
+                <li>Up to 100 instant 4R prints</li>
+                <li>Printing station</li>
+                <li>Online gallery</li>
+              </ul>
+              <a class="pill block pink" href="#availability">Choose Roaming</a>
+            </article>
+            <article class="price-card">
+              <p class="eyebrow">ROAMING PHOTOBOOTH</p>
+              <h3>Roaming Premium</h3>
+              <p class="price">₱6,000</p>
+              <p class="muted">2 hours</p>
+              <ul>
+                <li>Sony ZV-E10 + Tamron 17-70mm f/2.8</li>
+                <li>Unlimited photos taken</li>
+                <li>Up to 100–120 instant 4R prints</li>
+                <li>On-site sharing station</li>
+                <li>Premium print quality</li>
+              </ul>
+              <a class="pill block" href="#availability">Choose Premium</a>
+            </article>
+            <article class="price-card">
+              <p class="eyebrow">PREMIUM PHOTOBOOTH</p>
+              <h3>Signature Booth</h3>
+              <p class="price">₱7,500</p>
+              <p class="muted">2 hours</p>
+              <ul>
+                <li>Unlimited photo sessions</li>
+                <li>DNP professional 4R prints</li>
+                <li>Dedicated sharing station</li>
+                <li>AirDrop + QR sharing</li>
+                <li>Premium studio lighting</li>
+              </ul>
+              <a class="pill block" href="#availability">Choose Signature</a>
+            </article>
+            <article class="price-card">
+              <p class="eyebrow">360 VIDEO BOOTH</p>
+              <h3>360 Package</h3>
+              <p class="price">₱12,000</p>
+              <p class="muted">3 hours</p>
+              <ul>
+                <li>Unlimited 360° sessions</li>
+                <li>Custom branded overlay</li>
+                <li>AirDrop + QR sharing</li>
+                <li>Professional lighting</li>
+                <li>On-site attendant</li>
+              </ul>
+              <a class="pill block" href="#availability">Choose 360</a>
+            </article>
+            <article class="price-card">
+              <p class="eyebrow">360 VIDEO BOOTH</p>
+              <h3>360 + Photobooth</h3>
+              <p class="price">₱18,000</p>
+              <p class="muted">3 hours</p>
+              <ul>
+                <li>Everything in the 360 Package</li>
+                <li>Unlimited photobooth sessions</li>
+                <li>Custom photobooth layout</li>
+                <li>Props and fun accessories</li>
+                <li>Instant prints during the event</li>
+              </ul>
+              <a class="pill block pink" href="#availability">Choose Combo</a>
+            </article>
+          </div>
         </div>
 
         <div class="wrap offer-head">

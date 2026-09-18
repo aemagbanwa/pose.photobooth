@@ -266,6 +266,49 @@ a {
   gap: 18px;
   margin-top: 64px;
 }
+.package-carousel-shell {
+  position: relative;
+  margin-top: 64px;
+}
+.package-carousel-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.carousel-button {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--ink);
+  background: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+.carousel-button:hover {
+  color: #fff;
+  background: var(--black);
+}
+.package-carousel {
+  margin-top: 0;
+  display: flex;
+  overflow-x: auto;
+  grid-template-columns: none;
+  gap: 18px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.package-carousel::-webkit-scrollbar {
+  display: none;
+}
+.package-carousel .price-card {
+  flex: 0 0 calc((100% - 36px) / 3);
+  scroll-snap-align: start;
+}
 .price-card {
   border: 1px solid var(--line);
   border-radius: 28px;
@@ -590,21 +633,15 @@ footer {
   .price-grid {
     grid-template-columns: repeat(2, minmax(280px, 1fr));
   }
-  .package-carousel {
-    width: 100%;
-    padding-left: 14px;
-    padding-right: 14px;
-    overflow-x: auto;
-    grid-template-columns: repeat(4, minmax(78vw, 1fr));
-    scroll-snap-type: x mandatory;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
+  .package-carousel-shell {
+    width: min(calc(100% - 28px), var(--max));
   }
-  .package-carousel::-webkit-scrollbar {
-    display: none;
+  .package-carousel {
+    padding-left: 0;
+    padding-right: 0;
   }
   .package-carousel .price-card {
-    scroll-snap-align: start;
+    flex-basis: calc((100% - 18px) / 2);
   }
   .package-art {
     grid-template-columns: 1fr;
@@ -657,7 +694,10 @@ footer {
     grid-template-columns: 1fr;
   }
   .package-carousel {
-    grid-template-columns: repeat(4, minmax(84vw, 1fr));
+    gap: 14px;
+  }
+  .package-carousel .price-card {
+    flex-basis: 84vw;
   }
   .reviews-panel {
     padding: 30px;
