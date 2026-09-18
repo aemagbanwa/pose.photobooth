@@ -258,6 +258,15 @@ a {
 .feature-pink {
   background: #ffedf4;
 }
+.feature-signature {
+  background: #f3eee8;
+}
+.feature-signature img {
+  height: 100%;
+  max-height: 650px;
+  object-fit: cover;
+  object-position: center;
+}
 .feature-pink {
   grid-template-columns: 1fr 0.9fr;
 }
@@ -627,6 +636,9 @@ footer {
     min-height: 0;
   }
   .feature-pink {
+    grid-template-columns: 1fr;
+  }
+  .feature-signature {
     grid-template-columns: 1fr;
   }
   .feature-pink img {
