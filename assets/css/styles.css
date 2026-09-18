@@ -184,6 +184,13 @@ a {
 .events h2 {
   font-size: clamp(44px, 6vw, 78px);
 }
+.packages {
+  background-color: #fbfbfc;
+  background-image:
+    linear-gradient(rgba(17, 17, 17, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 17, 0.025) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
 .feature-grid {
   display: grid;
   gap: 22px;
