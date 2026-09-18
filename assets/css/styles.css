@@ -588,7 +588,23 @@ footer {
     padding: 30px;
   }
   .price-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+  }
+  .package-carousel {
+    width: 100%;
+    padding-left: 14px;
+    padding-right: 14px;
+    overflow-x: auto;
+    grid-template-columns: repeat(4, minmax(78vw, 1fr));
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .package-carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .package-carousel .price-card {
+    scroll-snap-align: start;
   }
   .package-art {
     grid-template-columns: 1fr;
@@ -639,6 +655,9 @@ footer {
   }
   .form-row {
     grid-template-columns: 1fr;
+  }
+  .package-carousel {
+    grid-template-columns: repeat(4, minmax(84vw, 1fr));
   }
   .reviews-panel {
     padding: 30px;
@@ -1016,7 +1035,7 @@ footer {
   }
 }
 @media (max-width: 850px) {
-  .price-grid-four {
+  .price-grid-four:not(.package-carousel) {
     grid-template-columns: 1fr;
   }
   .poster-grid {
