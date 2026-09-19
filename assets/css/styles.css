@@ -30,6 +30,16 @@ a {
   color: inherit;
   text-decoration: none;
 }
+:focus-visible {
+  outline: 3px solid var(--pink);
+  outline-offset: 3px;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--pink);
+  outline-offset: 2px;
+}
 .wrap {
   width: min(calc(100% - 40px), var(--max));
   margin: auto;
