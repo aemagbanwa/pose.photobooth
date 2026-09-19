@@ -63,6 +63,13 @@ document.querySelectorAll('a[href^="#"]').forEach((a) =>
 const form = document.querySelector("#leadForm");
 const formHelp = document.querySelector("#formHelp");
 const submitBtn = form?.querySelector('button[type="submit"]');
+const packageSelect = document.querySelector("#packageSelect");
+
+document.querySelectorAll("[data-package]").forEach((link) =>
+  link.addEventListener("click", () => {
+    if (packageSelect) packageSelect.value = link.dataset.package;
+  }),
+);
 
 function setFormMessage(message, type = "info") {
   if (!formHelp) return;
