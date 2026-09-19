@@ -287,10 +287,15 @@ a {
   margin-top: 64px;
 }
 .package-carousel-controls {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: -21px;
+  left: -21px;
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 14px;
+  justify-content: space-between;
+  pointer-events: none;
+  transform: translateY(-50%);
 }
 .carousel-button {
   width: 42px;
@@ -303,6 +308,8 @@ a {
   background: #fff;
   font-size: 20px;
   cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+  pointer-events: auto;
 }
 .carousel-button:hover {
   color: #fff;
