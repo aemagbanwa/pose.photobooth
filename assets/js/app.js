@@ -16,13 +16,34 @@ document.querySelectorAll(".package-carousel-shell").forEach((shell) => {
   const carousel = shell.querySelector(".package-carousel");
   const cards = carousel?.querySelectorAll(".price-card");
   if (!carousel || !cards?.length) return;
-  shell.querySelectorAll("[data-carousel-direction]").forEach((button) =>
+  const controls = [...shell.querySelectorAll("[data-carousel-direction]")];
+  const status = shell.querySelector(".carousel-status");
+  const updateCarouselState = () => {
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+    const atStart = carousel.scrollLeft <= 2;
+    const atEnd = carousel.scrollLeft >= maxScroll - 2;
+    controls.forEach((button) => {
+      const isNext = button.dataset.carouselDirection === "next";
+      button.disabled = isNext ? atEnd : atStart;
+      button.setAttribute("aria-disabled", String(button.disabled));
+    });
+    const step = cards[0].getBoundingClientRect().width + 18;
+    const current = Math.min(
+      cards.length,
+      Math.max(1, Math.round(carousel.scrollLeft / step) + 1),
+    );
+    if (status) status.textContent = `Package ${current} of ${cards.length}`;
+  };
+  controls.forEach((button) =>
     button.addEventListener("click", () => {
       const direction = button.dataset.carouselDirection === "next" ? 1 : -1;
       const distance = cards[0].getBoundingClientRect().width + 18;
       carousel.scrollBy({ left: direction * distance, behavior: "smooth" });
     }),
   );
+  carousel.addEventListener("scroll", updateCarouselState, { passive: true });
+  window.addEventListener("resize", updateCarouselState);
+  updateCarouselState();
 });
 
 // Keep same-page navigation reliable during local preview and on the live site.

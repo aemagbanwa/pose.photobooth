@@ -325,6 +325,20 @@ a {
   color: #fff;
   background: var(--black);
 }
+.carousel-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.carousel-status {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
 .package-carousel {
   margin-top: 0;
   display: flex;
