@@ -682,6 +682,13 @@ footer {
   }
   .menu {
     display: block;
+    padding: 10px 14px;
+    border-radius: 999px;
+    color: #fff;
+    background: var(--black);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
   }
   .nav nav {
     display: none;
@@ -697,6 +704,7 @@ footer {
   }
   .nav nav.open {
     display: flex;
+    box-shadow: 0 18px 30px rgba(0, 0, 0, 0.12);
   }
   .nav nav .pill {
     width: 100%;
