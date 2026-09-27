@@ -92,7 +92,7 @@
           <a href="#experiences">Experiences</a>
           <a href="#packages">Packages</a>
           <a href="#events">Events</a>
-          <a href="https://gallery.poseph.com">Gallery</a>
+          <a href="/gallery/">Gallery</a>
           <a href="#reviews">Reviews</a>
           <a href="#faq">FAQ</a>
           <a class="pill small" href="#availability">Check your date</a>
@@ -618,6 +618,16 @@
                 required
             /></label>
             <label
+              >Guest count <span class="optional">(optional)</span
+              ><input
+                type="number"
+                name="guestCount"
+                min="1"
+                step="1"
+                inputmode="numeric"
+                placeholder="Approximate number of guests"
+            /></label>
+            <label
               >Interested in<select name="service" required>
                 <option value="">Select</option>
                 <option>Photobooth</option>
@@ -639,6 +649,15 @@
                 <option>360 Package</option>
               </select></label
             >
+            <label
+              >Additional event details <span class="optional">(optional)</span
+              ><textarea
+                name="notes"
+                rows="4"
+                maxlength="2000"
+                placeholder="Share anything else that would help us prepare a quote."
+              ></textarea>
+            </label>
             <div class="form-row">
               <label
                 >Name<input
@@ -701,7 +720,7 @@
         <div>
           <strong>Explore</strong><a href="#experiences">Experiences</a
           ><a href="#packages">Packages</a><a href="#events">Events</a
-          ><a href="#reviews">Google reviews</a>
+          ><a href="/gallery/">Gallery</a><a href="#reviews">Google reviews</a>
         </div>
         <div>
           <strong>Connect</strong
@@ -725,7 +744,6 @@
       aria-label="Chat with POSE on Messenger"
       >Chat with POSE</a
     >
-    <script src="assets/js/inquiry-config.js"></script>
     <script src="assets/js/app.js?v=carousel-20260918"></script>
   </body>
 </html>

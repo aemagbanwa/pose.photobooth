@@ -1,143 +1,388 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#100f11">
-  <meta name="description" content="Real celebrations captured by POSE Photobooth across Rizal and Metro Manila.">
-  <title>Event Gallery — POSE Photobooth</title>
-  <link rel="preconnect" href="https://poseph.com">
-  <link rel="preconnect" href="https://drive.google.com">
-  <link rel="preconnect" href="https://lh3.googleusercontent.com">
-  <link rel="icon" href="https://poseph.com/assets/images/pose-logo.png">
-  <link rel="stylesheet" href="styles.css">
-  <script src="assets/config.js"></script>
-  <script src="app.js" defer></script>
-</head>
-<body>
-  <a class="skip-link" href="#gallery">Skip to gallery</a>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#100f11" />
+    <meta
+      name="description"
+      content="Real celebrations captured by POSE Photobooth across Rizal and Metro Manila."
+    />
+    <title>Event Gallery — POSE Photobooth</title>
+    <link rel="preconnect" href="https://poseph.com" />
+    <link rel="preconnect" href="https://drive.google.com" />
+    <link rel="preconnect" href="https://lh3.googleusercontent.com" />
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" />
+    <link rel="icon" href="https://poseph.com/assets/images/pose-logo.png" />
+    <link rel="stylesheet" href="./styles.css?v=24" />
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4431773260416818"
+      crossorigin="anonymous"
+    ></script>
+    <script src="./assets/config.js"></script>
+    <script src="./app.js?v=26" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#event-collections">Skip to gallery</a>
 
-  <header class="site-header" data-header>
-    <a class="brand" href="https://poseph.com/" aria-label="POSE Photobooth home">
-      <img src="https://poseph.com/assets/images/pose-logo.png" alt="POSE Photobooth" width="182" height="64">
-    </a>
-    <nav class="header-actions" aria-label="Primary navigation">
-      <a class="text-link" href="https://poseph.com/">Main site</a>
-      <a class="button button--light button--compact" href="https://poseph.com/#availability">Check your date</a>
-    </nav>
-  </header>
+    <header class="site-header" data-header>
+      <div class="nav wrap">
+        <a class="brand" href="../#top" aria-label="POSE Photobooth home">
+          <img src="../assets/images/pose-logo.png" alt="POSE Photobooth" />
+        </a>
+        <button
+          class="menu"
+          id="menu-button"
+          type="button"
+          aria-expanded="false"
+          aria-controls="primary-nav"
+          aria-label="Toggle navigation"
+        >
+          Menu
+        </button>
+        <nav id="primary-nav" aria-label="Primary navigation">
+          <a href="../#experiences">Experiences</a>
+          <a href="../#packages">Packages</a>
+          <a href="../#events">Events</a>
+          <a href="/gallery/" aria-current="page">Gallery</a>
+          <a href="../#reviews">Reviews</a>
+          <a href="../#faq">FAQ</a>
+          <a class="pill small" href="../#availability">Check your date</a>
+        </nav>
+      </div>
+    </header>
 
-  <main>
-    <section class="hero" aria-labelledby="gallery-title">
-      <div class="hero__glow" aria-hidden="true"></div>
-      <p class="eyebrow"><span></span> Real events · Real memories</p>
-      <h1 id="gallery-title">Real moments.<br><em>Beautifully kept.</em></h1>
-      <p class="hero__copy">A living collection of birthdays, weddings, and celebrations captured by POSE across Rizal and Metro Manila.</p>
-      <a class="scroll-cue" href="#gallery"><span>Explore the gallery</span><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14m0 0 6-6m-6 6-6-6"/></svg></a>
-    </section>
+    <main>
+      <section class="hero" aria-labelledby="gallery-title">
+        <div class="hero__glow" aria-hidden="true"></div>
+        <p class="eyebrow"><span></span> POSE EVENT GALLERY</p>
+        <h1 id="gallery-title">
+          Every moment.<br /><em>Worth remembering.</em>
+        </h1>
+        <p class="hero__copy">
+          Browse event collections, open a gallery, and relive every celebration
+          captured by POSE across Rizal and Metro Manila.
+        </p>
+        <a class="scroll-cue" href="#event-collections"
+          ><span>Explore the gallery</span
+          ><svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M12 5v14m0 0 6-6m-6 6-6-6" /></svg
+        ></a>
+      </section>
 
-    <section class="gallery-section" id="gallery" aria-labelledby="gallery-heading">
-      <div class="gallery-intro">
-        <div>
-          <p class="eyebrow eyebrow--dark">Captured by POSE</p>
-          <h2 id="gallery-heading">Moments by POSE.</h2>
+      <section
+        class="gallery-section"
+        id="event-collections"
+        aria-labelledby="gallery-heading"
+      >
+        <div class="gallery-intro">
+          <div>
+            <p class="eyebrow eyebrow--dark">Captured by POSE</p>
+            <h2 id="gallery-heading">Choose your event.</h2>
+          </div>
+          <p class="gallery-intro__copy">
+            Every event has its own collection. Select a cover to open the full
+            gallery and browse each photo.
+          </p>
         </div>
-        <p class="gallery-intro__copy">Choose an event or explore the full collection. Tap any photograph for a closer look.</p>
-      </div>
 
-      <div class="gallery-nav" aria-label="Gallery controls">
-        <div class="event-filters" id="event-filters" role="group" aria-label="Choose an event">
-          <button class="event-filter is-active" type="button" data-event="all" aria-pressed="true">All events</button>
-        </div>
-        <div class="gallery-tools">
-          <label class="search-box">
-            <span class="sr-only">Search events</span>
-            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
-            <input id="search" type="search" placeholder="Find an event" autocomplete="off">
-          </label>
-          <label class="sort-control">
-            <span class="sr-only">Sort gallery</span>
-            <select id="sort">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="name">A–Z</option>
-            </select>
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></svg>
-          </label>
-        </div>
-      </div>
-
-      <div class="results-line" aria-live="polite">
-        <p id="results-count">Loading recent events…</p>
-        <span class="results-line__note">Select a photo to view</span>
-      </div>
-
-      <div class="gallery-state masonry-loading" id="loading-state" aria-label="Loading gallery">
-        <div class="skeleton"></div>
-        <div class="skeleton"></div>
-        <div class="skeleton skeleton--tall"></div>
-        <div class="skeleton"></div>
-        <div class="skeleton skeleton--tall"></div>
-        <div class="skeleton"></div>
-      </div>
-
-      <div class="photo-masonry" id="collection-grid" hidden></div>
-
-      <div class="empty-state" id="empty-state" hidden>
-        <div class="empty-state__mark" aria-hidden="true">✦</div>
-        <h3 id="empty-title">No matching moments yet</h3>
-        <p id="empty-copy">Try a different event type or search.</p>
-        <button class="button button--dark" id="clear-filters" type="button">Show all events</button>
-      </div>
-    </section>
-
-    <section class="closing" aria-labelledby="closing-title">
-      <p class="eyebrow"><span></span> Your event can be next</p>
-      <h2 id="closing-title">Make the moment<br><em>worth remembering.</em></h2>
-      <div class="closing__actions">
-        <a class="button button--accent" href="https://poseph.com/#availability">Check your date</a>
-        <a class="button button--outline" href="https://poseph.com/#experiences">Explore POSE experiences</a>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <a class="brand brand--footer" href="https://poseph.com/" aria-label="POSE Photobooth home">
-      <img src="https://poseph.com/assets/images/pose-logo.png" alt="POSE Photobooth" width="182" height="64">
-    </a>
-    <p>Modern photo experiences for events across Rizal and Metro Manila.</p>
-    <a href="https://poseph.com/">Back to poseph.com <span aria-hidden="true">↗</span></a>
-  </footer>
-
-  <dialog class="viewer" id="viewer" aria-labelledby="viewer-title">
-    <div class="viewer__backdrop" data-close-viewer></div>
-    <div class="viewer__panel">
-      <div class="viewer__topbar">
-        <div>
-          <p class="viewer__counter" id="viewer-counter"></p>
-          <h2 id="viewer-title">POSE moment</h2>
-        </div>
-        <div class="viewer__actions">
-          <button class="icon-button" id="share-photo" type="button" aria-label="Share this photo">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.3 10.8 7.4-4.5M8.3 13.2l7.4 4.5"/></svg>
+        <div class="gallery-nav" aria-label="Gallery controls">
+          <button
+            class="gallery-filter-toggle"
+            id="gallery-filter-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="gallery-controls-panel"
+          >
+            <span>Browse &amp; filter</span><span aria-hidden="true">+</span>
           </button>
-          <button class="icon-button" type="button" data-close-viewer aria-label="Close image viewer">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m5 5 14 14M19 5 5 19"/></svg>
+          <div class="gallery-controls-panel" id="gallery-controls-panel">
+            <div
+              class="event-filters"
+              id="event-filters"
+              role="group"
+              aria-label="Filter by event type"
+            >
+              <button
+                class="event-filter is-active"
+                type="button"
+                data-event="all"
+                aria-pressed="true"
+              >
+                All events
+              </button>
+            </div>
+            <div class="gallery-tools">
+              <label class="search-box">
+                <span class="sr-only">Search events</span>
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="6.5" />
+                  <path d="m16 16 4 4" />
+                </svg>
+                <input
+                  id="search"
+                  type="search"
+                  placeholder="Find an event"
+                  autocomplete="off"
+                />
+              </label>
+              <label class="sort-control">
+                <span class="sr-only">Sort gallery</span>
+                <select id="sort">
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="name">A–Z</option>
+                </select>
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="m7 9 5 5 5-5" />
+                </svg>
+              </label>
+              <div
+                class="media-filter"
+                id="media-filter"
+                role="group"
+                aria-label="Filter media"
+              >
+                <button
+                  type="button"
+                  class="is-active"
+                  data-media="all"
+                  aria-pressed="true"
+                >
+                  All
+                </button>
+                <button type="button" data-media="image" aria-pressed="false">
+                  Photos
+                </button>
+                <button type="button" data-media="video" aria-pressed="false">
+                  Videos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="results-line" aria-live="polite">
+          <p id="results-count">Loading recent events…</p>
+          <span class="results-line__note"
+            >Select an event to open its gallery</span
+          >
+        </div>
+
+        <div
+          class="gallery-state collection-loading"
+          id="loading-state"
+          aria-label="Loading gallery"
+        >
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+        </div>
+
+        <div class="event-collection-grid" id="collection-grid" hidden></div>
+
+        <div class="empty-state" id="empty-state" hidden>
+          <div class="empty-state__mark" aria-hidden="true">✦</div>
+          <h3 id="empty-title">No matching moments yet</h3>
+          <p id="empty-copy">Try a different event type or search.</p>
+          <button class="button button--dark" id="clear-filters" type="button">
+            Show all events
           </button>
         </div>
-      </div>
-      <div class="viewer__stage" id="viewer-stage">
-        <button class="viewer__nav viewer__nav--prev" id="viewer-prev" type="button" aria-label="Previous photo"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
-        <figure>
-          <img id="viewer-image" src="" alt="">
-          <figcaption id="viewer-caption"></figcaption>
-        </figure>
-        <button class="viewer__nav viewer__nav--next" id="viewer-next" type="button" aria-label="Next photo"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button>
-      </div>
-      <div class="viewer__thumbs" id="viewer-thumbs" aria-label="Photos in this event"></div>
-    </div>
-  </dialog>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-</body>
+        <aside class="gallery-ad" aria-label="Advertisement">
+          <span class="gallery-ad__label">Advertisement</span>
+          <ins
+            class="adsbygoogle"
+            style="display: block"
+            data-ad-client="ca-pub-4431773260416818"
+            data-ad-slot="2423007958"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          ></ins>
+        </aside>
+      </section>
+
+      <section class="closing" aria-labelledby="closing-title">
+        <p class="eyebrow"><span></span> Your event can be next</p>
+        <h2 id="closing-title">
+          Make the moment<br /><em>worth remembering.</em>
+        </h2>
+        <div class="closing__actions">
+          <a
+            class="button button--accent"
+            href="https://poseph.com/#availability"
+            >Check your date</a
+          >
+          <a
+            class="button button--outline"
+            href="https://poseph.com/#experiences"
+            >Explore POSE experiences</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-grid">
+        <div>
+          <img src="../assets/images/pose-logo.png" alt="POSE Photobooth" />
+          <p>
+            Modern photo experiences for events across Rizal and Metro Manila.
+          </p>
+        </div>
+        <div>
+          <strong>Explore</strong>
+          <a href="../#experiences">Experiences</a>
+          <a href="../#packages">Packages</a>
+          <a href="../#events">Events</a>
+          <a href="/gallery/">Gallery</a>
+          <a href="../#reviews">Google reviews</a>
+        </div>
+        <div>
+          <strong>Connect</strong>
+          <a
+            href="https://www.facebook.com/pose.photobooth.2017"
+            target="_blank"
+            rel="noopener"
+            >Facebook</a
+          >
+          <a href="../#availability">Check availability</a>
+        </div>
+      </div>
+      <div class="wrap copyright">
+        © 2026 POSE Photobooth. All rights reserved.
+      </div>
+    </footer>
+
+    <dialog class="viewer" id="viewer" aria-labelledby="viewer-title">
+      <div class="viewer__backdrop" data-close-viewer></div>
+      <div class="viewer__panel">
+        <div class="viewer__topbar">
+          <div>
+            <p class="viewer__counter" id="viewer-counter"></p>
+            <h2 id="viewer-title">POSE moment</h2>
+          </div>
+          <div class="viewer__actions">
+            <button
+              class="album-download"
+              id="download-album"
+              type="button"
+              aria-label="Download all files in this album"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path
+                  d="M3.5 7.5h6l2-2h9v13h-17zM12 9.5v6m0 0 2.5-2.5M12 15.5 9.5 13"
+                />
+              </svg>
+              <span>Download album</span>
+            </button>
+            <button
+              class="icon-button"
+              id="share-photo"
+              type="button"
+              aria-label="Share this photo"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="18" cy="5" r="2.5" />
+                <circle cx="6" cy="12" r="2.5" />
+                <circle cx="18" cy="19" r="2.5" />
+                <path d="m8.3 10.8 7.4-4.5M8.3 13.2l7.4 4.5" />
+              </svg>
+            </button>
+            <a
+              class="icon-button"
+              id="download-media"
+              href="#"
+              target="_blank"
+              rel="noopener"
+              aria-label="Download this item"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14" />
+              </svg>
+            </a>
+            <button
+              class="icon-button"
+              type="button"
+              data-close-viewer
+              aria-label="Close image viewer"
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="m5 5 14 14M19 5 5 19" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="viewer__stage" id="viewer-stage">
+          <button
+            class="viewer__nav viewer__nav--prev"
+            id="viewer-prev"
+            type="button"
+            aria-label="Previous photo"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="m15 5-7 7 7 7" />
+            </svg>
+          </button>
+          <figure>
+            <img id="viewer-image" src="" alt="" />
+            <iframe
+              id="viewer-video"
+              src="about:blank"
+              title="POSE event video"
+              allow="autoplay; fullscreen"
+              hidden
+            ></iframe>
+            <figcaption id="viewer-caption"></figcaption>
+          </figure>
+          <button
+            class="viewer__nav viewer__nav--next"
+            id="viewer-next"
+            type="button"
+            aria-label="Next photo"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="m9 5 7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+        <div
+          class="viewer__thumbs"
+          id="viewer-thumbs"
+          aria-label="Photos in this event"
+        ></div>
+      </div>
+    </dialog>
+
+    <dialog class="pin-dialog" id="pin-dialog" aria-labelledby="pin-title">
+      <form method="dialog" class="pin-dialog__card" id="pin-form">
+        <button class="pin-dialog__close" value="cancel" aria-label="Close">
+          ×
+        </button>
+        <span class="pin-dialog__mark" aria-hidden="true">POSE</span>
+        <h2 id="pin-title">Enter gallery PIN</h2>
+        <p>This event is private. Enter the PIN provided by the POSE team.</p>
+        <label
+          ><span>Event PIN</span
+          ><input
+            id="pin-input"
+            type="password"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            required
+        /></label>
+        <p class="pin-dialog__error" id="pin-error" role="alert"></p>
+        <button class="button button--dark" id="pin-submit" value="default">
+          Open gallery
+        </button>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
 </html>

@@ -88,23 +88,14 @@ form?.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!form.reportValidity()) return;
 
-  const endpoint = window.POSE_INQUIRY?.endpoint?.trim();
-  if (!endpoint) {
-    setFormMessage(
-      "Online inquiry is not configured yet. Please message POSE on Facebook instead.",
-      "error",
-    );
-    return;
-  }
-
   const data = new FormData(form);
   if (data.get("website")) return; // honeypot
 
-  const payload = new URLSearchParams();
-  for (const [key, value] of data.entries()) payload.append(key, String(value));
-  payload.set("submissionId", submissionId());
-  payload.set("source", location.href.split("#")[0]);
-  payload.set("submittedAt", new Date().toISOString());
+  const payload = Object.fromEntries(data.entries());
+  payload.consent = data.get("consent") === "yes";
+  payload.submissionId = submissionId();
+  payload.source = location.href.split("#")[0];
+  payload.submittedAt = new Date().toISOString();
 
   const original = submitBtn.textContent;
   submitBtn.disabled = true;
@@ -112,31 +103,23 @@ form?.addEventListener("submit", async (e) => {
   setFormMessage("Sending your inquiry…");
 
   try {
-    let response;
-    try {
-      response = await fetch(endpoint, {
-        method: "POST",
-        body: payload,
-        redirect: "follow",
-      });
-      if (response.type !== "opaque" && !response.ok)
-        throw new Error("HTTP " + response.status);
-      if (response.type !== "opaque") {
-        const result = await response.json().catch(() => null);
-        if (result && result.ok === false)
-          throw new Error(result.error || "Submission failed");
-      }
-    } catch (firstError) {
-      // Apps Script may not expose CORS response headers in every hosting setup.
-      // A no-cors retry still delivers the form to the Web App.
-      await fetch(endpoint, { method: "POST", body: payload, mode: "no-cors" });
-    }
+    const response = await fetch("/api/inquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json().catch(() => null);
+    if (!response.ok || !result?.ok)
+      throw new Error(result?.error || "Inquiry submission failed.");
 
     form.reset();
-    setFormMessage(
-      "Inquiry sent. Thank you! POSE has received your event details. If you provided an email address, a confirmation has also been sent there.",
-      "success",
-    );
+    const successMessage =
+      result.boothmateSynced === false
+        ? "We received your inquiry, but Boothmate is not connected yet. Your details were saved, and the POSE team will follow up."
+        : result.legacySynced === false
+          ? "Your inquiry was saved to Boothmate, but the email and spreadsheet backup did not sync. The POSE team will follow up."
+          : "Inquiry sent. Thank you! POSE has received your event details. If you provided an email address, a confirmation has also been sent there.";
+    setFormMessage(successMessage, "success");
   } catch (err) {
     console.error("Inquiry submission failed:", err);
     setFormMessage(

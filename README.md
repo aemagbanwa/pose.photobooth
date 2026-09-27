@@ -1,11 +1,12 @@
 # POSE Photobooth Website
 
-Static website for POSE Photobooth, including the public event pages, inquiry form, and Google Apps Script inquiry backend.
+Vercel-hosted website for POSE Photobooth, including the public event pages, inquiry form, Boothmate integration, and Google Apps Script backup.
 
 ## Project layout
 
 - `index.html` - website entry point
 - `assets/` - styles, scripts, images, and video
+- `api/inquiries.js` - Vercel function that creates Boothmate inquiries and syncs the legacy backend
 - `google-apps-script/Code.gs` - inquiry storage and email backend
 - `START_LOCAL_PREVIEW.bat` - Windows preview launcher
 
@@ -13,11 +14,20 @@ Static website for POSE Photobooth, including the public event pages, inquiry fo
 
 On Windows, double-click `START_LOCAL_PREVIEW.bat`. If Python is installed, it starts a local server at `http://localhost:8080/`.
 
-The site can also be opened directly from `index.html`, although the local server is recommended for checking all assets.
+The Python preview serves static files only; inquiry submissions require the Vercel function. Use `vercel dev` to test the complete inquiry flow locally.
 
 ## Configuration
 
-The inquiry form endpoint is configured in `assets/js/inquiry-config.js`.
+Website inquiries are sent through the Vercel serverless function at `api/inquiries.js`, which creates a Boothmate record and syncs to the existing Google Apps Script backend.
+
+Set these environment variables in the Vercel project settings:
+
+- `BOOTHMATE_API_BASE_URL` - Boothmate API origin, using HTTPS.
+- `BOOTHMATE_ORGANIZATION_KEY` - organization key used in the public storefront route.
+- `BOOTHMATE_PACKAGE_IDS` - JSON object mapping the exact website package labels to Boothmate package IDs, for example `{"4R":"<package-id>","Strip":"<package-id>"}`.
+- `POSE_INQUIRY_ENDPOINT` - optional override for the Google Apps Script backup endpoint. The existing deployment URL is used by default.
+
+Keep organization keys and any future API credentials in Vercel environment variables, never in browser JavaScript. The static Python preview does not execute `/api/inquiries`; use `vercel dev` to test inquiry submissions locally.
 
 The optional gallery configuration is in `assets/js/gallery-config.js`. Keep the configured Google Apps Script and Drive resources available to the public site before deploying.
 
@@ -30,14 +40,16 @@ The optional gallery configuration is in `assets/js/gallery-config.js`. Keep the
 5. Keep **Execute as** set to the owner and **Who has access** set to **Anyone**.
 6. Open the `/exec` URL and confirm it returns a successful JSON response with the current system version.
 
-The Apps Script stores inquiries in a spreadsheet named `POSE Website Inquiries`, sends an owner notification, and sends a customer confirmation when an email address is provided.
+The Apps Script stores the secondary inquiry copy in a spreadsheet named `POSE Website Inquiries`, sends an owner notification, and sends a customer confirmation when an email address is provided.
 
 ## Pre-publish checks
 
 - Preview the site locally and check the navigation, images, video, package links, and inquiry form.
+- Set the Boothmate API origin, organization key, and package ID mapping in the Vercel project environment.
+- Submit a test inquiry and verify the Boothmate record and Google Sheets/email backup.
 - Submit one test inquiry with an email address and one without one.
 - Confirm both inquiries appear in the sheet and that email behavior matches the form input.
 - Check the browser console for failed assets or script errors.
 - Verify that no local credentials, `.env` files, or generated files are included in the commit.
 
-This project has no package manager or build step; deployment consists of publishing the tracked website files and updating the Apps Script deployment when its code changes.
+No build step is required. Vercel serves the static site and deploys `api/inquiries.js` as a serverless function. Update the Google Apps Script deployment only when its backend code changes.
