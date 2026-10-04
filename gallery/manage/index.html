@@ -8,6 +8,15 @@
     <title>Manage Gallery PIN | POSE Photobooth</title>
 
     <link rel="icon" href="../../favicon.ico" />
+
+    <!-- Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="../styles.css" />
 
     <style>
@@ -19,17 +28,33 @@
         min-height: 100vh;
         margin: 0;
         padding: 24px;
+
         display: grid;
         place-items: center;
+
         background:
           radial-gradient(
             circle at top,
-            rgba(255, 255, 255, 0.95),
-            transparent 45%
+            rgba(255, 255, 255, 0.98),
+            transparent 42%
           ),
           #f5f2ed;
-        font-family: inherit;
+
+        font-family: "Inter", Arial, Helvetica, sans-serif;
         color: #1b1b1b;
+      }
+
+      /* Override possible serif styles from gallery stylesheet */
+      .manage-wrapper,
+      .manage-wrapper h1,
+      .manage-wrapper h2,
+      .manage-wrapper h3,
+      .manage-wrapper p,
+      .manage-wrapper span,
+      .manage-wrapper label,
+      .manage-wrapper input,
+      .manage-wrapper button {
+        font-family: "Inter", Arial, Helvetica, sans-serif;
       }
 
       .manage-wrapper {
@@ -38,76 +63,154 @@
 
       .manage-card {
         width: 100%;
+        padding: 38px 36px 32px;
+
         background: #fff;
-        border: 1px solid rgba(0, 0, 0, 0.06);
+
+        border: 1px solid rgba(0, 0, 0, 0.055);
         border-radius: 24px;
-        padding: 38px 36px 34px;
+
         box-shadow:
-          0 24px 70px rgba(0, 0, 0, 0.08),
-          0 4px 16px rgba(0, 0, 0, 0.04);
+          0 24px 70px rgba(0, 0, 0, 0.07),
+          0 4px 15px rgba(0, 0, 0, 0.035);
+      }
+
+      /* LOGO */
+
+      .logo-link {
+        display: block;
+        width: fit-content;
+        margin: 0 auto 28px;
       }
 
       .manage-logo {
         display: block;
         width: 145px;
-        max-width: 48%;
+        max-width: 46vw;
         height: auto;
-        margin: 0 auto 28px;
       }
+
+      /* HEADING */
 
       .manage-card h1 {
         margin: 0;
+
         text-align: center;
-        font-size: clamp(1.65rem, 5vw, 2rem);
+
+        font-size: clamp(1.6rem, 5vw, 1.95rem);
+        font-weight: 700;
+
         line-height: 1.2;
-        letter-spacing: -0.025em;
+        letter-spacing: -0.035em;
+
+        color: #181818;
       }
 
       .lead {
         max-width: 390px;
+
         margin: 10px auto 28px;
+
         text-align: center;
-        color: #6c6c6c;
-        font-size: 0.97rem;
-        line-height: 1.55;
+
+        color: #707070;
+
+        font-size: 0.95rem;
+        font-weight: 400;
+
+        line-height: 1.6;
       }
+
+      /* LOADING */
+
+      .loading {
+        padding: 22px 0 6px;
+
+        text-align: center;
+
+        color: #777;
+
+        font-size: 0.9rem;
+      }
+
+      .spinner {
+        width: 30px;
+        height: 30px;
+
+        margin: 0 auto 14px;
+
+        border: 3px solid #e9e7e3;
+        border-top-color: #202020;
+        border-radius: 50%;
+
+        animation: spin 0.7s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* EVENT */
 
       .event-box {
         margin: 0 0 26px;
-        padding: 15px 18px;
+        padding: 16px 18px;
+
         background: #f8f7f5;
-        border: 1px solid #ece9e5;
+
+        border: 1px solid #ebe8e4;
         border-radius: 14px;
+
         text-align: center;
       }
 
       .event-label {
         display: block;
-        margin-bottom: 4px;
-        color: #888;
-        font-size: 0.72rem;
+
+        margin-bottom: 5px;
+
+        color: #929292;
+
+        font-size: 0.69rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
+
+        letter-spacing: 0.09em;
+
         text-transform: uppercase;
       }
 
       .event-name {
         display: block;
-        color: #222;
-        font-size: 1rem;
-        font-weight: 700;
-        line-height: 1.4;
+
+        color: #202020;
+
+        font-size: 0.98rem;
+        font-weight: 600;
+
+        line-height: 1.45;
       }
+
+      /* FORM */
 
       .field {
         margin-top: 18px;
       }
 
+      .field:first-child {
+        margin-top: 0;
+      }
+
       .field label {
         display: block;
+
         margin: 0 0 8px;
-        font-size: 0.9rem;
-        font-weight: 700;
+
+        color: #282828;
+
+        font-size: 0.87rem;
+        font-weight: 600;
       }
 
       .password-field {
@@ -117,82 +220,128 @@
       .password-field input {
         width: 100%;
         height: 52px;
-        padding: 0 76px 0 15px;
+
+        padding: 0 74px 0 15px;
+
         border: 1px solid #d9d7d3;
         border-radius: 12px;
+
         outline: none;
+
         background: #fff;
-        color: #1b1b1b;
-        font: inherit;
+        color: #181818;
+
+        font-size: 0.95rem;
+        font-weight: 400;
+
         transition:
           border-color 0.18s ease,
-          box-shadow 0.18s ease;
+          box-shadow 0.18s ease,
+          background 0.18s ease;
+      }
+
+      .password-field input::placeholder {
+        color: #aaa;
       }
 
       .password-field input:hover {
-        border-color: #bdbab5;
+        border-color: #bcb9b4;
       }
 
       .password-field input:focus {
         border-color: #222;
-        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
+
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.065);
       }
+
+      /* SHOW/HIDE */
 
       .toggle-password {
         position: absolute;
+
         top: 50%;
         right: 8px;
+
+        transform: translateY(-50%);
+
         width: auto;
+
         margin: 0;
         padding: 8px 9px;
-        transform: translateY(-50%);
+
         border: 0;
         border-radius: 8px;
+
         background: transparent;
-        color: #666;
-        font: inherit;
-        font-size: 0.82rem;
-        font-weight: 700;
+
+        color: #6b6b6b;
+
+        font-size: 0.78rem;
+        font-weight: 600;
+
         cursor: pointer;
+
+        transition:
+          color 0.15s ease,
+          background 0.15s ease;
       }
 
       .toggle-password:hover {
-        background: #f3f2f0;
+        background: #f2f1ef;
         color: #111;
       }
 
+      /* HINT */
+
       .hint {
-        margin: 9px 2px 0;
-        color: #777;
-        font-size: 0.82rem;
-        line-height: 1.5;
+        margin: 10px 2px 0;
+
+        color: #808080;
+
+        font-size: 0.79rem;
+        font-weight: 400;
+
+        line-height: 1.55;
       }
+
+      /* SUBMIT */
 
       .submit-button {
         width: 100%;
         min-height: 52px;
+
         margin-top: 26px;
         padding: 13px 18px;
+
         border: 0;
         border-radius: 12px;
-        background: #171717;
+
+        background: #191919;
         color: #fff;
-        font: inherit;
-        font-weight: 700;
+
+        font-size: 0.92rem;
+        font-weight: 600;
+
         cursor: pointer;
+
         transition:
+          background 0.15s ease,
           transform 0.15s ease,
           opacity 0.15s ease,
-          background 0.15s ease;
+          box-shadow 0.15s ease;
       }
 
       .submit-button:hover:not(:disabled) {
         background: #000;
+
         transform: translateY(-1px);
+
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.13);
       }
 
       .submit-button:active:not(:disabled) {
         transform: translateY(0);
+        box-shadow: none;
       }
 
       .submit-button:disabled {
@@ -200,99 +349,123 @@
         cursor: wait;
       }
 
+      /* STATUS */
+
       .status {
         min-height: 22px;
+
         margin-top: 18px;
+
         text-align: center;
-        font-size: 0.9rem;
+
+        font-size: 0.84rem;
         line-height: 1.5;
       }
 
       .status.error {
         padding: 12px 14px;
+
+        border: 1px solid #f1d2d2;
         border-radius: 10px;
-        background: #fff2f2;
+
+        background: #fff5f5;
+
         color: #9b1c1c;
       }
 
+      /* SUCCESS */
+
       .success-box {
         margin-top: 22px;
-        padding: 20px 18px;
+        padding: 22px 18px;
+
         border: 1px solid #d7eadc;
         border-radius: 14px;
-        background: #f3faf5;
+
+        background: #f5faf6;
+
         text-align: center;
+
         color: #176b37;
       }
 
       .success-icon {
         display: grid;
+        place-items: center;
+
         width: 42px;
         height: 42px;
-        margin: 0 auto 12px;
-        place-items: center;
+
+        margin: 0 auto 13px;
+
         border-radius: 50%;
+
         background: #176b37;
         color: #fff;
-        font-size: 1.25rem;
+
+        font-size: 1.2rem;
         font-weight: 700;
       }
 
       .success-box strong {
         display: block;
-        margin-bottom: 5px;
-        font-size: 1rem;
+
+        margin-bottom: 6px;
+
+        color: #185f34;
+
+        font-size: 0.96rem;
+        font-weight: 700;
       }
 
       .success-box span {
         display: block;
-        color: #4e7059;
-        font-size: 0.88rem;
+
+        color: #56725f;
+
+        font-size: 0.84rem;
+        font-weight: 400;
+
         line-height: 1.5;
       }
 
       .success-box small {
         display: block;
+
         margin-top: 10px;
-        color: #718278;
-        font-size: 0.78rem;
+
+        color: #829087;
+
+        font-size: 0.75rem;
+        font-weight: 400;
       }
 
-      .loading {
-        padding: 20px 0 4px;
-        text-align: center;
-        color: #777;
-      }
-
-      .spinner {
-        width: 30px;
-        height: 30px;
-        margin: 0 auto 14px;
-        border: 3px solid #e7e5e1;
-        border-top-color: #222;
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-      }
+      /* SECURITY FOOTER */
 
       .secure-note {
         display: flex;
         align-items: center;
         justify-content: center;
+
         gap: 6px;
-        margin-top: 24px;
+
+        margin-top: 25px;
+
         color: #999;
-        font-size: 0.76rem;
+
+        font-size: 0.72rem;
+        font-weight: 400;
+      }
+
+      .lock-icon {
+        font-size: 0.75rem;
       }
 
       .hidden {
         display: none !important;
       }
 
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
+      /* MOBILE */
 
       @media (max-width: 560px) {
         body {
@@ -300,12 +473,25 @@
         }
 
         .manage-card {
-          padding: 30px 22px 28px;
+          padding: 30px 22px 27px;
+
           border-radius: 20px;
         }
 
-        .manage-logo {
+        .logo-link {
           margin-bottom: 24px;
+        }
+
+        .manage-logo {
+          width: 130px;
+        }
+
+        .lead {
+          margin-bottom: 24px;
+        }
+
+        .event-box {
+          margin-bottom: 23px;
         }
       }
     </style>
@@ -314,7 +500,13 @@
   <body>
     <main class="manage-wrapper">
       <section class="manage-card">
-        <a href="https://poseph.com/" aria-label="POSE Photobooth">
+        <!-- LOGO -->
+
+        <a
+          class="logo-link"
+          href="https://poseph.com/"
+          aria-label="POSE Photobooth"
+        >
           <img
             class="manage-logo"
             src="../../assets/images/pose-logo.png"
@@ -322,28 +514,40 @@
           />
         </a>
 
+        <!-- HEADING -->
+
         <h1 id="page-title">Gallery PIN</h1>
 
         <p id="page-lead" class="lead">
           Secure your event gallery with a private PIN for your guests.
         </p>
 
-        <!-- Loading -->
+        <!-- LOADING -->
+
         <div id="loading" class="loading">
           <div class="spinner"></div>
+
           Checking your secure link…
         </div>
 
-        <!-- Management Panel -->
+        <!-- MANAGEMENT PANEL -->
+
         <section id="panel" class="hidden">
+          <!-- EVENT -->
+
           <div class="event-box">
-            <span class="event-label">Event Gallery</span>
+            <span class="event-label"> Event Gallery </span>
+
             <span id="event-name" class="event-name"></span>
           </div>
 
+          <!-- PIN FORM -->
+
           <form id="pin-form">
+            <!-- NEW PIN -->
+
             <div class="field">
-              <label for="pin">New PIN</label>
+              <label for="pin"> New PIN </label>
 
               <div class="password-field">
                 <input
@@ -367,8 +571,10 @@
               </div>
             </div>
 
+            <!-- CONFIRM -->
+
             <div class="field">
-              <label for="confirm-pin">Confirm PIN</label>
+              <label for="confirm-pin"> Confirm PIN </label>
 
               <div class="password-field">
                 <input
@@ -402,33 +608,53 @@
             </button>
           </form>
 
+          <!-- ERROR / STATUS -->
+
           <div id="status" class="status" aria-live="polite"></div>
+
+          <!-- SUCCESS -->
 
           <div id="success" class="success-box hidden">
             <div class="success-icon">✓</div>
 
-            <strong>PIN updated successfully</strong>
+            <strong> PIN updated successfully </strong>
 
             <span> Your new gallery PIN is ready for your guests. </span>
 
             <small> Redirecting you to your gallery… </small>
           </div>
 
+          <!-- SECURITY -->
+
           <div class="secure-note">
-            🔒 Secure gallery management by POSE Photobooth
+            <span class="lock-icon" aria-hidden="true"> 🔒 </span>
+
+            Secure gallery management by POSE Photobooth
           </div>
         </section>
       </section>
     </main>
 
+    <!-- POSE GALLERY CONFIG -->
+
     <script src="../assets/config.js"></script>
 
     <script>
       (() => {
+        /* ---------------------------------
+         CONFIGURATION
+      ---------------------------------- */
+
         const endpoint = window.POSE_GALLERY && window.POSE_GALLERY.endpoint;
 
         const token =
           new URLSearchParams(window.location.search).get("token") || "";
+
+        const galleryUrl = "https://poseph.com/gallery/";
+
+        /* ---------------------------------
+         ELEMENTS
+      ---------------------------------- */
 
         const loading = document.querySelector("#loading");
 
@@ -454,9 +680,10 @@
 
         let currentEvent = null;
 
-        /*
-         * Show an initialization error.
-         */
+        /* ---------------------------------
+         ERROR
+      ---------------------------------- */
+
         function fail(message) {
           loading.innerHTML = "";
 
@@ -465,9 +692,10 @@
           loading.className = "status error";
         }
 
-        /*
-         * Show / Hide PIN buttons
-         */
+        /* ---------------------------------
+         SHOW / HIDE PIN
+      ---------------------------------- */
+
         document.querySelectorAll(".toggle-password").forEach((toggle) => {
           toggle.addEventListener("click", () => {
             const input = document.getElementById(toggle.dataset.target);
@@ -485,10 +713,10 @@
           });
         });
 
-        /*
-         * Validate management token
-         * and retrieve event information.
-         */
+        /* ---------------------------------
+         LOAD EVENT
+      ---------------------------------- */
+
         async function init() {
           if (!endpoint || !token) {
             fail(
@@ -522,10 +750,10 @@
 
             eventName.textContent = currentEvent.eventName;
 
-            /*
-             * Adjust UI depending on whether
-             * the gallery already has a PIN.
-             */
+            /* -----------------------------
+             SET / CHANGE MODE
+          ------------------------------ */
+
             if (currentEvent.pinEnabled) {
               pageTitle.textContent = "Change Gallery PIN";
 
@@ -552,9 +780,10 @@
           }
         }
 
-        /*
-         * Save new PIN.
-         */
+        /* ---------------------------------
+         SAVE PIN
+      ---------------------------------- */
+
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
 
@@ -566,9 +795,8 @@
 
           status.className = "status";
 
-          /*
-           * Client-side validation.
-           */
+          /* PIN LENGTH */
+
           if (pin.length < 4 || pin.length > 32) {
             status.textContent = "Your PIN must contain 4–32 characters.";
 
@@ -579,6 +807,8 @@
             return;
           }
 
+          /* PIN MATCH */
+
           if (pin !== confirm) {
             status.textContent = "The PINs do not match. Please try again.";
 
@@ -588,6 +818,8 @@
 
             return;
           }
+
+          /* SAVING */
 
           button.disabled = true;
 
@@ -614,9 +846,10 @@
               throw new Error(data.message || "Unable to update your PIN.");
             }
 
-            /*
-             * Success
-             */
+            /* -----------------------------
+               SUCCESS
+            ------------------------------ */
+
             form.classList.add("hidden");
 
             status.classList.add("hidden");
@@ -626,13 +859,15 @@
             form.reset();
 
             /*
-             * Redirect after a short success message.
+             * Redirect after showing
+             * confirmation briefly.
              *
-             * The management token is NOT included
-             * in the destination URL.
+             * Management token is NOT
+             * included in destination URL.
              */
+
             setTimeout(() => {
-              window.location.href = "https://poseph.com/gallery/";
+              window.location.href = galleryUrl;
             }, 2200);
           } catch (error) {
             status.textContent =
@@ -649,9 +884,10 @@
           }
         });
 
-        /*
-         * Start.
-         */
+        /* ---------------------------------
+         START
+      ---------------------------------- */
+
         init();
       })();
     </script>
