@@ -1810,3 +1810,48 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Progressive gallery pagination */
+.viewer__pagination {
+  width: min(100%, 92rem);
+  margin: 0.75rem auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.72rem;
+}
+.viewer__pagination[hidden] {
+  display: none;
+}
+.viewer__load-more {
+  min-height: 2.5rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.viewer__load-more:hover,
+.viewer__load-more:focus-visible {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.38);
+}
+.viewer__load-more:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+@media (max-width: 640px) {
+  .viewer__pagination {
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+  }
+  .viewer__load-more {
+    min-width: 8.5rem;
+  }
+}

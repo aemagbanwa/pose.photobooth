@@ -5,5 +5,5 @@ window.POSE_GALLERY = Object.freeze({
     "https://drive.google.com/drive/folders/13TDUiu_rKxJJrdkQTGhn-o2nVFv6-ZjI?usp=sharing",
   homeUrl: "https://poseph.com/",
   bookingUrl: "https://poseph.com/#booking",
-  maxItemsPerEvent: 200,
+  pageSize: 30,
 });

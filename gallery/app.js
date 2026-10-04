@@ -37,6 +37,9 @@
     viewerCaption: document.querySelector("#viewer-caption"),
     viewerCounter: document.querySelector("#viewer-counter"),
     viewerThumbs: document.querySelector("#viewer-thumbs"),
+    viewerPagination: document.querySelector("#viewer-pagination"),
+    viewerLoadMore: document.querySelector("#viewer-load-more"),
+    viewerLoadStatus: document.querySelector("#viewer-load-status"),
     viewerPrev: document.querySelector("#viewer-prev"),
     viewerNext: document.querySelector("#viewer-next"),
     viewerStage: document.querySelector("#viewer-stage"),
@@ -236,8 +239,6 @@
           payload?.results,
         ].find(Array.isArray) || [];
 
-    const maxItemsPerEvent =
-      Number(config.maxItemsPerEvent || config.maxItems) || 100;
     return roots
       .map((entry, eventIndex) => {
         const mediaList = [
@@ -248,7 +249,6 @@
         ].find(Array.isArray);
         const children = mediaList || [];
         const items = children
-          .slice(0, maxItemsPerEvent)
           .map((child, index) => normalizeItem(child, index, entry))
           .filter(Boolean);
         const rawName = value(
@@ -297,6 +297,11 @@
             entry?.videoCount ??
               items.filter((item) => item.mediaType === "video").length,
           ),
+          loadedCount: items.length,
+          nextPageToken: null,
+          hasMore: false,
+          localRemainder: [],
+          accessPin: "",
         };
       })
       .filter(
@@ -466,7 +471,8 @@
       els.viewerTitle.textContent = collection.title;
       els.viewerCaption.textContent =
         photo.description || formatDate(photo.date || collection.date);
-      els.viewerCounter.textContent = `${String(state.currentIndex + 1).padStart(2, "0")} / ${String(collection.photos.length).padStart(2, "0")}`;
+      const total = collection.itemCount || collection.photos.length;
+      els.viewerCounter.textContent = `${String(state.currentIndex + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
       els.viewerImage.onload = () =>
         els.viewerImage.classList.remove("is-changing");
     });
@@ -474,14 +480,14 @@
     els.download.href = photo.download || photo.original;
     els.albumDownload.hidden =
       !collection.downloadsEnabled ||
-      !collection.photos.some((item) => item.download);
-    els.viewerPrev.disabled = collection.photos.length < 2;
-    els.viewerNext.disabled = collection.photos.length < 2;
+      (!collection.photos.some((item) => item.download) && !collection.hasMore);
+    els.viewerPrev.disabled = collection.photos.length < 2 && !collection.hasMore;
+    els.viewerNext.disabled = collection.photos.length < 2 && !collection.hasMore;
     els.viewerThumbs.innerHTML = collection.photos
       .map(
         (item, index) => `
-      <button class="viewer__thumb ${index === state.currentIndex ? "is-active" : ""}" type="button" data-view-index="${index}" aria-label="Show photo ${index + 1}">
-        <img src="${escapeAttr(item.thumbnailUrl || item.url)}" alt="" loading="lazy"><span class="viewer__thumb-play" ${item.mediaType === "video" ? "" : "hidden"}>▶</span>
+      <button class="viewer__thumb ${index === state.currentIndex ? "is-active" : ""}" type="button" data-view-index="${index}" aria-label="Show item ${index + 1}">
+        <img src="${escapeAttr(item.thumbnailUrl || item.url)}" alt="" loading="lazy" decoding="async"><span class="viewer__thumb-play" ${item.mediaType === "video" ? "" : "hidden"}>▶</span>
       </button>`,
       )
       .join("");
@@ -496,34 +502,153 @@
       inline: "center",
       block: "nearest",
     });
+    renderViewerPagination(collection);
   }
 
-  async function fetchCollection(collection, pin = "") {
+  function pageSize() {
+    const configured = Number(config.pageSize || config.itemsPerPage || 30);
+    return Number.isFinite(configured) ? Math.min(Math.max(configured, 12), 60) : 30;
+  }
+
+  function payloadPageToken(payload, event) {
+    return String(
+      payload?.nextPageToken ??
+        payload?.next_page_token ??
+        event?.nextPageToken ??
+        event?.next_page_token ??
+        "",
+    );
+  }
+
+  function payloadHasMore(payload, event) {
+    const explicit =
+      payload?.hasMore ??
+      payload?.has_more ??
+      event?.hasMore ??
+      event?.has_more;
+    return typeof explicit === "boolean" ? explicit : null;
+  }
+
+  function rawMedia(event) {
+    return [event?.items, event?.photos, event?.images, event?.files].find(Array.isArray) || [];
+  }
+
+  function appendUniquePhotos(collection, items) {
+    const seen = new Set(collection.photos.map((item) => item.id));
+    for (const item of items) {
+      if (!seen.has(item.id)) {
+        collection.photos.push(item);
+        seen.add(item.id);
+      }
+    }
+    collection.loadedCount = collection.photos.length;
+  }
+
+  async function fetchCollectionPage(collection, pin = "", reset = false) {
+    const limit = pageSize();
+    if (reset) {
+      collection.photos = [];
+      collection.loadedCount = 0;
+      collection.nextPageToken = null;
+      collection.hasMore = false;
+      collection.localRemainder = [];
+    }
+
+    if (!reset && collection.localRemainder?.length) {
+      const chunk = collection.localRemainder.splice(0, limit);
+      appendUniquePhotos(collection, chunk);
+      collection.hasMore = collection.localRemainder.length > 0 || collection.loadedCount < collection.itemCount;
+      return;
+    }
+
     const url = new URL(config.endpoint);
     url.searchParams.set("eventId", collection.id);
-    if (pin) url.searchParams.set("pin", pin);
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("offset", String(collection.loadedCount || 0));
+    if (collection.nextPageToken) url.searchParams.set("pageToken", collection.nextPageToken);
+    const activePin = pin || collection.accessPin || "";
+    if (activePin) url.searchParams.set("pin", activePin);
+
     const response = await fetch(url, { cache: "no-store" });
     const payload = await response.json();
     if (!response.ok || !payload.ok || !payload.event) {
       throw new Error(payload.message || "Unable to open this gallery.");
     }
-    const details = extractCollections({ events: [payload.event] })[0];
-    if (!details || !details.loaded || !details.photos.length) {
-      throw new Error("This album did not return any media.");
+
+    const event = payload.event;
+    const raw = rawMedia(event);
+    if (!raw.length && reset) throw new Error("This album did not return any media.");
+    const normalized = raw
+      .map((child, index) => normalizeItem(child, (collection.loadedCount || 0) + index, event))
+      .filter(Boolean);
+
+    const token = payloadPageToken(payload, event);
+    const explicitHasMore = payloadHasMore(payload, event);
+    const total = Number(event.itemCount ?? payload.itemCount ?? collection.itemCount ?? normalized.length);
+    if (Number.isFinite(total) && total >= 0) collection.itemCount = total;
+
+    // Backward compatibility: older endpoints may ignore limit/offset and return
+    // the entire album. Keep only one page in the UI and progressively reveal the rest.
+    if (normalized.length > limit && !token && explicitHasMore === null) {
+      appendUniquePhotos(collection, normalized.slice(0, limit));
+      collection.localRemainder = normalized.slice(limit);
+      collection.hasMore = collection.localRemainder.length > 0;
+    } else {
+      appendUniquePhotos(collection, normalized);
+      collection.nextPageToken = token || null;
+      collection.hasMore =
+        explicitHasMore !== null
+          ? explicitHasMore
+          : Boolean(token) || collection.loadedCount < collection.itemCount;
     }
-    Object.assign(collection, details, { locked: false });
+
+    collection.loaded = true;
+    collection.locked = false;
+    if (activePin) collection.accessPin = activePin;
+    collection.photoCount = Number(event.photoCount ?? collection.photoCount);
+    collection.videoCount = Number(event.videoCount ?? collection.videoCount);
+    collection.downloadsEnabled = event.downloadsEnabled !== false;
   }
 
   async function ensureCollectionLoaded(collection, pin = "") {
-    if (collection.loaded) return;
+    if (collection.loaded && collection.photos.length) return;
     if (!collection.loadPromise) {
-      collection.loadPromise = fetchCollection(collection, pin);
+      collection.loadPromise = fetchCollectionPage(collection, pin, true);
     }
     try {
       await collection.loadPromise;
     } finally {
       collection.loadPromise = null;
     }
+  }
+
+  async function loadMoreCurrentCollection({ quiet = false } = {}) {
+    const collection = state.currentCollection;
+    if (!collection || !collection.hasMore || collection.loadingMore) return false;
+    collection.loadingMore = true;
+    renderViewerPagination(collection);
+    try {
+      await fetchCollectionPage(collection);
+      renderViewer();
+      return true;
+    } catch (error) {
+      if (!quiet) showToast(error.message || "Unable to load more photos.");
+      return false;
+    } finally {
+      collection.loadingMore = false;
+      renderViewerPagination(collection);
+    }
+  }
+
+  function renderViewerPagination(collection) {
+    if (!els.viewerPagination || !els.viewerLoadMore || !els.viewerLoadStatus) return;
+    const total = collection.itemCount || collection.photos.length;
+    const loaded = collection.photos.length;
+    els.viewerPagination.hidden = !collection.hasMore && loaded >= total;
+    els.viewerLoadMore.hidden = !collection.hasMore;
+    els.viewerLoadMore.disabled = Boolean(collection.loadingMore);
+    els.viewerLoadMore.textContent = collection.loadingMore ? "Loading…" : "Load more";
+    els.viewerLoadStatus.textContent = `${Math.min(loaded, total)} of ${total} items loaded`;
   }
 
   async function openViewer(collection, index = 0) {
@@ -558,9 +683,23 @@
     document.body.classList.remove("is-locked");
   }
 
-  function moveViewer(direction) {
-    const length = state.currentCollection?.photos.length || 0;
+  async function moveViewer(direction) {
+    const collection = state.currentCollection;
+    let length = collection?.photos.length || 0;
+    if (!collection || length < 1) return;
+
+    if (direction > 0 && state.currentIndex === length - 1 && collection.hasMore) {
+      const loaded = await loadMoreCurrentCollection({ quiet: true });
+      length = collection.photos.length;
+      if (loaded && state.currentIndex < length - 1) {
+        state.currentIndex += 1;
+        renderViewer();
+        return;
+      }
+    }
+
     if (length < 2) return;
+    if (direction < 0 && state.currentIndex === 0 && collection.hasMore) return;
     state.currentIndex = (state.currentIndex + direction + length) % length;
     renderViewer();
   }
@@ -604,6 +743,15 @@
     const collection = state.currentCollection;
     if (!collection || collection.locked || !collection.downloadsEnabled)
       return;
+
+    if (collection.hasMore) {
+      showToast("Preparing the full album…");
+      while (collection.hasMore) {
+        const ok = await loadMoreCurrentCollection({ quiet: true });
+        if (!ok) break;
+      }
+    }
+
     const files = collection.photos.filter((item) => item.download);
     if (!files.length) return showToast("Album downloads are unavailable");
 
@@ -801,6 +949,7 @@
     els.viewerNext.addEventListener("click", () => moveViewer(1));
     els.share.addEventListener("click", shareCurrent);
     els.albumDownload.addEventListener("click", downloadCurrentAlbum);
+    els.viewerLoadMore?.addEventListener("click", () => loadMoreCurrentCollection());
     els.viewer.addEventListener("close", () =>
       document.body.classList.remove("is-locked"),
     );

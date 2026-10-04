@@ -23,14 +23,14 @@
       rel="stylesheet"
     />
     <link rel="icon" href="https://poseph.com/assets/images/pose-logo.png" />
-    <link rel="stylesheet" href="./styles.css?v=25" />
+    <link rel="stylesheet" href="./styles.css?v=26" />
     <script
       async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4431773260416818"
       crossorigin="anonymous"
     ></script>
     <script src="./assets/config.js"></script>
-    <script src="./app.js?v=26" defer></script>
+    <script src="./app.js?v=27" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#event-collections">Skip to gallery</a>
@@ -322,6 +322,10 @@
           id="viewer-thumbs"
           aria-label="Photos in this event"
         ></div>
+        <div class="viewer__pagination" id="viewer-pagination" hidden>
+          <button class="viewer__load-more" id="viewer-load-more" type="button">Load more</button>
+          <span id="viewer-load-status" aria-live="polite"></span>
+        </div>
       </div>
     </dialog>
 
