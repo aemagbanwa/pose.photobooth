@@ -1,38 +1,659 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="robots" content="noindex,nofollow">
-  <title>Manage Gallery PIN | POSE Photobooth</title>
-  <link rel="icon" href="../../favicon.ico">
-  <link rel="stylesheet" href="../styles.css">
-  <style>
-    body{min-height:100vh;display:grid;place-items:center;padding:24px;background:#f7f4ef}.manage-card{width:min(100%,520px);background:#fff;border-radius:24px;padding:32px;box-shadow:0 18px 60px rgba(0,0,0,.12)}.manage-logo{display:block;width:150px;max-width:45%;margin:0 auto 24px}.manage-card h1{text-align:center;margin:0 0 8px}.manage-card .lead{text-align:center;color:#666;margin:0 0 28px}.manage-card label{display:block;font-weight:700;margin:16px 0 8px}.manage-card input{box-sizing:border-box;width:100%;padding:14px 16px;border:1px solid #ccc;border-radius:12px;font:inherit}.manage-card button{width:100%;margin-top:20px;padding:14px;border:0;border-radius:12px;background:#111;color:#fff;font:inherit;font-weight:700;cursor:pointer}.manage-card button:disabled{opacity:.6}.status{margin-top:16px;text-align:center;min-height:24px}.error{color:#a40000}.success{color:#176b37}.event-name{text-align:center;font-weight:700;font-size:1.1rem;margin:12px 0 20px}.hint{font-size:.9rem;color:#666;margin-top:8px}.hidden{display:none!important}
-  </style>
-</head>
-<body>
-  <main class="manage-card">
-    <a href="https://poseph.com/"><img class="manage-logo" src="../../assets/images/pose-logo.png" alt="POSE Photobooth"></a>
-    <h1>Gallery PIN</h1>
-    <p class="lead">Set or change the PIN guests use to open your event gallery.</p>
-    <div id="loading" class="status">Checking your secure link…</div>
-    <section id="panel" class="hidden">
-      <div id="event-name" class="event-name"></div>
-      <form id="pin-form">
-        <label for="pin">New PIN</label>
-        <input id="pin" type="password" minlength="4" maxlength="32" autocomplete="new-password" required>
-        <label for="confirm-pin">Confirm PIN</label>
-        <input id="confirm-pin" type="password" minlength="4" maxlength="32" autocomplete="new-password" required>
-        <p class="hint">Use 4–32 characters. Choose something easy to share with your guests but difficult for others to guess.</p>
-        <button id="submit" type="submit">Save new PIN</button>
-      </form>
-      <div id="status" class="status" aria-live="polite"></div>
-    </section>
-  </main>
-  <script src="../assets/config.js"></script>
-  <script>
-  (()=>{const endpoint=window.POSE_GALLERY&&window.POSE_GALLERY.endpoint;const token=new URLSearchParams(location.search).get('token')||'';const loading=document.querySelector('#loading'),panel=document.querySelector('#panel'),name=document.querySelector('#event-name'),form=document.querySelector('#pin-form'),status=document.querySelector('#status'),button=document.querySelector('#submit');function fail(m){loading.textContent=m;loading.className='status error'}async function init(){if(!endpoint||!token)return fail('This management link is incomplete. Please ask POSE Photobooth for a new link.');try{const u=new URL(endpoint);u.searchParams.set('manage','1');u.searchParams.set('token',token);const r=await fetch(u,{cache:'no-store'}),d=await r.json();if(!d.ok)throw new Error(d.message||'Invalid management link.');name.textContent=d.event.eventName;loading.classList.add('hidden');panel.classList.remove('hidden')}catch(e){fail(e.message||'Unable to open this management link.')}}form.addEventListener('submit',async e=>{e.preventDefault();const pin=document.querySelector('#pin').value,confirm=document.querySelector('#confirm-pin').value;status.className='status';if(pin!==confirm){status.textContent='The PINs do not match.';status.classList.add('error');return}button.disabled=true;button.textContent='Saving…';status.textContent='';try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setClientPin',token,pin})}),d=await r.json();if(!d.ok)throw new Error(d.message||'Unable to update PIN.');status.textContent=d.message;status.classList.add('success');form.reset()}catch(err){status.textContent=err.message||'Unable to update PIN.';status.classList.add('error')}finally{button.disabled=false;button.textContent='Save new PIN'}});init()})();
-  </script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+
+    <title>Manage Gallery PIN | POSE Photobooth</title>
+
+    <link rel="icon" href="../../favicon.ico" />
+    <link rel="stylesheet" href="../styles.css" />
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        padding: 24px;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(
+            circle at top,
+            rgba(255, 255, 255, 0.95),
+            transparent 45%
+          ),
+          #f5f2ed;
+        font-family: inherit;
+        color: #1b1b1b;
+      }
+
+      .manage-wrapper {
+        width: min(100%, 500px);
+      }
+
+      .manage-card {
+        width: 100%;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        border-radius: 24px;
+        padding: 38px 36px 34px;
+        box-shadow:
+          0 24px 70px rgba(0, 0, 0, 0.08),
+          0 4px 16px rgba(0, 0, 0, 0.04);
+      }
+
+      .manage-logo {
+        display: block;
+        width: 145px;
+        max-width: 48%;
+        height: auto;
+        margin: 0 auto 28px;
+      }
+
+      .manage-card h1 {
+        margin: 0;
+        text-align: center;
+        font-size: clamp(1.65rem, 5vw, 2rem);
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+      }
+
+      .lead {
+        max-width: 390px;
+        margin: 10px auto 28px;
+        text-align: center;
+        color: #6c6c6c;
+        font-size: 0.97rem;
+        line-height: 1.55;
+      }
+
+      .event-box {
+        margin: 0 0 26px;
+        padding: 15px 18px;
+        background: #f8f7f5;
+        border: 1px solid #ece9e5;
+        border-radius: 14px;
+        text-align: center;
+      }
+
+      .event-label {
+        display: block;
+        margin-bottom: 4px;
+        color: #888;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .event-name {
+        display: block;
+        color: #222;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+
+      .field {
+        margin-top: 18px;
+      }
+
+      .field label {
+        display: block;
+        margin: 0 0 8px;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .password-field {
+        position: relative;
+      }
+
+      .password-field input {
+        width: 100%;
+        height: 52px;
+        padding: 0 76px 0 15px;
+        border: 1px solid #d9d7d3;
+        border-radius: 12px;
+        outline: none;
+        background: #fff;
+        color: #1b1b1b;
+        font: inherit;
+        transition:
+          border-color 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .password-field input:hover {
+        border-color: #bdbab5;
+      }
+
+      .password-field input:focus {
+        border-color: #222;
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
+      }
+
+      .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        width: auto;
+        margin: 0;
+        padding: 8px 9px;
+        transform: translateY(-50%);
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #666;
+        font: inherit;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .toggle-password:hover {
+        background: #f3f2f0;
+        color: #111;
+      }
+
+      .hint {
+        margin: 9px 2px 0;
+        color: #777;
+        font-size: 0.82rem;
+        line-height: 1.5;
+      }
+
+      .submit-button {
+        width: 100%;
+        min-height: 52px;
+        margin-top: 26px;
+        padding: 13px 18px;
+        border: 0;
+        border-radius: 12px;
+        background: #171717;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          opacity 0.15s ease,
+          background 0.15s ease;
+      }
+
+      .submit-button:hover:not(:disabled) {
+        background: #000;
+        transform: translateY(-1px);
+      }
+
+      .submit-button:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .submit-button:disabled {
+        opacity: 0.55;
+        cursor: wait;
+      }
+
+      .status {
+        min-height: 22px;
+        margin-top: 18px;
+        text-align: center;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .status.error {
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: #fff2f2;
+        color: #9b1c1c;
+      }
+
+      .success-box {
+        margin-top: 22px;
+        padding: 20px 18px;
+        border: 1px solid #d7eadc;
+        border-radius: 14px;
+        background: #f3faf5;
+        text-align: center;
+        color: #176b37;
+      }
+
+      .success-icon {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        margin: 0 auto 12px;
+        place-items: center;
+        border-radius: 50%;
+        background: #176b37;
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 700;
+      }
+
+      .success-box strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1rem;
+      }
+
+      .success-box span {
+        display: block;
+        color: #4e7059;
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+
+      .success-box small {
+        display: block;
+        margin-top: 10px;
+        color: #718278;
+        font-size: 0.78rem;
+      }
+
+      .loading {
+        padding: 20px 0 4px;
+        text-align: center;
+        color: #777;
+      }
+
+      .spinner {
+        width: 30px;
+        height: 30px;
+        margin: 0 auto 14px;
+        border: 3px solid #e7e5e1;
+        border-top-color: #222;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+
+      .secure-note {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 24px;
+        color: #999;
+        font-size: 0.76rem;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 560px) {
+        body {
+          padding: 16px;
+        }
+
+        .manage-card {
+          padding: 30px 22px 28px;
+          border-radius: 20px;
+        }
+
+        .manage-logo {
+          margin-bottom: 24px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="manage-wrapper">
+      <section class="manage-card">
+        <a href="https://poseph.com/" aria-label="POSE Photobooth">
+          <img
+            class="manage-logo"
+            src="../../assets/images/pose-logo.png"
+            alt="POSE Photobooth"
+          />
+        </a>
+
+        <h1 id="page-title">Gallery PIN</h1>
+
+        <p id="page-lead" class="lead">
+          Secure your event gallery with a private PIN for your guests.
+        </p>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+          <div class="spinner"></div>
+          Checking your secure link…
+        </div>
+
+        <!-- Management Panel -->
+        <section id="panel" class="hidden">
+          <div class="event-box">
+            <span class="event-label">Event Gallery</span>
+            <span id="event-name" class="event-name"></span>
+          </div>
+
+          <form id="pin-form">
+            <div class="field">
+              <label for="pin">New PIN</label>
+
+              <div class="password-field">
+                <input
+                  id="pin"
+                  type="password"
+                  minlength="4"
+                  maxlength="32"
+                  autocomplete="new-password"
+                  placeholder="Enter your new PIN"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="toggle-password"
+                  data-target="pin"
+                  aria-label="Show new PIN"
+                >
+                  Show
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="confirm-pin">Confirm PIN</label>
+
+              <div class="password-field">
+                <input
+                  id="confirm-pin"
+                  type="password"
+                  minlength="4"
+                  maxlength="32"
+                  autocomplete="new-password"
+                  placeholder="Enter the PIN again"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="toggle-password"
+                  data-target="confirm-pin"
+                  aria-label="Show confirmation PIN"
+                >
+                  Show
+                </button>
+              </div>
+            </div>
+
+            <p class="hint">
+              Use 4–32 characters. Choose something easy for your guests to
+              remember but difficult for others to guess.
+            </p>
+
+            <button id="submit" class="submit-button" type="submit">
+              Save PIN
+            </button>
+          </form>
+
+          <div id="status" class="status" aria-live="polite"></div>
+
+          <div id="success" class="success-box hidden">
+            <div class="success-icon">✓</div>
+
+            <strong>PIN updated successfully</strong>
+
+            <span> Your new gallery PIN is ready for your guests. </span>
+
+            <small> Redirecting you to your gallery… </small>
+          </div>
+
+          <div class="secure-note">
+            🔒 Secure gallery management by POSE Photobooth
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="../assets/config.js"></script>
+
+    <script>
+      (() => {
+        const endpoint = window.POSE_GALLERY && window.POSE_GALLERY.endpoint;
+
+        const token =
+          new URLSearchParams(window.location.search).get("token") || "";
+
+        const loading = document.querySelector("#loading");
+
+        const panel = document.querySelector("#panel");
+
+        const eventName = document.querySelector("#event-name");
+
+        const pageTitle = document.querySelector("#page-title");
+
+        const pageLead = document.querySelector("#page-lead");
+
+        const form = document.querySelector("#pin-form");
+
+        const pinInput = document.querySelector("#pin");
+
+        const confirmInput = document.querySelector("#confirm-pin");
+
+        const status = document.querySelector("#status");
+
+        const success = document.querySelector("#success");
+
+        const button = document.querySelector("#submit");
+
+        let currentEvent = null;
+
+        /*
+         * Show an initialization error.
+         */
+        function fail(message) {
+          loading.innerHTML = "";
+
+          loading.textContent = message;
+
+          loading.className = "status error";
+        }
+
+        /*
+         * Show / Hide PIN buttons
+         */
+        document.querySelectorAll(".toggle-password").forEach((toggle) => {
+          toggle.addEventListener("click", () => {
+            const input = document.getElementById(toggle.dataset.target);
+
+            const isVisible = input.type === "text";
+
+            input.type = isVisible ? "password" : "text";
+
+            toggle.textContent = isVisible ? "Show" : "Hide";
+
+            toggle.setAttribute(
+              "aria-label",
+              isVisible ? "Show PIN" : "Hide PIN",
+            );
+          });
+        });
+
+        /*
+         * Validate management token
+         * and retrieve event information.
+         */
+        async function init() {
+          if (!endpoint || !token) {
+            fail(
+              "This management link is incomplete. " +
+                "Please ask POSE Photobooth for a new link.",
+            );
+
+            return;
+          }
+
+          try {
+            const url = new URL(endpoint);
+
+            url.searchParams.set("manage", "1");
+
+            url.searchParams.set("token", token);
+
+            const response = await fetch(url, {
+              cache: "no-store",
+            });
+
+            const data = await response.json();
+
+            if (!data.ok) {
+              throw new Error(
+                data.message || "This management link is invalid.",
+              );
+            }
+
+            currentEvent = data.event;
+
+            eventName.textContent = currentEvent.eventName;
+
+            /*
+             * Adjust UI depending on whether
+             * the gallery already has a PIN.
+             */
+            if (currentEvent.pinEnabled) {
+              pageTitle.textContent = "Change Gallery PIN";
+
+              pageLead.textContent =
+                "Choose a new PIN for guests accessing your event gallery.";
+
+              button.textContent = "Update Gallery PIN";
+            } else {
+              pageTitle.textContent = "Set Gallery PIN";
+
+              pageLead.textContent =
+                "Create a private PIN for guests accessing your event gallery.";
+
+              button.textContent = "Set Gallery PIN";
+            }
+
+            loading.classList.add("hidden");
+
+            panel.classList.remove("hidden");
+
+            pinInput.focus();
+          } catch (error) {
+            fail(error.message || "Unable to open this management link.");
+          }
+        }
+
+        /*
+         * Save new PIN.
+         */
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const pin = pinInput.value.trim();
+
+          const confirm = confirmInput.value.trim();
+
+          status.textContent = "";
+
+          status.className = "status";
+
+          /*
+           * Client-side validation.
+           */
+          if (pin.length < 4 || pin.length > 32) {
+            status.textContent = "Your PIN must contain 4–32 characters.";
+
+            status.classList.add("error");
+
+            pinInput.focus();
+
+            return;
+          }
+
+          if (pin !== confirm) {
+            status.textContent = "The PINs do not match. Please try again.";
+
+            status.classList.add("error");
+
+            confirmInput.focus();
+
+            return;
+          }
+
+          button.disabled = true;
+
+          button.textContent = "Saving…";
+
+          try {
+            const response = await fetch(endpoint, {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "text/plain;charset=utf-8",
+              },
+
+              body: JSON.stringify({
+                action: "setClientPin",
+                token: token,
+                pin: pin,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!data.ok) {
+              throw new Error(data.message || "Unable to update your PIN.");
+            }
+
+            /*
+             * Success
+             */
+            form.classList.add("hidden");
+
+            status.classList.add("hidden");
+
+            success.classList.remove("hidden");
+
+            form.reset();
+
+            /*
+             * Redirect after a short success message.
+             *
+             * The management token is NOT included
+             * in the destination URL.
+             */
+            setTimeout(() => {
+              window.location.href = "https://poseph.com/gallery/";
+            }, 2200);
+          } catch (error) {
+            status.textContent =
+              error.message || "Unable to update your PIN. Please try again.";
+
+            status.className = "status error";
+
+            button.disabled = false;
+
+            button.textContent =
+              currentEvent && currentEvent.pinEnabled
+                ? "Update Gallery PIN"
+                : "Set Gallery PIN";
+          }
+        });
+
+        /*
+         * Start.
+         */
+        init();
+      })();
+    </script>
+  </body>
 </html>
