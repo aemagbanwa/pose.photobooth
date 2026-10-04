@@ -54,3 +54,9 @@ The gallery now supports secure client self-service PIN changes.
 6. The client opens the link at `/gallery/manage/?token=...`, enters a new PIN twice, and saves it. The new PIN is salted/hashed exactly like admin-entered PINs and `PIN Enabled` is turned on automatically.
 
 Generating a replacement client link invalidates the previous management link. The event folder ID by itself cannot change a PIN. Column K stores only the management-token hash and is hidden automatically.
+
+
+## Shared header and footer
+The main page and gallery now use `/partials/header.html` and `/partials/footer.html`.
+`/assets/js/partials.js` injects the shared partials, handles the mobile navigation, marks Gallery active, and updates the copyright year.
+Edit the partial files once to update both pages.

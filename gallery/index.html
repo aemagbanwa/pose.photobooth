@@ -31,36 +31,11 @@
     ></script>
     <script src="./assets/config.js"></script>
     <script src="./app.js?v=27" defer></script>
+      <script src="/assets/js/partials.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#event-collections">Skip to gallery</a>
-
-    <header class="site-header" data-header>
-      <div class="nav wrap">
-        <a class="brand" href="../#top" aria-label="POSE Photobooth home">
-          <img src="../assets/images/pose-logo.png" alt="POSE Photobooth" />
-        </a>
-        <button
-          class="menu"
-          id="menu-button"
-          type="button"
-          aria-expanded="false"
-          aria-controls="primary-nav"
-          aria-label="Toggle navigation"
-        >
-          Menu
-        </button>
-        <nav id="primary-nav" aria-label="Primary navigation">
-          <a href="../#experiences">Experiences</a>
-          <a href="../#packages">Packages</a>
-          <a href="../#events">Events</a>
-          <a href="/gallery/" aria-current="page">Gallery</a>
-          <a href="../#reviews">Reviews</a>
-          <a href="../#faq">FAQ</a>
-          <a class="pill small" href="../#availability">Check your date</a>
-        </nav>
-      </div>
-    </header>
+    <div data-shared-header></div>
 
     <main>
       <section
@@ -192,38 +167,7 @@
         </aside>
       </section>
     </main>
-
-    <footer class="site-footer">
-      <div class="wrap footer-grid">
-        <div>
-          <img src="../assets/images/pose-logo.png" alt="POSE Photobooth" />
-          <p>
-            Modern photo experiences for events across Rizal and Metro Manila.
-          </p>
-        </div>
-        <div>
-          <strong>Explore</strong>
-          <a href="../#experiences">Experiences</a>
-          <a href="../#packages">Packages</a>
-          <a href="../#events">Events</a>
-          <a href="/gallery/">Gallery</a>
-          <a href="../#reviews">Google reviews</a>
-        </div>
-        <div>
-          <strong>Connect</strong>
-          <a
-            href="https://www.facebook.com/pose.photobooth.2017"
-            target="_blank"
-            rel="noopener"
-            >Facebook</a
-          >
-          <a href="../#availability">Check availability</a>
-        </div>
-      </div>
-      <div class="wrap copyright">
-        © 2026 POSE Photobooth. All rights reserved.
-      </div>
-    </footer>
+    <div data-shared-footer></div>
 
     <dialog class="viewer" id="viewer" aria-labelledby="viewer-title">
       <div class="viewer__backdrop" data-close-viewer></div>
