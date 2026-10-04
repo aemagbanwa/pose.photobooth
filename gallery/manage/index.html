@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Manage Gallery PIN | POSE Photobooth</title>
+  <link rel="icon" href="../../favicon.ico">
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:24px;background:#f7f4ef}.manage-card{width:min(100%,520px);background:#fff;border-radius:24px;padding:32px;box-shadow:0 18px 60px rgba(0,0,0,.12)}.manage-logo{display:block;width:150px;max-width:45%;margin:0 auto 24px}.manage-card h1{text-align:center;margin:0 0 8px}.manage-card .lead{text-align:center;color:#666;margin:0 0 28px}.manage-card label{display:block;font-weight:700;margin:16px 0 8px}.manage-card input{box-sizing:border-box;width:100%;padding:14px 16px;border:1px solid #ccc;border-radius:12px;font:inherit}.manage-card button{width:100%;margin-top:20px;padding:14px;border:0;border-radius:12px;background:#111;color:#fff;font:inherit;font-weight:700;cursor:pointer}.manage-card button:disabled{opacity:.6}.status{margin-top:16px;text-align:center;min-height:24px}.error{color:#a40000}.success{color:#176b37}.event-name{text-align:center;font-weight:700;font-size:1.1rem;margin:12px 0 20px}.hint{font-size:.9rem;color:#666;margin-top:8px}.hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <main class="manage-card">
+    <a href="https://poseph.com/"><img class="manage-logo" src="../../assets/images/pose-logo.png" alt="POSE Photobooth"></a>
+    <h1>Gallery PIN</h1>
+    <p class="lead">Set or change the PIN guests use to open your event gallery.</p>
+    <div id="loading" class="status">Checking your secure link…</div>
+    <section id="panel" class="hidden">
+      <div id="event-name" class="event-name"></div>
+      <form id="pin-form">
+        <label for="pin">New PIN</label>
+        <input id="pin" type="password" minlength="4" maxlength="32" autocomplete="new-password" required>
+        <label for="confirm-pin">Confirm PIN</label>
+        <input id="confirm-pin" type="password" minlength="4" maxlength="32" autocomplete="new-password" required>
+        <p class="hint">Use 4–32 characters. Choose something easy to share with your guests but difficult for others to guess.</p>
+        <button id="submit" type="submit">Save new PIN</button>
+      </form>
+      <div id="status" class="status" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="../assets/config.js"></script>
+  <script>
+  (()=>{const endpoint=window.POSE_GALLERY&&window.POSE_GALLERY.endpoint;const token=new URLSearchParams(location.search).get('token')||'';const loading=document.querySelector('#loading'),panel=document.querySelector('#panel'),name=document.querySelector('#event-name'),form=document.querySelector('#pin-form'),status=document.querySelector('#status'),button=document.querySelector('#submit');function fail(m){loading.textContent=m;loading.className='status error'}async function init(){if(!endpoint||!token)return fail('This management link is incomplete. Please ask POSE Photobooth for a new link.');try{const u=new URL(endpoint);u.searchParams.set('manage','1');u.searchParams.set('token',token);const r=await fetch(u,{cache:'no-store'}),d=await r.json();if(!d.ok)throw new Error(d.message||'Invalid management link.');name.textContent=d.event.eventName;loading.classList.add('hidden');panel.classList.remove('hidden')}catch(e){fail(e.message||'Unable to open this management link.')}}form.addEventListener('submit',async e=>{e.preventDefault();const pin=document.querySelector('#pin').value,confirm=document.querySelector('#confirm-pin').value;status.className='status';if(pin!==confirm){status.textContent='The PINs do not match.';status.classList.add('error');return}button.disabled=true;button.textContent='Saving…';status.textContent='';try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'setClientPin',token,pin})}),d=await r.json();if(!d.ok)throw new Error(d.message||'Unable to update PIN.');status.textContent=d.message;status.classList.add('success');form.reset()}catch(err){status.textContent=err.message||'Unable to update PIN.';status.classList.add('error')}finally{button.disabled=false;button.textContent='Save new PIN'}});init()})();
+  </script>
+</body>
+</html>

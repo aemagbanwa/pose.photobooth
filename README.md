@@ -41,3 +41,16 @@ The Apps Script stores inquiries in a spreadsheet named `POSE Website Inquiries`
 - Verify that no local credentials, `.env` files, or generated files are included in the commit.
 
 This project has no package manager or build step; deployment consists of publishing the tracked website files and updating the Apps Script deployment when its code changes.
+
+## Client-managed gallery PIN
+
+The gallery now supports secure client self-service PIN changes.
+
+1. Deploy the updated `google-apps-script/gallery_script.gs` as the existing web app (execute as you; access: anyone).
+2. Run `setupGalleryConfig()` once after deploying so the Events sheet receives the new columns and the management-token salt is initialized.
+3. Open the private **POSE Gallery Configuration** spreadsheet and select the event row.
+4. Use **POSE Gallery → Generate/replace client PIN link**. Copy the URL from **Client Management Link** (column J) and send it to the client.
+5. After sending it, you may use **POSE Gallery → Clear visible client link**. This removes the plaintext URL from the sheet while its hidden token hash remains valid.
+6. The client opens the link at `/gallery/manage/?token=...`, enters a new PIN twice, and saves it. The new PIN is salted/hashed exactly like admin-entered PINs and `PIN Enabled` is turned on automatically.
+
+Generating a replacement client link invalidates the previous management link. The event folder ID by itself cannot change a PIN. Column K stores only the management-token hash and is hidden automatically.
