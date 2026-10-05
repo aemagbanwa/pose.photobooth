@@ -185,8 +185,27 @@
       metrics.protected.textContent=formatNumber(events.filter(e=>e.pinEnabled).length);
       metrics.media.textContent=formatNumber(events.reduce((sum,e)=>sum+(Number(e.itemCount)||0),0));
     }
-    async function apiGet(){const u=new URL(endpoint);u.searchParams.set('admin','1');u.searchParams.set('token',token);const r=await fetch(u,{cache:'no-store'});return r.json()}
-    async function apiPost(body){const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...body,token})});return r.json()}
+    async function apiGet(){
+      const u=new URL(endpoint);
+      u.searchParams.set('admin','1');
+      u.searchParams.set('token',token);
+      u.searchParams.set('_',Date.now().toString());
+      const r=await fetch(u,{cache:'no-store'});
+      if(!r.ok)throw new Error(`Admin request failed (${r.status}).`);
+      return r.json();
+    }
+    async function apiPost(body){
+      const r=await fetch(endpoint,{
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        cache:'no-store',
+        body:JSON.stringify({...body,token})
+      });
+      if(!r.ok)throw new Error(`Save request failed (${r.status}).`);
+      let data;
+      try{data=await r.json()}catch(_){throw new Error('The gallery API returned an invalid response. Make sure the latest Apps Script deployment is active.')}
+      return data;
+    }
 
     function render(){
       const q=search.value.trim().toLowerCase();
@@ -287,9 +306,20 @@
           });
           if(!d.ok)throw new Error(d.message);
           val('newPin').value='';
-          saveState.textContent='Saved';
-          setStatus(d.message,'ok');
-          await load();
+
+          // Use the server-verified values returned by Apps Script immediately.
+          if(d.event){
+            val('published').checked=d.event.published!==false;
+            val('pinEnabled').checked=Boolean(d.event.pinEnabled);
+            val('downloadsEnabled').checked=d.event.downloadsEnabled!==false;
+            val('expires').value=d.event.expires||'';
+            val('coverFileId').value=d.event.coverFileId||'';
+            const local=events.find(e=>String(e.id)===String(id));
+            if(local)Object.assign(local,d.event);
+          }
+          saveState.textContent='Saved ✓';
+          setStatus('Saved and verified.','ok');
+          updateMetrics();
         }catch(e){saveState.textContent='';setStatus(e.message||'Save failed.','error')}
         finally{b.disabled=false;b.textContent=old}
       }
@@ -309,6 +339,14 @@
         }catch(e){setStatus(e.message||'Unable to generate client link.','error')}
         finally{b.disabled=false;b.textContent=old}
       }
+    });
+
+    grid.addEventListener('change',ev=>{
+      if(!ev.target.matches('[data-field]'))return;
+      const card=ev.target.closest('.card');
+      if(!card)return;
+      const state=card.querySelector('[data-save-state]');
+      if(state)state.textContent='Unsaved changes';
     });
 
     load();

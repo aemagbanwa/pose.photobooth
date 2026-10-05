@@ -669,50 +669,101 @@ function adminBoolean_(value, fallback) {
 }
 
 function adminUpdateEvent_(body) {
-  if (!adminTokenValid_(body.token || '')) return jsonResponse_({ok:false, code:'INVALID_ADMIN_TOKEN', message:'Admin link is invalid.'});
+  if (!adminTokenValid_(body.token || '')) {
+    return jsonResponse_({ok:false, code:'INVALID_ADMIN_TOKEN', message:'Admin link is invalid.'});
+  }
+
   const id = String(body.eventId || '').trim();
+  if (!id) return jsonResponse_({ok:false, code:'INVALID_EVENT', message:'Event ID is missing.'});
+
   const spreadsheet = configSpreadsheet_();
-  const sheet = spreadsheet && spreadsheet.getSheetByName(CONFIG_SHEET_NAME);
-  if (!sheet) return jsonResponse_({ok:false, message:'Events sheet is unavailable.'});
-  if (sheet.getLastRow() < 2) return jsonResponse_({ok:false, message:'No events are configured.'});
-  const vals = sheet.getRange(2,1,sheet.getLastRow()-1,CONFIG_HEADERS.length).getValues();
-  let row = 0;
-  let current = null;
-  for (let i=0;i<vals.length;i++) {
-    if (String(vals[i][0]||'')===id) { row=i+2; current=vals[i]; break; }
+  if (!spreadsheet) return jsonResponse_({ok:false, code:'CONFIG_UNAVAILABLE', message:'Gallery configuration is unavailable.'});
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    // Re-apply/migrate the current sheet schema before every admin write. This
+    // makes upgrades safe even if setupGalleryConfig() was not re-run.
+    const sheet = prepareConfigSheet_(spreadsheet);
+    if (sheet.getLastRow() < 2) return jsonResponse_({ok:false, message:'No events are configured.'});
+
+    const vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, CONFIG_HEADERS.length).getValues();
+    let row = 0;
+    let current = null;
+    for (let i = 0; i < vals.length; i += 1) {
+      if (String(vals[i][0] || '').trim() === id) {
+        row = i + 2;
+        current = vals[i].slice();
+        break;
+      }
+    }
+    if (!row || !current) return jsonResponse_({ok:false, code:'EVENT_NOT_FOUND', message:'Event not found.'});
+
+    const expires = String(body.expires || '').trim();
+    const coverFileId = String(body.coverFileId || '').trim();
+    const pinEnabled = adminBoolean_(body.pinEnabled, checkboxValue_(current[4]));
+    const downloadsEnabled = adminBoolean_(body.downloadsEnabled, current[5] === '' ? true : checkboxValue_(current[5]));
+    const published = adminBoolean_(body.published, current[12] === '' ? true : checkboxValue_(current[12]));
+    const newPin = String(body.newPin || '').trim();
+
+    if (newPin && (newPin.length < 4 || newPin.length > 32)) {
+      return jsonResponse_({ok:false, code:'INVALID_PIN', message:'PIN must contain 4–32 characters.'});
+    }
+    const existingPinHash = String(current[3] || '');
+    if (pinEnabled && !newPin && !existingPinHash) {
+      return jsonResponse_({ok:false, code:'PIN_REQUIRED', message:'Set a PIN before enabling PIN protection.'});
+    }
+
+    // Write the complete row once. This avoids partial saves when several
+    // checkboxes are changed together and keeps their values as real booleans.
+    if (newPin) current[3] = hashPin_(newPin);   // D: PIN Hash
+    current[4] = pinEnabled;                    // E: PIN Enabled
+    current[5] = downloadsEnabled;              // F: Downloads Enabled
+    current[6] = expires;                       // G: Expiry Date
+    current[7] = coverFileId;                   // H: Cover File ID
+    current[8] = new Date();                    // I: Updated At
+    current[12] = published;                    // M: Published
+
+    sheet.getRange(row, 1, 1, CONFIG_HEADERS.length).setValues([current]);
+    SpreadsheetApp.flush();
+
+    // Read the row back from Sheets. A successful response now means the
+    // persisted values were actually verified, not merely queued for writing.
+    const saved = sheet.getRange(row, 1, 1, CONFIG_HEADERS.length).getValues()[0];
+    const savedPinEnabled = checkboxValue_(saved[4]);
+    const savedDownloadsEnabled = saved[5] === '' ? true : checkboxValue_(saved[5]);
+    const savedPublished = saved[12] === '' ? true : checkboxValue_(saved[12]);
+
+    if (savedPinEnabled !== pinEnabled || savedDownloadsEnabled !== downloadsEnabled || savedPublished !== published) {
+      console.error('Admin save verification failed for event ' + id);
+      return jsonResponse_({
+        ok:false,
+        code:'SAVE_VERIFY_FAILED',
+        message:'The settings could not be verified after saving. Please try again.'
+      });
+    }
+
+    clearGalleryCache_();
+    requestConfigMemo_ = undefined;
+
+    return jsonResponse_({
+      ok:true,
+      message:'Event settings saved.',
+      event:{
+        id:id,
+        pinEnabled:savedPinEnabled,
+        downloadsEnabled:savedDownloadsEnabled,
+        published:savedPublished,
+        expires:dateValue_(saved[6]),
+        coverFileId:String(saved[7] || '').trim()
+      }
+    });
+  } catch (error) {
+    console.error('adminUpdateEvent_ failed: ' + error.stack);
+    return jsonResponse_({ok:false, code:'SAVE_FAILED', message:'Unable to save event settings: ' + error.message});
+  } finally {
+    lock.releaseLock();
   }
-  if (!row) return jsonResponse_({ok:false, message:'Event not found.'});
-
-  const expires = String(body.expires || '').trim();
-  const coverFileId = String(body.coverFileId || '').trim();
-  const pinEnabled = adminBoolean_(body.pinEnabled, checkboxValue_(current[4]));
-  const downloadsEnabled = adminBoolean_(body.downloadsEnabled, current[5] === '' ? true : checkboxValue_(current[5]));
-  const published = adminBoolean_(body.published, current[12] === '' ? true : checkboxValue_(current[12]));
-  const newPin = String(body.newPin || '').trim();
-
-  if (newPin && (newPin.length < 4 || newPin.length > 32)) {
-    return jsonResponse_({ok:false,message:'PIN must contain 4–32 characters.'});
-  }
-  const existingPinHash = String(current[3] || '');
-  if (pinEnabled && !newPin && !existingPinHash) {
-    return jsonResponse_({ok:false,message:'Set a PIN before enabling PIN protection.'});
-  }
-
-  if (newPin) sheet.getRange(row,4).setValue(hashPin_(newPin));
-  sheet.getRange(row,5).setValue(pinEnabled);
-  sheet.getRange(row,6).setValue(downloadsEnabled);
-  sheet.getRange(row,7).setValue(expires);
-  sheet.getRange(row,8).setValue(coverFileId);
-  sheet.getRange(row,9).setValue(new Date());
-  sheet.getRange(row,13).setValue(published);
-
-  clearGalleryCache_();
-  requestConfigMemo_=undefined;
-  return jsonResponse_({
-    ok:true,
-    message:'Event settings updated.',
-    event:{id:id,pinEnabled:pinEnabled,downloadsEnabled:downloadsEnabled,published:published,expires:expires,coverFileId:coverFileId}
-  });
 }
 
 function adminRefreshIndex_(token) {
@@ -850,6 +901,9 @@ function prepareConfigSheet_(spreadsheet) {
   if (!sheet) {
     sheet = spreadsheet.getSheets()[0];
     sheet.setName(CONFIG_SHEET_NAME);
+  }
+  if (sheet.getMaxColumns() < CONFIG_HEADERS.length) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), CONFIG_HEADERS.length - sheet.getMaxColumns());
   }
   sheet.getRange(1, 1, 1, CONFIG_HEADERS.length).setValues([CONFIG_HEADERS]);
   sheet.setFrozenRows(1);
