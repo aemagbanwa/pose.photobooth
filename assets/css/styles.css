@@ -69,8 +69,11 @@ select:focus-visible {
   gap: 26px;
   font-size: 14px;
 }
+.nav nav > a:not(.pill) {
+  transition: color 0.2s ease;
+}
 .nav nav > a:not(.pill):hover {
-  color: var(--pink);
+  color: #ff0068;
 }
 .menu {
   display: none;
