@@ -13,6 +13,7 @@
     currentCollection: null,
     currentIndex: 0,
     pendingCollection: null,
+    albumPage: 1,
   };
 
   const els = {
@@ -28,6 +29,7 @@
     sort: document.querySelector("#sort"),
     mediaFilter: document.querySelector("#media-filter"),
     eventFilters: document.querySelector("#event-filters"),
+    albumPagination: document.querySelector("#album-pagination"),
     filterToggle: document.querySelector("#gallery-filter-toggle"),
     controlsPanel: document.querySelector("#gallery-controls-panel"),
     viewer: document.querySelector("#viewer"),
@@ -320,6 +322,72 @@
     );
   }
 
+  function albumPageSize() {
+    const configured = Number(config.albumPageSize || 12);
+    return Number.isFinite(configured)
+      ? Math.min(Math.max(Math.round(configured), 4), 48)
+      : 12;
+  }
+
+  function albumPageCount() {
+    return Math.max(1, Math.ceil(state.visible.length / albumPageSize()));
+  }
+
+  function albumPageItems() {
+    const size = albumPageSize();
+    const start = (state.albumPage - 1) * size;
+    return state.visible.slice(start, start + size);
+  }
+
+  function albumPageWindow(totalPages, currentPage) {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const pages = [1];
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+    if (start > 2) pages.push('ellipsis-start');
+    for (let page = start; page <= end; page += 1) pages.push(page);
+    if (end < totalPages - 1) pages.push('ellipsis-end');
+    pages.push(totalPages);
+    return pages;
+  }
+
+  function renderAlbumPagination() {
+    if (!els.albumPagination) return;
+    const totalPages = albumPageCount();
+    const shouldShow = state.visible.length > albumPageSize();
+    els.albumPagination.hidden = !shouldShow;
+    if (!shouldShow) {
+      els.albumPagination.innerHTML = '';
+      return;
+    }
+
+    const pages = albumPageWindow(totalPages, state.albumPage);
+    els.albumPagination.innerHTML = `
+      <button class="album-pagination__nav" type="button" data-album-page="${state.albumPage - 1}" ${state.albumPage <= 1 ? 'disabled' : ''} aria-label="Previous album page">
+        <span aria-hidden="true">←</span><span class="album-pagination__nav-label">Previous</span>
+      </button>
+      <div class="album-pagination__pages" aria-label="Album pages">
+        ${pages.map((page) => {
+          if (typeof page !== 'number') return '<span class="album-pagination__ellipsis" aria-hidden="true">…</span>';
+          const current = page === state.albumPage;
+          return `<button class="album-pagination__page${current ? ' is-active' : ''}" type="button" data-album-page="${page}" ${current ? 'aria-current="page"' : ''} aria-label="Go to album page ${page}">${page}</button>`;
+        }).join('')}
+      </div>
+      <button class="album-pagination__nav" type="button" data-album-page="${state.albumPage + 1}" ${state.albumPage >= totalPages ? 'disabled' : ''} aria-label="Next album page">
+        <span class="album-pagination__nav-label">Next</span><span aria-hidden="true">→</span>
+      </button>`;
+
+    els.albumPagination.querySelectorAll('[data-album-page]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const page = Number(button.dataset.albumPage);
+        if (!Number.isInteger(page) || page < 1 || page > totalPages || page === state.albumPage) return;
+        state.albumPage = page;
+        render();
+        document.querySelector('.results-line')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+  }
+
   function applyFilters() {
     const query = state.search.toLowerCase().trim();
     state.visible = state.collections.filter((collection) => {
@@ -345,6 +413,7 @@
       const bTime = b.date?.valueOf() || 0;
       return state.sort === "oldest" ? aTime - bTime : bTime - aTime;
     });
+    state.albumPage = 1;
     render();
   }
 
@@ -419,7 +488,14 @@
     els.empty.hidden = hasResults;
 
     if (hasResults) {
-      els.grid.innerHTML = state.visible.map(collectionMarkup).join("");
+      const totalPages = albumPageCount();
+      state.albumPage = Math.min(Math.max(state.albumPage, 1), totalPages);
+      const size = albumPageSize();
+      const start = (state.albumPage - 1) * size;
+      const pageItems = albumPageItems();
+      els.grid.innerHTML = pageItems
+        .map((collection, pageIndex) => collectionMarkup(collection, start + pageIndex))
+        .join("");
       els.grid.querySelectorAll("[data-collection-index]").forEach((button) => {
         button.addEventListener("click", () => {
           const collection =
@@ -429,13 +505,15 @@
       });
     }
 
+    renderAlbumPagination();
+
     const photoCount = state.visible.reduce(
       (sum, collection) =>
         sum + (collection.itemCount || collection.photos.length),
       0,
     );
     els.count.textContent = hasResults
-      ? `${state.visible.length} ${state.visible.length === 1 ? "event" : "events"} · ${photoCount} ${photoCount === 1 ? "moment" : "photos & videos"}`
+      ? `${state.visible.length} ${state.visible.length === 1 ? "event" : "events"} · ${photoCount} ${photoCount === 1 ? "moment" : "photos & videos"}${state.visible.length > albumPageSize() ? ` · Page ${state.albumPage} of ${albumPageCount()}` : ""}`
       : "No matching events";
   }
 

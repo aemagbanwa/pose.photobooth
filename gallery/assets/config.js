@@ -6,4 +6,5 @@ window.POSE_GALLERY = Object.freeze({
   homeUrl: "https://poseph.com/",
   bookingUrl: "https://poseph.com/#booking",
   pageSize: 30,
+  albumPageSize: 12,
 });
