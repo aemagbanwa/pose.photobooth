@@ -481,8 +481,10 @@
     els.albumDownload.hidden =
       !collection.downloadsEnabled ||
       (!collection.photos.some((item) => item.download) && !collection.hasMore);
-    els.viewerPrev.disabled = collection.photos.length < 2 && !collection.hasMore;
-    els.viewerNext.disabled = collection.photos.length < 2 && !collection.hasMore;
+    els.viewerPrev.disabled =
+      collection.photos.length < 2 && !collection.hasMore;
+    els.viewerNext.disabled =
+      collection.photos.length < 2 && !collection.hasMore;
     els.viewerThumbs.innerHTML = collection.photos
       .map(
         (item, index) => `
@@ -507,7 +509,9 @@
 
   function pageSize() {
     const configured = Number(config.pageSize || config.itemsPerPage || 30);
-    return Number.isFinite(configured) ? Math.min(Math.max(configured, 12), 60) : 30;
+    return Number.isFinite(configured)
+      ? Math.min(Math.max(configured, 12), 60)
+      : 30;
   }
 
   function payloadPageToken(payload, event) {
@@ -530,7 +534,11 @@
   }
 
   function rawMedia(event) {
-    return [event?.items, event?.photos, event?.images, event?.files].find(Array.isArray) || [];
+    return (
+      [event?.items, event?.photos, event?.images, event?.files].find(
+        Array.isArray,
+      ) || []
+    );
   }
 
   function appendUniquePhotos(collection, items) {
@@ -557,7 +565,9 @@
     if (!reset && collection.localRemainder?.length) {
       const chunk = collection.localRemainder.splice(0, limit);
       appendUniquePhotos(collection, chunk);
-      collection.hasMore = collection.localRemainder.length > 0 || collection.loadedCount < collection.itemCount;
+      collection.hasMore =
+        collection.localRemainder.length > 0 ||
+        collection.loadedCount < collection.itemCount;
       return;
     }
 
@@ -565,7 +575,8 @@
     url.searchParams.set("eventId", collection.id);
     url.searchParams.set("limit", String(limit));
     url.searchParams.set("offset", String(collection.loadedCount || 0));
-    if (collection.nextPageToken) url.searchParams.set("pageToken", collection.nextPageToken);
+    if (collection.nextPageToken)
+      url.searchParams.set("pageToken", collection.nextPageToken);
     const activePin = pin || collection.accessPin || "";
     if (activePin) url.searchParams.set("pin", activePin);
 
@@ -577,14 +588,22 @@
 
     const event = payload.event;
     const raw = rawMedia(event);
-    if (!raw.length && reset) throw new Error("This album did not return any media.");
+    if (!raw.length && reset)
+      throw new Error("This album did not return any media.");
     const normalized = raw
-      .map((child, index) => normalizeItem(child, (collection.loadedCount || 0) + index, event))
+      .map((child, index) =>
+        normalizeItem(child, (collection.loadedCount || 0) + index, event),
+      )
       .filter(Boolean);
 
     const token = payloadPageToken(payload, event);
     const explicitHasMore = payloadHasMore(payload, event);
-    const total = Number(event.itemCount ?? payload.itemCount ?? collection.itemCount ?? normalized.length);
+    const total = Number(
+      event.itemCount ??
+        payload.itemCount ??
+        collection.itemCount ??
+        normalized.length,
+    );
     if (Number.isFinite(total) && total >= 0) collection.itemCount = total;
 
     // Backward compatibility: older endpoints may ignore limit/offset and return
@@ -624,7 +643,8 @@
 
   async function loadMoreCurrentCollection({ quiet = false } = {}) {
     const collection = state.currentCollection;
-    if (!collection || !collection.hasMore || collection.loadingMore) return false;
+    if (!collection || !collection.hasMore || collection.loadingMore)
+      return false;
     collection.loadingMore = true;
     renderViewerPagination(collection);
     try {
@@ -641,13 +661,16 @@
   }
 
   function renderViewerPagination(collection) {
-    if (!els.viewerPagination || !els.viewerLoadMore || !els.viewerLoadStatus) return;
+    if (!els.viewerPagination || !els.viewerLoadMore || !els.viewerLoadStatus)
+      return;
     const total = collection.itemCount || collection.photos.length;
     const loaded = collection.photos.length;
     els.viewerPagination.hidden = !collection.hasMore && loaded >= total;
     els.viewerLoadMore.hidden = !collection.hasMore;
     els.viewerLoadMore.disabled = Boolean(collection.loadingMore);
-    els.viewerLoadMore.textContent = collection.loadingMore ? "Loading…" : "Load more";
+    els.viewerLoadMore.textContent = collection.loadingMore
+      ? "Loading…"
+      : "Load more";
     els.viewerLoadStatus.textContent = `${Math.min(loaded, total)} of ${total} items loaded`;
   }
 
@@ -688,7 +711,11 @@
     let length = collection?.photos.length || 0;
     if (!collection || length < 1) return;
 
-    if (direction > 0 && state.currentIndex === length - 1 && collection.hasMore) {
+    if (
+      direction > 0 &&
+      state.currentIndex === length - 1 &&
+      collection.hasMore
+    ) {
       const loaded = await loadMoreCurrentCollection({ quiet: true });
       length = collection.photos.length;
       if (loaded && state.currentIndex < length - 1) {
@@ -902,8 +929,10 @@
   }
 
   function initInteractions() {
-    const setHeader = () =>
-      els.header.classList.toggle("is-scrolled", scrollY > 24);
+    const setHeader = () => {
+      const header = document.querySelector("[data-header]");
+      header?.classList.toggle("is-scrolled", scrollY > 24);
+    };
     addEventListener("scroll", setHeader, { passive: true });
     setHeader();
 
@@ -949,7 +978,9 @@
     els.viewerNext.addEventListener("click", () => moveViewer(1));
     els.share.addEventListener("click", shareCurrent);
     els.albumDownload.addEventListener("click", downloadCurrentAlbum);
-    els.viewerLoadMore?.addEventListener("click", () => loadMoreCurrentCollection());
+    els.viewerLoadMore?.addEventListener("click", () =>
+      loadMoreCurrentCollection(),
+    );
     els.viewer.addEventListener("close", () =>
       document.body.classList.remove("is-locked"),
     );
