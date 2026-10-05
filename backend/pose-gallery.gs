@@ -660,6 +660,14 @@ function adminDashboardData_(token) {
   return jsonResponse_({ok:true, events:events, updatedAt:new Date().toISOString()});
 }
 
+function adminBoolean_(value, fallback) {
+  if (value === true || value === false) return value;
+  const normalized = String(value == null ? '' : value).trim().toLowerCase();
+  if (normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on') return true;
+  if (normalized === 'false' || normalized === '0' || normalized === 'no' || normalized === 'off') return false;
+  return Boolean(fallback);
+}
+
 function adminUpdateEvent_(body) {
   if (!adminTokenValid_(body.token || '')) return jsonResponse_({ok:false, code:'INVALID_ADMIN_TOKEN', message:'Admin link is invalid.'});
   const id = String(body.eventId || '').trim();
@@ -669,24 +677,42 @@ function adminUpdateEvent_(body) {
   if (sheet.getLastRow() < 2) return jsonResponse_({ok:false, message:'No events are configured.'});
   const vals = sheet.getRange(2,1,sheet.getLastRow()-1,CONFIG_HEADERS.length).getValues();
   let row = 0;
-  for (let i=0;i<vals.length;i++) if (String(vals[i][0]||'')===id) { row=i+2; break; }
+  let current = null;
+  for (let i=0;i<vals.length;i++) {
+    if (String(vals[i][0]||'')===id) { row=i+2; current=vals[i]; break; }
+  }
   if (!row) return jsonResponse_({ok:false, message:'Event not found.'});
+
   const expires = String(body.expires || '').trim();
   const coverFileId = String(body.coverFileId || '').trim();
-  sheet.getRange(row,5).setValue(Boolean(body.pinEnabled));
-  sheet.getRange(row,6).setValue(body.downloadsEnabled !== false);
+  const pinEnabled = adminBoolean_(body.pinEnabled, checkboxValue_(current[4]));
+  const downloadsEnabled = adminBoolean_(body.downloadsEnabled, current[5] === '' ? true : checkboxValue_(current[5]));
+  const published = adminBoolean_(body.published, current[12] === '' ? true : checkboxValue_(current[12]));
+  const newPin = String(body.newPin || '').trim();
+
+  if (newPin && (newPin.length < 4 || newPin.length > 32)) {
+    return jsonResponse_({ok:false,message:'PIN must contain 4–32 characters.'});
+  }
+  const existingPinHash = String(current[3] || '');
+  if (pinEnabled && !newPin && !existingPinHash) {
+    return jsonResponse_({ok:false,message:'Set a PIN before enabling PIN protection.'});
+  }
+
+  if (newPin) sheet.getRange(row,4).setValue(hashPin_(newPin));
+  sheet.getRange(row,5).setValue(pinEnabled);
+  sheet.getRange(row,6).setValue(downloadsEnabled);
   sheet.getRange(row,7).setValue(expires);
   sheet.getRange(row,8).setValue(coverFileId);
   sheet.getRange(row,9).setValue(new Date());
-  sheet.getRange(row,13).setValue(body.published !== false);
-  if (body.newPin) {
-    const pin=String(body.newPin).trim();
-    if (pin.length<4 || pin.length>32) return jsonResponse_({ok:false,message:'PIN must contain 4–32 characters.'});
-    sheet.getRange(row,4).setValue(hashPin_(pin));
-    sheet.getRange(row,5).setValue(true);
-  }
-  clearGalleryCache_(); requestConfigMemo_=undefined;
-  return jsonResponse_({ok:true, message:'Event settings updated.'});
+  sheet.getRange(row,13).setValue(published);
+
+  clearGalleryCache_();
+  requestConfigMemo_=undefined;
+  return jsonResponse_({
+    ok:true,
+    message:'Event settings updated.',
+    event:{id:id,pinEnabled:pinEnabled,downloadsEnabled:downloadsEnabled,published:published,expires:expires,coverFileId:coverFileId}
+  });
 }
 
 function adminRefreshIndex_(token) {
