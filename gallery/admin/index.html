@@ -352,21 +352,11 @@
             const local=events.find(e=>String(e.id)===String(id));
             if(local)Object.assign(local,d.event);
           }
-          // Re-read admin data from the server so the UI only reports success
-          // when a fresh GET sees the persisted setting too.
-          const verify=await apiGet();
-          if(!verify.ok)throw new Error(verify.message||'Unable to verify saved settings.');
-          const persisted=(verify.events||[]).find(x=>String(x.id)===String(id));
-          if(!persisted)throw new Error('Saved event could not be reloaded for verification.');
-          if(Boolean(persisted.published!==false)!==Boolean(val('published').checked) ||
-             Boolean(persisted.pinEnabled)!==Boolean(val('pinEnabled').checked) ||
-             Boolean(persisted.downloadsEnabled!==false)!==Boolean(val('downloadsEnabled').checked)) {
-            throw new Error('The server did not persist one or more switches. Confirm the latest Apps Script deployment is active.');
-          }
-          const local=events.find(e=>String(e.id)===String(id));
-          if(local)Object.assign(local,persisted);
+          // The save endpoint already performs a read-back verification in the
+          // same request. Avoid a second full admin reload here because that
+          // also scans Drive for unregistered folders and made Save feel slow.
           saveState.textContent='Saved ✓';
-          setStatus('Saved and verified from Google Sheets.','ok');
+          setStatus('Changes saved.','ok');
           updateMetrics();
         }catch(e){saveState.textContent='';setStatus(e.message||'Save failed.','error')}
         finally{b.disabled=false;b.textContent=old}

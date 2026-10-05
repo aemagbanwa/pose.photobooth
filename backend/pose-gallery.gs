@@ -723,7 +723,12 @@ function adminUpdateEvent_(body) {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    const sheet = prepareConfigSheet_(spreadsheet);
+    // Fast save path: do not run schema formatting, checkbox validation,
+    // column hiding, or auto-resize on every Save click. Those operations are
+    // intentionally reserved for setup/migration and were the main source of
+    // admin save latency.
+    const sheet = spreadsheet.getSheetByName(CONFIG_SHEET_NAME);
+    if (!sheet) return jsonResponse_({ok:false, code:'CONFIG_UNAVAILABLE', message:'Events sheet is unavailable. Run setupGalleryConfig() once.'});
     if (sheet.getLastRow() < 2) return jsonResponse_({ok:false, message:'No events are configured.'});
 
     const columns = configColumnMap_(sheet);
@@ -761,28 +766,36 @@ function adminUpdateEvent_(body) {
       return jsonResponse_({ok:false, code:'PIN_REQUIRED', message:'Set a PIN before enabling PIN protection.'});
     }
 
-    // Write each admin setting to its named column. This avoids any dependence
-    // on column position and prevents unrelated values from being overwritten.
-    sheet.getRange(row, columns['Event Name']).setValue(eventName);
-    sheet.getRange(row, columns['Event Date']).setValue(eventDate || '');
-    sheet.getRange(row, columns['Event Type']).setValue(eventType);
-    if (newPin) sheet.getRange(row, columns['PIN Hash']).setValue(hashPin_(newPin));
-    sheet.getRange(row, columns['PIN Enabled']).setValue(pinEnabled);
-    sheet.getRange(row, columns['Downloads Enabled']).setValue(downloadsEnabled);
-    sheet.getRange(row, columns['Expiry Date']).setValue(expires || '');
-    sheet.getRange(row, columns['Cover File ID']).setValue(coverFileId);
-    sheet.getRange(row, columns['Updated At']).setValue(new Date());
-    sheet.getRange(row, columns['Published']).setValue(published);
+    // Batch the whole record into one Sheet write. Apps Script calls to Sheets
+    // are comparatively expensive, so one setValues() is much faster than
+    // issuing a separate setValue() call for every field.
+    const width = Math.max(sheet.getLastColumn(), CONFIG_HEADERS.length);
+    const rowRange = sheet.getRange(row, 1, 1, width);
+    const rowValues = rowRange.getValues()[0];
+    const set = function(name, value) { rowValues[(columns[name] || 1) - 1] = value; };
+    set('Event Name', eventName);
+    set('Event Date', eventDate || '');
+    set('Event Type', eventType);
+    if (newPin) set('PIN Hash', hashPin_(newPin));
+    set('PIN Enabled', pinEnabled);
+    set('Downloads Enabled', downloadsEnabled);
+    set('Expiry Date', expires || '');
+    set('Cover File ID', coverFileId);
+    set('Updated At', new Date());
+    set('Published', published);
+    rowRange.setValues([rowValues]);
     SpreadsheetApp.flush();
 
-    // Read directly back from the exact cells that were written.
-    const savedPinEnabled = checkboxValue_(sheet.getRange(row, columns['PIN Enabled']).getValue());
-    const savedDownloadsRaw = sheet.getRange(row, columns['Downloads Enabled']).getValue();
+    // Verify with one row read instead of several individual cell reads.
+    const savedRow = rowRange.getValues()[0];
+    const get = function(name) { return savedRow[(columns[name] || 1) - 1]; };
+    const savedPinEnabled = checkboxValue_(get('PIN Enabled'));
+    const savedDownloadsRaw = get('Downloads Enabled');
     const savedDownloadsEnabled = savedDownloadsRaw === '' ? true : checkboxValue_(savedDownloadsRaw);
-    const savedPublishedRaw = sheet.getRange(row, columns['Published']).getValue();
+    const savedPublishedRaw = get('Published');
     const savedPublished = savedPublishedRaw === '' ? true : checkboxValue_(savedPublishedRaw);
-    const savedExpires = dateValue_(sheet.getRange(row, columns['Expiry Date']).getValue());
-    const savedCoverFileId = String(sheet.getRange(row, columns['Cover File ID']).getDisplayValue() || '').trim();
+    const savedExpires = dateValue_(get('Expiry Date'));
+    const savedCoverFileId = String(get('Cover File ID') || '').trim();
 
     if (savedPinEnabled !== pinEnabled || savedDownloadsEnabled !== downloadsEnabled || savedPublished !== published) {
       return jsonResponse_({
