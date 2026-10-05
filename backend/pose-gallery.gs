@@ -1093,15 +1093,45 @@ function adminDeleteEvent_(body) {
   if (!spreadsheet) return jsonResponse_({ok:false, message:'Gallery configuration is unavailable.'});
   const lock = LockService.getScriptLock(); lock.waitLock(30000);
   try {
-    const sheet = prepareConfigSheet_(spreadsheet);
+    // Fast path: remove only the selected configuration row and its matching
+    // Gallery Index row. Do NOT rebuild every gallery or rescan Drive here.
+    const sheet = spreadsheet.getSheetByName(CONFIG_SHEET_NAME);
+    if (!sheet || sheet.getLastRow() < 2) {
+      return jsonResponse_({ok:false, code:'EVENT_NOT_FOUND', message:'Album is not registered.'});
+    }
     const record = configuredEventRecords_(sheet).find(function(item){ return item.id === eventId; });
     if (!record) return jsonResponse_({ok:false, code:'EVENT_NOT_FOUND', message:'Album is not registered.'});
+
+    const removed = {
+      id: record.id,
+      folderName: record.eventName || '',
+      eventName: record.eventName || '',
+      eventDate: record.eventDate || '',
+      eventType: record.eventType || 'other'
+    };
+
     sheet.deleteRow(record.row);
+
+    const indexSheet = spreadsheet.getSheetByName(INDEX_SHEET_NAME);
+    if (indexSheet && indexSheet.getLastRow() >= 2) {
+      const ids = indexSheet.getRange(2, 1, indexSheet.getLastRow() - 1, 1).getDisplayValues();
+      for (let i = 0; i < ids.length; i += 1) {
+        if (String(ids[i][0] || '').trim() === eventId) {
+          indexSheet.deleteRow(i + 2);
+          break;
+        }
+      }
+    }
+
     SpreadsheetApp.flush();
-    requestConfigMemo_ = undefined;
-    refreshGalleryIndex();
-    return jsonResponse_({ok:true, message:'Album removed from POSE Gallery. Google Drive files were not deleted.'});
+    clearGalleryCache_();
+    return jsonResponse_({
+      ok:true,
+      message:'Album removed from POSE Gallery. Google Drive files were not deleted.',
+      removed: removed
+    });
   } catch(error) {
+    console.error('adminDeleteEvent_ failed: ' + error.stack);
     return jsonResponse_({ok:false, code:'DELETE_FAILED', message:'Unable to remove album: ' + error.message});
   } finally { lock.releaseLock(); }
 }

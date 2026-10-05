@@ -366,7 +366,29 @@
         const current=events.find(e=>String(e.id)===String(id));
         if(!confirm(`Remove “${current?.eventName||'this album'}” from POSE Gallery?\n\nThis removes only the gallery configuration and public listing. Google Drive files will NOT be deleted.`))return;
         const b=ev.target;b.disabled=true;const old=b.textContent;b.textContent='Removing…';
-        try{const d=await apiPost({action:'adminDeleteEvent',eventId:id});if(!d.ok)throw new Error(d.message);setStatus(d.message,'ok');await load();}
+        try{
+          const d=await apiPost({action:'adminDeleteEvent',eventId:id});
+          if(!d.ok)throw new Error(d.message);
+
+          // Update the dashboard immediately instead of doing a full reload,
+          // which would rescan Drive for unregistered folders and make removal slow.
+          const removedIndex=events.findIndex(e=>String(e.id)===String(id));
+          const removedEvent=removedIndex>=0?events.splice(removedIndex,1)[0]:current;
+          const removed=d.removed||removedEvent;
+          if(removed && !unregisteredFolders.some(f=>String(f.id)===String(id))){
+            unregisteredFolders.push({
+              id:String(id),
+              folderName:removed.folderName||removed.eventName||'Removed album',
+              eventName:removed.eventName||removed.folderName||'',
+              eventDate:removed.eventDate||'',
+              eventType:removed.eventType||'other'
+            });
+          }
+          card.remove();
+          updateMetrics();
+          if(!grid.querySelector('.card'))render();
+          setStatus(d.message,'ok');
+        }
         catch(e){setStatus(e.message||'Unable to remove album.','error')}
         finally{b.disabled=false;b.textContent=old}
       }
