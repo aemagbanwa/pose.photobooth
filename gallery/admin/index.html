@@ -108,6 +108,14 @@
     .hidden{display:none!important}
     .empty{grid-column:1/-1;background:var(--surface);border:1px dashed #d2d2cc;border-radius:16px;padding:42px;text-align:center;color:#7d7d77;font-size:.84rem}
 
+
+    .btn.danger{color:var(--danger);border-color:#e3caca;background:#fff}.btn.danger:hover{background:#fff6f6;border-color:#d8b7b7}
+    select{font:inherit}.field select{width:100%;height:42px;border:1px solid var(--line-strong);border-radius:10px;padding:0 36px 0 11px;background:#fff;color:var(--text);font-size:.77rem;outline:none}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(18,18,18,.36);display:grid;place-items:center;padding:20px;z-index:1000}
+    .modal{width:min(560px,100%);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.18);overflow:hidden}
+    .modal-head{padding:20px 22px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.modal-head h2{margin:0;font-size:1.08rem;letter-spacing:-.03em}.modal-head p{margin:5px 0 0;color:var(--muted);font-size:.74rem}
+    .modal-body{padding:20px 22px}.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.modal-grid .field.full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:14px 22px;border-top:1px solid var(--line);background:#fcfcfa}
+    .notice{padding:11px 12px;border-radius:10px;background:#f4f4f1;color:#676760;font-size:.72rem;line-height:1.5;margin-top:12px}
     @media(max-width:980px){.overview{grid-template-columns:repeat(2,minmax(0,1fr))}.grid{grid-template-columns:1fr}}
     @media(max-width:700px){
       .shell{width:min(100% - 22px,1240px);padding-top:20px}
@@ -134,15 +142,17 @@
       </div>
       <div class="top-actions">
         <button class="btn" id="open-gallery">Open Gallery</button>
-        <button class="btn primary" id="refresh">Refresh Drive Index</button>
+        <button class="btn" id="refresh">Refresh Drive Index</button>
+        <button class="btn primary" id="add-album">+ Add Album</button>
       </div>
     </header>
 
-    <section class="overview" aria-label="Gallery overview">
+    <section class="overview" aria-label="Gallery overview" style="grid-template-columns:repeat(5,minmax(0,1fr))">
       <div class="metric"><div class="metric-label">Events</div><div class="metric-value" id="metric-events">—</div><div class="metric-note">Loaded in admin</div></div>
       <div class="metric"><div class="metric-label">Published</div><div class="metric-value" id="metric-published">—</div><div class="metric-note">Visible to visitors</div></div>
       <div class="metric"><div class="metric-label">Protected</div><div class="metric-value" id="metric-protected">—</div><div class="metric-note">PIN enabled</div></div>
       <div class="metric"><div class="metric-label">Media</div><div class="metric-value" id="metric-media">—</div><div class="metric-note">Photos & videos</div></div>
+      <div class="metric"><div class="metric-label">Unregistered</div><div class="metric-value" id="metric-unregistered">—</div><div class="metric-note">Drive folders ready to add</div></div>
     </section>
 
     <div class="controlbar">
@@ -157,6 +167,24 @@
     <section class="grid" id="grid" aria-live="polite"></section>
   </main>
 
+
+  <div class="modal-backdrop hidden" id="album-modal" role="dialog" aria-modal="true" aria-labelledby="album-modal-title">
+    <div class="modal">
+      <div class="modal-head"><div><h2 id="album-modal-title">Add gallery album</h2><p>Only registered albums can appear on the public POSE Gallery.</p></div><button class="btn ghost small" id="modal-close" aria-label="Close">Close</button></div>
+      <form id="add-form">
+        <div class="modal-body">
+          <div class="modal-grid">
+            <div class="field full"><label>Google Drive folder</label><select id="folder-select" required><option value="">Select an unregistered folder…</option></select></div>
+            <div class="field full"><label>Event name</label><input type="text" id="add-name" required placeholder="Event name" /></div>
+            <div class="field"><label>Event date</label><input type="date" id="add-date" /></div>
+            <div class="field"><label>Category</label><select id="add-type"><option value="birthday">Birthday</option><option value="wedding">Wedding</option><option value="debut">Debut</option><option value="corporate">Corporate</option><option value="dedication">Dedication</option><option value="other">Other</option></select></div>
+          </div>
+          <div class="notice">New albums are created as <strong>unpublished drafts</strong>. Your Google Drive folder and files are never moved or deleted by Gallery Admin.</div>
+        </div>
+        <div class="modal-actions"><button type="button" class="btn" id="modal-cancel">Cancel</button><button type="submit" class="btn primary" id="modal-add">Add album</button></div>
+      </form>
+    </div>
+  </div>
   <script src="../assets/config.js"></script>
   <script>
   (()=>{
@@ -171,9 +199,11 @@
       events:document.querySelector('#metric-events'),
       published:document.querySelector('#metric-published'),
       protected:document.querySelector('#metric-protected'),
-      media:document.querySelector('#metric-media')
+      media:document.querySelector('#metric-media'),
+      unregistered:document.querySelector('#metric-unregistered')
     };
     let events=[];
+    let unregisteredFolders=[];
 
     document.querySelector('#open-gallery').addEventListener('click',()=>location.href='../');
     const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -184,6 +214,7 @@
       metrics.published.textContent=formatNumber(events.filter(e=>e.published!==false).length);
       metrics.protected.textContent=formatNumber(events.filter(e=>e.pinEnabled).length);
       metrics.media.textContent=formatNumber(events.reduce((sum,e)=>sum+(Number(e.itemCount)||0),0));
+      metrics.unregistered.textContent=formatNumber(unregisteredFolders.length);
     }
     async function apiGet(){
       const u=new URL(endpoint);
@@ -225,6 +256,9 @@
 
           <div class="settings">
             <div class="settings-grid">
+              <div class="field full"><label>Event name</label><input type="text" data-field="eventName" value="${esc(e.eventName||'')}" /></div>
+              <div class="field"><label>Event date</label><input type="date" data-field="eventDate" value="${esc(e.eventDate||'')}" /></div>
+              <div class="field"><label>Category</label><select data-field="eventType"><option value="birthday" ${e.eventType==='birthday'?'selected':''}>Birthday</option><option value="wedding" ${e.eventType==='wedding'?'selected':''}>Wedding</option><option value="debut" ${e.eventType==='debut'?'selected':''}>Debut</option><option value="corporate" ${e.eventType==='corporate'?'selected':''}>Corporate</option><option value="dedication" ${e.eventType==='dedication'?'selected':''}>Dedication</option><option value="other" ${e.eventType==='other'?'selected':''}>Other</option></select></div>
               <div class="field"><label>Expiry date</label><input type="date" data-field="expires" value="${esc(e.expires||'')}" /></div>
               <div class="field"><label>Cover file ID</label><input type="text" data-field="coverFileId" value="${esc(e.coverFileId||'')}" placeholder="Google Drive file ID" /></div>
               <div class="field full"><label>New PIN <span style="font-weight:500;color:#aaa">(optional)</span></label><input type="password" data-field="newPin" placeholder="Leave blank to keep the current PIN" autocomplete="new-password" /></div>
@@ -248,7 +282,7 @@
           </div>
         </div>
         <div class="card-actions">
-          <div class="left"><button class="btn small" data-client>Generate client link</button></div>
+          <div class="left"><button class="btn small" data-client>Generate client link</button><button class="btn danger small" data-remove>Remove from Gallery</button></div>
           <div class="right"><span class="save-state" data-save-state></span><button class="btn primary small" data-save>Save changes</button></div>
         </div>
       </article>`).join('');
@@ -261,6 +295,7 @@
         const d=await apiGet();
         if(!d.ok)throw new Error(d.message||'Unable to load admin data.');
         events=d.events||[];
+        unregisteredFolders=d.unregisteredFolders||[];
         updateMetrics();
         render();
         setStatus(`${events.length} events loaded.`);
@@ -299,7 +334,7 @@
         const val=n=>card.querySelector(`[data-field="${n}"]`);
         try{
           const d=await apiPost({
-            action:'adminUpdateEvent',eventId:id,expires:val('expires').value,
+            action:'adminUpdateEvent',eventId:id,eventName:val('eventName').value.trim(),eventDate:val('eventDate').value,eventType:val('eventType').value,expires:val('expires').value,
             coverFileId:val('coverFileId').value.trim(),newPin:val('newPin').value.trim(),
             published:val('published').checked,pinEnabled:val('pinEnabled').checked,
             downloadsEnabled:val('downloadsEnabled').checked
@@ -337,6 +372,15 @@
         finally{b.disabled=false;b.textContent=old}
       }
 
+      if(ev.target.matches('[data-remove]')){
+        const current=events.find(e=>String(e.id)===String(id));
+        if(!confirm(`Remove “${current?.eventName||'this album'}” from POSE Gallery?\n\nThis removes only the gallery configuration and public listing. Google Drive files will NOT be deleted.`))return;
+        const b=ev.target;b.disabled=true;const old=b.textContent;b.textContent='Removing…';
+        try{const d=await apiPost({action:'adminDeleteEvent',eventId:id});if(!d.ok)throw new Error(d.message);setStatus(d.message,'ok');await load();}
+        catch(e){setStatus(e.message||'Unable to remove album.','error')}
+        finally{b.disabled=false;b.textContent=old}
+      }
+
       if(ev.target.matches('[data-client]')){
         const b=ev.target;
         b.disabled=true;
@@ -360,6 +404,29 @@
       if(!card)return;
       const state=card.querySelector('[data-save-state]');
       if(state)state.textContent='Unsaved changes';
+    });
+
+    const modal=document.querySelector('#album-modal');
+    const addButton=document.querySelector('#add-album');
+    const addForm=document.querySelector('#add-form');
+    const folderSelect=document.querySelector('#folder-select');
+    const addName=document.querySelector('#add-name');
+    const addDate=document.querySelector('#add-date');
+    const addType=document.querySelector('#add-type');
+    function fillFolderSelect(){
+      folderSelect.innerHTML='<option value="">Select an unregistered folder…</option>'+unregisteredFolders.map(f=>`<option value="${esc(f.id)}">${esc(f.folderName)}</option>`).join('');
+    }
+    function closeModal(){modal.classList.add('hidden');addForm.reset()}
+    addButton.addEventListener('click',()=>{fillFolderSelect();if(!unregisteredFolders.length){setStatus('There are no unregistered Drive folders to add.','ok');return}modal.classList.remove('hidden');folderSelect.focus()});
+    document.querySelector('#modal-close').addEventListener('click',closeModal);
+    document.querySelector('#modal-cancel').addEventListener('click',closeModal);
+    modal.addEventListener('click',e=>{if(e.target===modal)closeModal()});
+    folderSelect.addEventListener('change',()=>{const f=unregisteredFolders.find(x=>String(x.id)===folderSelect.value);if(!f)return;addName.value=f.eventName||f.folderName||'';addDate.value=f.eventDate||'';addType.value=f.eventType||'other'});
+    addForm.addEventListener('submit',async e=>{
+      e.preventDefault();const b=document.querySelector('#modal-add');b.disabled=true;const old=b.textContent;b.textContent='Adding…';
+      try{const d=await apiPost({action:'adminCreateEvent',folderId:folderSelect.value,eventName:addName.value.trim(),eventDate:addDate.value,eventType:addType.value});if(!d.ok)throw new Error(d.message);closeModal();setStatus(d.message,'ok');await load()}
+      catch(err){setStatus(err.message||'Unable to add album.','error')}
+      finally{b.disabled=false;b.textContent=old}
     });
 
     load();
