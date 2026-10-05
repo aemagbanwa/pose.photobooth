@@ -23,14 +23,20 @@
       rel="stylesheet"
     />
     <link rel="icon" href="https://poseph.com/assets/images/pose-logo.png" />
-    <link rel="stylesheet" href="./styles.css?v=27" />
+    <link rel="canonical" href="https://poseph.com/gallery/" />
+    <meta property="og:title" content="Event Gallery — POSE Photobooth" />
+    <meta property="og:description" content="Browse recent POSE Photobooth celebrations across Rizal and Metro Manila." />
+    <meta property="og:url" content="https://poseph.com/gallery/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://poseph.com/assets/images/photobooth.webp" />
+    <link rel="stylesheet" href="./styles.css?v=28" />
     <script
       async
       src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4431773260416818"
       crossorigin="anonymous"
     ></script>
     <script src="./assets/config.js"></script>
-    <script src="./app.js?v=29" defer></script>
+    <script src="./app.js?v=30" defer></script>
       <script src="/assets/js/partials.js" defer></script>
   </head>
   <body>
@@ -138,6 +144,15 @@
           id="loading-state"
           aria-label="Loading gallery"
         >
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
           <div class="skeleton"></div>
           <div class="skeleton"></div>
           <div class="skeleton"></div>
@@ -283,15 +298,21 @@
         <span class="pin-dialog__mark" aria-hidden="true">POSE</span>
         <h2 id="pin-title">Enter gallery PIN</h2>
         <p>This event is private. Enter the PIN provided by the POSE team.</p>
-        <label
-          ><span>Event PIN</span
-          ><input
-            id="pin-input"
-            type="password"
-            inputmode="numeric"
-            autocomplete="one-time-code"
-            required
-        /></label>
+        <label>
+          <span>Event PIN</span>
+          <span class="pin-field">
+            <input
+              id="pin-input"
+              type="password"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              minlength="4"
+              maxlength="32"
+              required
+            />
+            <button class="pin-field__toggle" id="pin-toggle" type="button" aria-pressed="false" aria-label="Show or hide PIN">Show</button>
+          </span>
+        </label>
         <p class="pin-dialog__error" id="pin-error" role="alert"></p>
         <button class="button button--dark" id="pin-submit" value="default">
           Open gallery

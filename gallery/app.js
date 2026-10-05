@@ -14,6 +14,8 @@
     currentIndex: 0,
     pendingCollection: null,
     albumPage: 1,
+    failedPinAttempts: 0,
+    pinCooldownUntil: 0,
   };
 
   const els = {
@@ -51,6 +53,7 @@
     pinDialog: document.querySelector("#pin-dialog"),
     pinForm: document.querySelector("#pin-form"),
     pinInput: document.querySelector("#pin-input"),
+    pinToggle: document.querySelector("#pin-toggle"),
     pinError: document.querySelector("#pin-error"),
     pinSubmit: document.querySelector("#pin-submit"),
     toast: document.querySelector("#toast"),
@@ -383,12 +386,67 @@
         if (!Number.isInteger(page) || page < 1 || page > totalPages || page === state.albumPage) return;
         state.albumPage = page;
         render();
-        document.querySelector('.results-line')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        writeUrlState();
+        document.querySelector(".results-line")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
   }
 
-  function applyFilters() {
+  function readUrlState() {
+    const params = new URLSearchParams(location.search);
+    const category = String(params.get("category") || "all").toLowerCase();
+    const media = String(params.get("media") || "all").toLowerCase();
+    const sort = String(params.get("sort") || "newest").toLowerCase();
+    const page = Number(params.get("page") || 1);
+    state.eventFilter = category;
+    state.mediaFilter = ["all", "image", "video"].includes(media) ? media : "all";
+    state.sort = ["newest", "oldest", "name"].includes(sort) ? sort : "newest";
+    state.search = String(params.get("q") || "").slice(0, 120);
+    state.albumPage = Number.isInteger(page) && page > 0 ? page : 1;
+  }
+
+  function writeUrlState({ replace = false } = {}) {
+    const params = new URLSearchParams();
+    if (state.eventFilter !== "all") params.set("category", state.eventFilter);
+    if (state.mediaFilter !== "all") params.set("media", state.mediaFilter);
+    if (state.sort !== "newest") params.set("sort", state.sort);
+    if (state.search.trim()) params.set("q", state.search.trim());
+    if (state.albumPage > 1) params.set("page", String(state.albumPage));
+    const next = `${location.pathname}${params.toString() ? `?${params}` : ""}${location.hash || ""}`;
+    history[replace ? "replaceState" : "pushState"]({ poseGallery: true }, "", next);
+  }
+
+  function syncControlsFromState() {
+    if (els.search) els.search.value = state.search;
+    if (els.sort) els.sort.value = state.sort;
+    els.eventFilters?.querySelectorAll("[data-event]").forEach((button) => {
+      const active = button.dataset.event === state.eventFilter;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+    els.mediaFilter?.querySelectorAll("[data-media]").forEach((button) => {
+      const active = button.dataset.media === state.mediaFilter;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  function saveScrollPosition() {
+    try {
+      sessionStorage.setItem("pose.gallery.scroll", String(Math.max(0, Math.round(scrollY))));
+    } catch {}
+  }
+
+  function restoreScrollPosition() {
+    try {
+      const saved = Number(sessionStorage.getItem("pose.gallery.scroll"));
+      if (Number.isFinite(saved) && saved > 0) {
+        requestAnimationFrame(() => scrollTo({ top: saved, behavior: "auto" }));
+      }
+    } catch {}
+  }
+
+  function applyFilters({ resetPage = true, updateUrl = true, replaceUrl = false } = {}) {
     const query = state.search.toLowerCase().trim();
     state.visible = state.collections.filter((collection) => {
       const categoryMatch =
@@ -413,8 +471,12 @@
       const bTime = b.date?.valueOf() || 0;
       return state.sort === "oldest" ? aTime - bTime : bTime - aTime;
     });
-    state.albumPage = 1;
+    if (resetPage) state.albumPage = 1;
+    const pages = Math.max(1, Math.ceil(state.visible.length / albumPageSize()));
+    state.albumPage = Math.min(Math.max(state.albumPage, 1), pages);
     render();
+    syncControlsFromState();
+    if (updateUrl) writeUrlState({ replace: replaceUrl });
   }
 
   function collectionMarkup(collection, index) {
@@ -429,7 +491,7 @@
       <article class="event-card">
         <button class="event-card__button" type="button" data-collection-index="${index}" aria-label="${escapeAttr(label)}">
           <span class="event-card__cover">
-            ${cover ? `<img src="${escapeAttr(cover)}" alt="${escapeAttr(`${collection.title} event thumbnail`)}" loading="${index < 3 ? "eager" : "lazy"}" decoding="async">` : `<span class="event-card__placeholder">POSE</span>`}
+            ${cover ? `<img src="${escapeAttr(cover)}" alt="${escapeAttr(`${collection.title} event thumbnail`)}" loading="${index < 4 ? "eager" : "lazy"}" decoding="async" fetchpriority="${index < 2 ? "high" : "auto"}" onerror="this.hidden=true;this.nextElementSibling?.classList.add('is-visible')"><span class="event-card__image-fallback" aria-hidden="true">POSE</span>` : `<span class="event-card__placeholder">POSE</span>`}
             <span class="event-card__shade"></span>
             <span class="event-card__type">${escapeHtml(categoryLabel(collection.category))}</span>
             <span class="event-card__title"><strong title="${escapeAttr(collection.title)}">${escapeHtml(collection.title)}</strong></span>
@@ -471,11 +533,6 @@
     els.eventFilters.querySelectorAll("[data-event]").forEach((button) =>
       button.addEventListener("click", () => {
         state.eventFilter = button.dataset.event;
-        els.eventFilters.querySelectorAll("[data-event]").forEach((item) => {
-          const active = item === button;
-          item.classList.toggle("is-active", active);
-          item.setAttribute("aria-pressed", String(active));
-        });
         applyFilters();
       }),
     );
@@ -717,10 +774,16 @@
   }
 
   async function openViewer(collection, index = 0) {
+    saveScrollPosition();
     if (collection.locked) {
       state.pendingCollection = collection;
       els.pinError.textContent = "";
       els.pinInput.value = "";
+      els.pinInput.type = "password";
+      if (els.pinToggle) {
+        els.pinToggle.textContent = "Show";
+        els.pinToggle.setAttribute("aria-pressed", "false");
+      }
       els.pinDialog.showModal();
       setTimeout(() => els.pinInput.focus(), 50);
       return;
@@ -856,16 +919,31 @@
   async function unlockPendingEvent() {
     const collection = state.pendingCollection;
     if (!collection) return;
+    const now = Date.now();
+    if (state.pinCooldownUntil > now) {
+      const seconds = Math.ceil((state.pinCooldownUntil - now) / 1000);
+      els.pinError.textContent = `Too many attempts. Try again in ${seconds}s.`;
+      return;
+    }
     els.pinSubmit.disabled = true;
     els.pinSubmit.textContent = "Checking…";
     els.pinError.textContent = "";
     try {
       await ensureCollectionLoaded(collection, els.pinInput.value);
+      state.failedPinAttempts = 0;
+      state.pinCooldownUntil = 0;
       els.pinDialog.close();
       render();
       await openViewer(collection, 0);
     } catch (error) {
-      els.pinError.textContent = error.message || "That PIN is not correct.";
+      state.failedPinAttempts += 1;
+      if (state.failedPinAttempts >= 5) {
+        state.pinCooldownUntil = Date.now() + 30000;
+        state.failedPinAttempts = 0;
+        els.pinError.textContent = "Too many incorrect attempts. Please wait 30 seconds.";
+      } else {
+        els.pinError.textContent = error.message || "That PIN is not correct.";
+      }
       els.pinInput.select();
     } finally {
       els.pinSubmit.disabled = false;
@@ -917,7 +995,13 @@
       if (!state.collections.length)
         throw new Error("Gallery is currently empty");
       renderEventFilters();
-      applyFilters();
+      readUrlState();
+      if (!els.eventFilters.querySelector(`[data-event="${CSS.escape(state.eventFilter)}"]`)) {
+        state.eventFilter = "all";
+      }
+      syncControlsFromState();
+      applyFilters({ resetPage: false, updateUrl: true, replaceUrl: true });
+      restoreScrollPosition();
     } catch (error) {
       const message =
         error && error.name === "AbortError"
@@ -956,14 +1040,12 @@
       return;
     }
     state.eventFilter = "all";
+    state.mediaFilter = "all";
+    state.sort = "newest";
     state.search = "";
-    els.search.value = "";
-    els.eventFilters.querySelectorAll("[data-event]").forEach((button) => {
-      const active = button.dataset.event === "all";
-      button.classList.toggle("is-active", active);
-      button.setAttribute("aria-pressed", String(active));
-    });
-    applyFilters();
+    state.albumPage = 1;
+    syncControlsFromState();
+    applyFilters({ resetPage: true, updateUrl: true });
   }
 
   function initInteractions() {
@@ -986,7 +1068,7 @@
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => {
         state.search = els.search.value;
-        applyFilters();
+        applyFilters({ resetPage: true, updateUrl: true, replaceUrl: true });
       }, 140);
     });
     els.sort.addEventListener("change", () => {
@@ -997,12 +1079,14 @@
       const button = event.target.closest("[data-media]");
       if (!button) return;
       state.mediaFilter = button.dataset.media;
-      els.mediaFilter.querySelectorAll("[data-media]").forEach((item) => {
-        const active = item === button;
-        item.classList.toggle("is-active", active);
-        item.setAttribute("aria-pressed", String(active));
-      });
       applyFilters();
+    });
+    els.pinToggle?.addEventListener("click", () => {
+      const show = els.pinInput.type === "password";
+      els.pinInput.type = show ? "text" : "password";
+      els.pinToggle.textContent = show ? "Hide" : "Show";
+      els.pinToggle.setAttribute("aria-pressed", String(show));
+      els.pinInput.focus();
     });
     els.pinForm.addEventListener("submit", (event) => {
       if (event.submitter?.value === "cancel") return;
@@ -1025,6 +1109,13 @@
       if (!els.viewer.open) return;
       if (event.key === "ArrowLeft") moveViewer(-1);
       if (event.key === "ArrowRight") moveViewer(1);
+      if (event.key === "Escape") closeViewer();
+    });
+    addEventListener("pagehide", saveScrollPosition);
+    addEventListener("popstate", () => {
+      readUrlState();
+      syncControlsFromState();
+      applyFilters({ resetPage: false, updateUrl: false });
     });
 
     let touchStart = 0;

@@ -1945,3 +1945,104 @@ button {
     gap: 0.3rem;
   }
 }
+
+/* Gallery performance/polish additions */
+.event-card__image-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.38);
+  background: linear-gradient(135deg, #171717, #343434);
+  font-size: clamp(2.4rem, 5vw, 4.6rem);
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+.event-card__image-fallback.is-visible {
+  display: grid;
+}
+
+.pin-field {
+  position: relative;
+  display: block !important;
+  margin: 0 !important;
+}
+.pin-field input {
+  padding-right: 4.4rem;
+}
+.pin-field__toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  min-width: 3.35rem;
+  min-height: 2.35rem;
+  padding: 0 0.7rem;
+  border: 0;
+  border-radius: 0.6rem;
+  transform: translateY(-50%);
+  color: var(--ink);
+  background: #f1f1f3;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.pin-field__toggle:focus-visible,
+.event-filter:focus-visible,
+.media-filter button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+@media (max-width: 680px) {
+  .event-collection-grid,
+  .collection-loading {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+  .event-card__title strong {
+    font-size: clamp(1rem, 4.2vw, 1.3rem);
+  }
+  .event-card__title {
+    left: 0.8rem;
+    right: 0.8rem;
+    bottom: 0.8rem;
+  }
+  .event-card__type {
+    top: 0.55rem;
+    left: 0.55rem;
+    padding: 0.32rem 0.48rem;
+    font-size: 0.52rem;
+  }
+  .event-card__footer {
+    min-height: 4.2rem;
+    display: block;
+  }
+  .event-card__meta {
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    font-size: 0.62rem;
+  }
+  .event-card__cta {
+    display: inline-block;
+    margin-top: 0.25rem;
+  }
+  .collection-loading .skeleton:not(:first-child) {
+    display: block;
+  }
+  .collection-loading .skeleton:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .event-collection-grid,
+  .collection-loading {
+    grid-template-columns: 1fr;
+  }
+  .event-card__title strong {
+    font-size: 1.45rem;
+  }
+  .collection-loading .skeleton:nth-child(n + 3) {
+    display: none;
+  }
+}
