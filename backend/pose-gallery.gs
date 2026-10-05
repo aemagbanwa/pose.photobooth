@@ -335,7 +335,7 @@ function doPost(request) {
     return jsonResponse_({ ok: false, code: 'BAD_REQUEST', message: 'Unsupported request.' });
   } catch (error) {
     console.error(error);
-    return jsonResponse_({ ok: false, code: 'BAD_REQUEST', message: 'Unable to update the gallery PIN.' });
+    return jsonResponse_({ ok: false, code: 'BAD_REQUEST', message: 'Unable to process the gallery request: ' + error.message });
   }
 }
 
@@ -682,64 +682,65 @@ function adminUpdateEvent_(body) {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    // Re-apply/migrate the current sheet schema before every admin write. This
-    // makes upgrades safe even if setupGalleryConfig() was not re-run.
     const sheet = prepareConfigSheet_(spreadsheet);
     if (sheet.getLastRow() < 2) return jsonResponse_({ok:false, message:'No events are configured.'});
 
-    const vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, CONFIG_HEADERS.length).getValues();
+    const columns = configColumnMap_(sheet);
+    const folderColumn = columns['Folder ID'];
+    const ids = sheet.getRange(2, folderColumn, sheet.getLastRow() - 1, 1).getDisplayValues();
     let row = 0;
-    let current = null;
-    for (let i = 0; i < vals.length; i += 1) {
-      if (String(vals[i][0] || '').trim() === id) {
-        row = i + 2;
-        current = vals[i].slice();
-        break;
-      }
+    for (let i = 0; i < ids.length; i += 1) {
+      if (String(ids[i][0] || '').trim() === id) { row = i + 2; break; }
     }
-    if (!row || !current) return jsonResponse_({ok:false, code:'EVENT_NOT_FOUND', message:'Event not found.'});
+    if (!row) return jsonResponse_({ok:false, code:'EVENT_NOT_FOUND', message:'Event not found.'});
 
+    const currentPinHash = String(sheet.getRange(row, columns['PIN Hash']).getDisplayValue() || '').trim();
+    const currentPinEnabled = checkboxValue_(sheet.getRange(row, columns['PIN Enabled']).getValue());
+    const currentDownloadsValue = sheet.getRange(row, columns['Downloads Enabled']).getValue();
+    const currentDownloads = currentDownloadsValue === '' ? true : checkboxValue_(currentDownloadsValue);
+    const currentPublishedValue = sheet.getRange(row, columns['Published']).getValue();
+    const currentPublished = currentPublishedValue === '' ? true : checkboxValue_(currentPublishedValue);
+
+    const pinEnabled = adminBoolean_(body.pinEnabled, currentPinEnabled);
+    const downloadsEnabled = adminBoolean_(body.downloadsEnabled, currentDownloads);
+    const published = adminBoolean_(body.published, currentPublished);
     const expires = String(body.expires || '').trim();
     const coverFileId = String(body.coverFileId || '').trim();
-    const pinEnabled = adminBoolean_(body.pinEnabled, checkboxValue_(current[4]));
-    const downloadsEnabled = adminBoolean_(body.downloadsEnabled, current[5] === '' ? true : checkboxValue_(current[5]));
-    const published = adminBoolean_(body.published, current[12] === '' ? true : checkboxValue_(current[12]));
     const newPin = String(body.newPin || '').trim();
 
     if (newPin && (newPin.length < 4 || newPin.length > 32)) {
       return jsonResponse_({ok:false, code:'INVALID_PIN', message:'PIN must contain 4–32 characters.'});
     }
-    const existingPinHash = String(current[3] || '');
-    if (pinEnabled && !newPin && !existingPinHash) {
+    if (pinEnabled && !newPin && !currentPinHash) {
       return jsonResponse_({ok:false, code:'PIN_REQUIRED', message:'Set a PIN before enabling PIN protection.'});
     }
 
-    // Write the complete row once. This avoids partial saves when several
-    // checkboxes are changed together and keeps their values as real booleans.
-    if (newPin) current[3] = hashPin_(newPin);   // D: PIN Hash
-    current[4] = pinEnabled;                    // E: PIN Enabled
-    current[5] = downloadsEnabled;              // F: Downloads Enabled
-    current[6] = expires;                       // G: Expiry Date
-    current[7] = coverFileId;                   // H: Cover File ID
-    current[8] = new Date();                    // I: Updated At
-    current[12] = published;                    // M: Published
-
-    sheet.getRange(row, 1, 1, CONFIG_HEADERS.length).setValues([current]);
+    // Write each admin setting to its named column. This avoids any dependence
+    // on column position and prevents unrelated values from being overwritten.
+    if (newPin) sheet.getRange(row, columns['PIN Hash']).setValue(hashPin_(newPin));
+    sheet.getRange(row, columns['PIN Enabled']).setValue(pinEnabled);
+    sheet.getRange(row, columns['Downloads Enabled']).setValue(downloadsEnabled);
+    sheet.getRange(row, columns['Expiry Date']).setValue(expires || '');
+    sheet.getRange(row, columns['Cover File ID']).setValue(coverFileId);
+    sheet.getRange(row, columns['Updated At']).setValue(new Date());
+    sheet.getRange(row, columns['Published']).setValue(published);
     SpreadsheetApp.flush();
 
-    // Read the row back from Sheets. A successful response now means the
-    // persisted values were actually verified, not merely queued for writing.
-    const saved = sheet.getRange(row, 1, 1, CONFIG_HEADERS.length).getValues()[0];
-    const savedPinEnabled = checkboxValue_(saved[4]);
-    const savedDownloadsEnabled = saved[5] === '' ? true : checkboxValue_(saved[5]);
-    const savedPublished = saved[12] === '' ? true : checkboxValue_(saved[12]);
+    // Read directly back from the exact cells that were written.
+    const savedPinEnabled = checkboxValue_(sheet.getRange(row, columns['PIN Enabled']).getValue());
+    const savedDownloadsRaw = sheet.getRange(row, columns['Downloads Enabled']).getValue();
+    const savedDownloadsEnabled = savedDownloadsRaw === '' ? true : checkboxValue_(savedDownloadsRaw);
+    const savedPublishedRaw = sheet.getRange(row, columns['Published']).getValue();
+    const savedPublished = savedPublishedRaw === '' ? true : checkboxValue_(savedPublishedRaw);
+    const savedExpires = dateValue_(sheet.getRange(row, columns['Expiry Date']).getValue());
+    const savedCoverFileId = String(sheet.getRange(row, columns['Cover File ID']).getDisplayValue() || '').trim();
 
     if (savedPinEnabled !== pinEnabled || savedDownloadsEnabled !== downloadsEnabled || savedPublished !== published) {
-      console.error('Admin save verification failed for event ' + id);
       return jsonResponse_({
         ok:false,
         code:'SAVE_VERIFY_FAILED',
-        message:'The settings could not be verified after saving. Please try again.'
+        message:'Settings were written but did not read back correctly.',
+        debug:{requested:{published:published,pinEnabled:pinEnabled,downloadsEnabled:downloadsEnabled},saved:{published:savedPublished,pinEnabled:savedPinEnabled,downloadsEnabled:savedDownloadsEnabled},row:row}
       });
     }
 
@@ -754,8 +755,8 @@ function adminUpdateEvent_(body) {
         pinEnabled:savedPinEnabled,
         downloadsEnabled:savedDownloadsEnabled,
         published:savedPublished,
-        expires:dateValue_(saved[6]),
-        coverFileId:String(saved[7] || '').trim()
+        expires:savedExpires,
+        coverFileId:savedCoverFileId
       }
     });
   } catch (error) {
@@ -905,16 +906,38 @@ function prepareConfigSheet_(spreadsheet) {
   if (sheet.getMaxColumns() < CONFIG_HEADERS.length) {
     sheet.insertColumnsAfter(sheet.getMaxColumns(), CONFIG_HEADERS.length - sheet.getMaxColumns());
   }
+
+  // Keep the schema current without using insertCheckboxes() on whole columns.
+  // insertCheckboxes() can replace existing checkbox values in some sheets;
+  // data validation is applied instead so TRUE/FALSE values are preserved.
   sheet.getRange(1, 1, 1, CONFIG_HEADERS.length).setValues([CONFIG_HEADERS]);
   sheet.setFrozenRows(1);
-  sheet.getRange('E2:F').insertCheckboxes();
-  sheet.getRange('L2:M').insertCheckboxes();
+
+  const checkboxRule = SpreadsheetApp.newDataValidation().requireCheckbox().build();
+  const maxDataRows = Math.max(sheet.getMaxRows() - 1, 1);
+  sheet.getRange(2, 5, maxDataRows, 2).setDataValidation(checkboxRule);   // E:F
+  sheet.getRange(2, 12, maxDataRows, 2).setDataValidation(checkboxRule); // L:M
+
   sheet.getRange('G2:G').setNumberFormat('yyyy-mm-dd');
   sheet.getRange('I2:I').setNumberFormat('yyyy-mm-dd hh:mm:ss');
-  sheet.hideColumns(4);
-  sheet.hideColumns(11);
+  try { sheet.hideColumns(4); } catch (_) {}
+  try { sheet.hideColumns(11); } catch (_) {}
   sheet.autoResizeColumns(1, CONFIG_HEADERS.length);
   return sheet;
+}
+
+function configColumnMap_(sheet) {
+  const width = Math.max(sheet.getLastColumn(), CONFIG_HEADERS.length);
+  const headers = sheet.getRange(1, 1, 1, width).getDisplayValues()[0];
+  const map = {};
+  headers.forEach(function (name, index) {
+    const key = String(name || '').trim();
+    if (key && !map[key]) map[key] = index + 1;
+  });
+  CONFIG_HEADERS.forEach(function (name, index) {
+    if (!map[name]) map[name] = index + 1;
+  });
+  return map;
 }
 
 function syncConfigRows_(sheet) {
