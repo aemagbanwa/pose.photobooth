@@ -6,7 +6,23 @@ const PIN_SALT_PROPERTY = 'POSE_GALLERY_PIN_SALT';
 const MANAGE_SALT_PROPERTY = 'POSE_GALLERY_MANAGE_SALT';
 const CLIENT_MANAGE_URL = 'https://poseph.com/gallery/manage/';
 const CONFIG_SHEET_NAME = 'Events';
-const GALLERY_CACHE_KEY = 'pose-gallery-index-v8';
+const GALLERY_CACHE_KEY = 'pose-gallery-index-v9';
+const INDEX_SHEET_NAME = 'Gallery Index';
+const INDEX_HEADERS = [
+  'Folder ID',
+  'Slug',
+  'Event Name',
+  'Event Date',
+  'Event Type',
+  'Item Count',
+  'Photo Count',
+  'Video Count',
+  'Cover File ID',
+  'Cover URL',
+  'Updated At'
+];
+const PIN_RATE_LIMIT_ATTEMPTS = 5;
+const PIN_RATE_LIMIT_SECONDS = 60;
 let requestConfigMemo_;
 const CONFIG_HEADERS = [
   'Folder ID',
@@ -25,45 +41,280 @@ const CONFIG_HEADERS = [
 
 function doGet(request) {
   try {
-    // Apps Script deployments and installable triggers can have separate cache
-    // state. Read the private Sheet once per request so PIN changes are always
-    // authoritative, while still avoiding one Sheet read per event folder.
     requestConfigMemo_ = undefined;
     const params = (request && request.parameter) || {};
+
     if (params.manage === '1' && params.token) return managementEvent_(params.token);
     if (params.eventId) return unlockEvent_(params.eventId, params.pin || '', params);
+    if (params.slug) return eventBySlug_(params.slug);
 
-    const cache = CacheService.getScriptCache();
-    const cached = params.refresh === '1' ? null : cache.get(GALLERY_CACHE_KEY);
-    if (cached) return jsonResponse_(JSON.parse(cached));
-
-    const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
-    const events = [];
-    const folders = root.getFolders();
-    while (folders.hasNext()) {
-      const event = buildEvent_(folders.next(), false, false);
-      if (event && event.itemCount) events.push(event);
-    }
-
-    const rootItems = readMedia_(root, false);
-    if (rootItems.length) {
-      events.push(eventPayload_({ folder: root, details: { eventName: 'Recent celebrations', eventDate: '' }, settings: { pinEnabled: false, downloadsEnabled: true }, items: rootItems, protectedView: false, includeItems: false }));
-    }
-
-    events.sort(function (a, b) { return String(b.eventDate).localeCompare(String(a.eventDate)); });
-    const payload = { ok: true, updatedAt: new Date().toISOString(), events: events };
-    // Apps Script cache entries are limited in size. A gallery with many photos
-    // can exceed that limit, but caching must never make a valid feed fail.
-    try {
-      cache.put(GALLERY_CACHE_KEY, JSON.stringify(payload), CACHE_SECONDS);
-    } catch (cacheError) {
-      console.warn('POSE gallery cache skipped: ' + cacheError.message);
-    }
-    return jsonResponse_(payload);
+    return galleryIndexResponse_(params);
   } catch (error) {
     console.error(error);
-    return jsonResponse_({ ok: false, updatedAt: new Date().toISOString(), events: [], message: 'The gallery is temporarily unavailable.' });
+    return jsonResponse_({
+      ok: false,
+      updatedAt: new Date().toISOString(),
+      events: [],
+      message: 'The gallery is temporarily unavailable.'
+    });
   }
+}
+
+function galleryIndexResponse_(params) {
+  params = params || {};
+  const limitRaw = Number(params.limit || 12);
+  const limit = Math.min(Math.max(Number.isFinite(limitRaw) ? Math.floor(limitRaw) : 12, 4), 48);
+  const pageRaw = Number(params.page || 1);
+  const page = Math.max(1, Number.isFinite(pageRaw) ? Math.floor(pageRaw) : 1);
+  const category = String(params.category || 'all').toLowerCase();
+  const media = String(params.media || 'all').toLowerCase();
+  const sort = String(params.sort || 'newest').toLowerCase();
+  const query = String(params.q || '').trim().toLowerCase().slice(0, 120);
+
+  let rows = readGalleryIndex_();
+  if (!rows.length) {
+    refreshGalleryIndex();
+    rows = readGalleryIndex_();
+  }
+
+  const now = new Date();
+  const config = galleryConfig_() || {};
+  const visible = rows.filter(function (row) {
+    const settings = config[row.id] || {};
+    if (settings.expires && new Date(settings.expires + 'T23:59:59') < now) return false;
+    if (category !== 'all' && row.eventType !== category) return false;
+    if (media === 'image' && row.photoCount < 1) return false;
+    if (media === 'video' && row.videoCount < 1) return false;
+    if (query && (row.eventName + ' ' + row.eventType).toLowerCase().indexOf(query) === -1) return false;
+    return row.itemCount > 0;
+  });
+
+  visible.sort(function (a, b) {
+    if (sort === 'name') return a.eventName.localeCompare(b.eventName);
+    const compare = String(a.eventDate || '').localeCompare(String(b.eventDate || ''));
+    return sort === 'oldest' ? compare : -compare;
+  });
+
+  const totalEvents = visible.length;
+  const totalItems = visible.reduce(function (sum, row) { return sum + row.itemCount; }, 0);
+  const totalPages = Math.max(1, Math.ceil(totalEvents / limit));
+  const safePage = Math.min(page, totalPages);
+  const start = (safePage - 1) * limit;
+  const pageRows = visible.slice(start, start + limit);
+
+  const facets = {};
+  rows.forEach(function (row) {
+    if (row.itemCount < 1) return;
+    facets[row.eventType] = (facets[row.eventType] || 0) + 1;
+  });
+
+  const events = pageRows.map(function (row) {
+    const settings = row.id === ROOT_FOLDER_ID
+      ? { pinEnabled: false, downloadsEnabled: true }
+      : settingsFor_(row.id);
+    return {
+      id: row.id,
+      slug: row.slug,
+      eventName: row.eventName,
+      eventDate: row.eventDate,
+      eventType: row.eventType,
+      locked: Boolean(settings.pinEnabled),
+      downloadsEnabled: settings.downloadsEnabled !== false,
+      coverUrl: row.coverUrl,
+      itemCount: row.itemCount,
+      photoCount: row.photoCount,
+      videoCount: row.videoCount,
+      items: []
+    };
+  });
+
+  return jsonResponse_({
+    ok: true,
+    updatedAt: new Date().toISOString(),
+    events: events,
+    pagination: {
+      page: safePage,
+      limit: limit,
+      totalEvents: totalEvents,
+      totalItems: totalItems,
+      totalPages: totalPages,
+      hasPrevious: safePage > 1,
+      hasNext: safePage < totalPages
+    },
+    facets: facets
+  });
+}
+
+function eventBySlug_(slug) {
+  slug = slugify_(slug);
+  if (!slug) return jsonResponse_({ ok: false, code: 'EVENT_NOT_FOUND', message: 'That event could not be found.' });
+  const rows = readGalleryIndex_();
+  const row = rows.find(function (item) { return item.slug === slug; });
+  if (!row) return jsonResponse_({ ok: false, code: 'EVENT_NOT_FOUND', message: 'That event could not be found.' });
+  const settings = row.id === ROOT_FOLDER_ID
+    ? { pinEnabled: false, downloadsEnabled: true }
+    : settingsFor_(row.id);
+  return jsonResponse_({
+    ok: true,
+    event: {
+      id: row.id,
+      slug: row.slug,
+      eventName: row.eventName,
+      eventDate: row.eventDate,
+      eventType: row.eventType,
+      locked: Boolean(settings.pinEnabled),
+      downloadsEnabled: settings.downloadsEnabled !== false,
+      coverUrl: row.coverUrl,
+      itemCount: row.itemCount,
+      photoCount: row.photoCount,
+      videoCount: row.videoCount,
+      items: []
+    }
+  });
+}
+
+function prepareIndexSheet_(spreadsheet) {
+  let sheet = spreadsheet.getSheetByName(INDEX_SHEET_NAME);
+  if (!sheet) sheet = spreadsheet.insertSheet(INDEX_SHEET_NAME);
+  sheet.getRange(1, 1, 1, INDEX_HEADERS.length).setValues([INDEX_HEADERS]);
+  sheet.setFrozenRows(1);
+  sheet.getRange('K2:K').setNumberFormat('yyyy-mm-dd hh:mm:ss');
+  sheet.autoResizeColumns(1, INDEX_HEADERS.length);
+  return sheet;
+}
+
+function refreshGalleryIndex() {
+  const spreadsheet = configSpreadsheet_();
+  if (!spreadsheet) throw new Error('Gallery configuration spreadsheet is unavailable.');
+  const sheet = prepareIndexSheet_(spreadsheet);
+  const rows = [];
+  const root = DriveApp.getFolderById(ROOT_FOLDER_ID);
+
+  const folders = root.getFolders();
+  while (folders.hasNext()) {
+    const folder = folders.next();
+    const indexed = buildIndexRow_(folder, false);
+    if (indexed) rows.push(indexed);
+  }
+
+  const rootIndexed = buildIndexRow_(root, true);
+  if (rootIndexed && rootIndexed[5] > 0) rows.push(rootIndexed);
+
+  rows.sort(function (a, b) { return String(b[3] || '').localeCompare(String(a[3] || '')); });
+  const oldRows = Math.max(0, sheet.getLastRow() - 1);
+  if (oldRows) sheet.getRange(2, 1, oldRows, INDEX_HEADERS.length).clearContent();
+  if (rows.length) sheet.getRange(2, 1, rows.length, INDEX_HEADERS.length).setValues(rows);
+  clearGalleryCache_();
+  SpreadsheetApp.flush();
+  return rows.length;
+}
+
+function buildIndexRow_(folder, isRoot) {
+  const id = folder.getId();
+  const settings = isRoot
+    ? { coverFileId: '', expires: '' }
+    : settingsFor_(id);
+  if (!isRoot && settings.expires && new Date(settings.expires + 'T23:59:59') < new Date()) return null;
+
+  const details = isRoot
+    ? { eventName: 'Recent celebrations', eventDate: '' }
+    : parseEventFolder_(folder.getName());
+  const items = readMedia_(folder, false);
+  const photoCount = items.filter(function (item) { return item.mediaType === 'image'; }).length;
+  const videoCount = items.length - photoCount;
+  const cover = selectCover_(items, settings.coverFileId);
+  const slug = uniqueSlugForFolder_(details.eventName, details.eventDate, id);
+  return [
+    id,
+    slug,
+    details.eventName,
+    details.eventDate,
+    detectEventType_(details.eventName),
+    items.length,
+    photoCount,
+    videoCount,
+    cover ? cover.id : '',
+    cover ? driveThumbnailUrl_(cover.id, 640) : '',
+    new Date()
+  ];
+}
+
+function readGalleryIndex_() {
+  const spreadsheet = configSpreadsheet_();
+  if (!spreadsheet) return [];
+  const sheet = spreadsheet.getSheetByName(INDEX_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, INDEX_HEADERS.length).getValues();
+  return values.map(function (row) {
+    return {
+      id: String(row[0] || ''),
+      slug: String(row[1] || ''),
+      eventName: String(row[2] || ''),
+      eventDate: dateValue_(row[3]),
+      eventType: String(row[4] || 'other'),
+      itemCount: Number(row[5] || 0),
+      photoCount: Number(row[6] || 0),
+      videoCount: Number(row[7] || 0),
+      coverFileId: String(row[8] || ''),
+      coverUrl: String(row[9] || ''),
+      updatedAt: row[10] ? String(row[10]) : ''
+    };
+  }).filter(function (row) { return row.id && row.eventName; });
+}
+
+function uniqueSlugForFolder_(eventName, eventDate, folderId) {
+  const base = slugify_((eventDate ? eventDate + '-' : '') + eventName);
+  const suffix = String(folderId || '').slice(-6).toLowerCase();
+  return (base || 'event') + '-' + suffix;
+}
+
+function slugify_(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 110);
+}
+
+function pinRateKey_(folderId, clientKey) {
+  const safeClient = String(clientKey || 'anonymous').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
+  return 'pose-pin-rate-' + String(folderId).slice(-12) + '-' + safeClient;
+}
+
+function pinRateState_(folderId, clientKey) {
+  const cache = CacheService.getScriptCache();
+  const key = pinRateKey_(folderId, clientKey);
+  const raw = cache.get(key);
+  if (!raw) return { attempts: 0, blockedUntil: 0, key: key };
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      attempts: Number(parsed.attempts || 0),
+      blockedUntil: Number(parsed.blockedUntil || 0),
+      key: key
+    };
+  } catch (error) {
+    return { attempts: 0, blockedUntil: 0, key: key };
+  }
+}
+
+function recordPinFailure_(folderId, clientKey) {
+  const cache = CacheService.getScriptCache();
+  const state = pinRateState_(folderId, clientKey);
+  state.attempts += 1;
+  if (state.attempts >= PIN_RATE_LIMIT_ATTEMPTS) {
+    state.blockedUntil = Date.now() + PIN_RATE_LIMIT_SECONDS * 1000;
+    state.attempts = 0;
+  }
+  cache.put(state.key, JSON.stringify({
+    attempts: state.attempts,
+    blockedUntil: state.blockedUntil
+  }), PIN_RATE_LIMIT_SECONDS);
+  return state;
+}
+
+function clearPinFailures_(folderId, clientKey) {
+  CacheService.getScriptCache().remove(pinRateKey_(folderId, clientKey));
 }
 
 function doPost(request) {
@@ -178,11 +429,33 @@ function unlockEvent_(folderId, suppliedPin, params) {
   const settings = isRootFolder
     ? { pinEnabled: false, coverFileId: '', downloadsEnabled: true, expires: '' }
     : settingsFor_(folderId);
-  if (settings.pinEnabled && (!settings.pinHash || !secureEquals_(hashPin_(suppliedPin), settings.pinHash))) {
-    return jsonResponse_({ ok: false, code: 'INVALID_PIN', message: 'That PIN is not correct.' });
+  params = params || {};
+  const clientKey = String(params.clientKey || '');
+  if (settings.pinEnabled) {
+    const rate = pinRateState_(folderId, clientKey);
+    if (rate.blockedUntil > Date.now()) {
+      return jsonResponse_({
+        ok: false,
+        code: 'RATE_LIMITED',
+        retryAfter: Math.max(1, Math.ceil((rate.blockedUntil - Date.now()) / 1000)),
+        message: 'Too many incorrect PIN attempts. Please try again shortly.'
+      });
+    }
+    if (!settings.pinHash || !secureEquals_(hashPin_(suppliedPin), settings.pinHash)) {
+      const failed = recordPinFailure_(folderId, clientKey);
+      if (failed.blockedUntil > Date.now()) {
+        return jsonResponse_({
+          ok: false,
+          code: 'RATE_LIMITED',
+          retryAfter: PIN_RATE_LIMIT_SECONDS,
+          message: 'Too many incorrect PIN attempts. Please try again shortly.'
+        });
+      }
+      return jsonResponse_({ ok: false, code: 'INVALID_PIN', message: 'That PIN is not correct.' });
+    }
+    clearPinFailures_(folderId, clientKey);
   }
 
-  params = params || {};
   const requestedLimit = Number(params.limit || 30);
   const limit = Math.min(Math.max(Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 30, 12), 60);
   const tokenOffset = Number(params.pageToken || '');
@@ -225,6 +498,11 @@ function paginatedEvent_(folder, settings, offset, limit) {
   const cover = selectCover_(allItems, settings.coverFileId);
   return {
     id: folder.getId(),
+    slug: uniqueSlugForFolder_(
+      isRootFolder ? 'Recent celebrations' : parseEventFolder_(folder.getName()).eventName,
+      isRootFolder ? '' : parseEventFolder_(folder.getName()).eventDate,
+      folder.getId()
+    ),
     eventName: isRootFolder ? 'Recent celebrations' : parseEventFolder_(folder.getName()).eventName,
     eventDate: isRootFolder ? '' : parseEventFolder_(folder.getName()).eventDate,
     eventType: detectEventType_(isRootFolder ? 'Recent celebrations' : parseEventFolder_(folder.getName()).eventName),
@@ -336,6 +614,22 @@ function setupGalleryConfig() {
   } finally {
     lock.releaseLock();
   }
+}
+
+
+/**
+ * Run once after deploying this version. It builds the lightweight gallery
+ * index and installs a time-based refresh every 10 minutes.
+ */
+function setupGalleryIndex() {
+  refreshGalleryIndex();
+  const exists = ScriptApp.getProjectTriggers().some(function (trigger) {
+    return trigger.getHandlerFunction() === 'refreshGalleryIndex';
+  });
+  if (!exists) {
+    ScriptApp.newTrigger('refreshGalleryIndex').timeBased().everyMinutes(10).create();
+  }
+  return 'Gallery index ready.';
 }
 
 /** Run after adding Drive event folders so they appear in the config sheet. */
@@ -610,10 +904,11 @@ function parseEventFolder_(folderName) {
 
 function detectEventType_(eventName) {
   const name = String(eventName).toLowerCase();
-  if (/birthday|bday|\d+(st|nd|rd|th)/.test(name)) return 'birthday';
+  if (/dedication|christening|baptism|baptismal/.test(name)) return 'dedication';
   if (/wedding|nuptial|bride|groom/.test(name)) return 'wedding';
   if (/debut|18th/.test(name)) return 'debut';
   if (/corporate|company|year[- ]?end|christmas party|team/.test(name)) return 'corporate';
+  if (/birthday|bday|\d+(st|nd|rd|th)/.test(name)) return 'birthday';
   return 'other';
 }
 

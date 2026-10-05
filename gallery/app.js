@@ -16,6 +16,13 @@
     albumPage: 1,
     failedPinAttempts: 0,
     pinCooldownUntil: 0,
+    serverPagination: false,
+    totalEvents: 0,
+    totalItems: 0,
+    totalPages: 1,
+    facets: {},
+    listController: null,
+    sharedEventSlug: "",
   };
 
   const els = {
@@ -48,6 +55,7 @@
     viewerNext: document.querySelector("#viewer-next"),
     viewerStage: document.querySelector("#viewer-stage"),
     share: document.querySelector("#share-photo"),
+    shareAlbum: document.querySelector("#share-album"),
     download: document.querySelector("#download-media"),
     albumDownload: document.querySelector("#download-album"),
     pinDialog: document.querySelector("#pin-dialog"),
@@ -264,10 +272,11 @@
             ),
           ),
           title: details.name,
+          slug: String(value(entry, ["slug", "eventSlug", "event_slug"], "")),
           category: categoryFor(entry, details.name),
           date: date && !Number.isNaN(date.valueOf()) ? date : null,
           photos: items,
-          loaded: Boolean(mediaList),
+          loaded: items.length > 0,
           locked: Boolean(entry?.locked),
           downloadsEnabled: entry?.downloadsEnabled !== false,
           coverUrl: imageUrl(
@@ -333,10 +342,12 @@
   }
 
   function albumPageCount() {
+    if (state.serverPagination) return Math.max(1, Number(state.totalPages || 1));
     return Math.max(1, Math.ceil(state.visible.length / albumPageSize()));
   }
 
   function albumPageItems() {
+    if (state.serverPagination) return state.visible;
     const size = albumPageSize();
     const start = (state.albumPage - 1) * size;
     return state.visible.slice(start, start + size);
@@ -357,7 +368,9 @@
   function renderAlbumPagination() {
     if (!els.albumPagination) return;
     const totalPages = albumPageCount();
-    const shouldShow = state.visible.length > albumPageSize();
+    const shouldShow = state.serverPagination
+      ? albumPageCount() > 1
+      : state.visible.length > albumPageSize();
     els.albumPagination.hidden = !shouldShow;
     if (!shouldShow) {
       els.albumPagination.innerHTML = '';
@@ -385,8 +398,12 @@
         const page = Number(button.dataset.albumPage);
         if (!Number.isInteger(page) || page < 1 || page > totalPages || page === state.albumPage) return;
         state.albumPage = page;
-        render();
         writeUrlState();
+        if (state.serverPagination) {
+          loadGallery({ restoreScroll: false, preserveSharedEvent: true });
+        } else {
+          render();
+        }
         document.querySelector(".results-line")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
@@ -403,6 +420,7 @@
     state.sort = ["newest", "oldest", "name"].includes(sort) ? sort : "newest";
     state.search = String(params.get("q") || "").slice(0, 120);
     state.albumPage = Number.isInteger(page) && page > 0 ? page : 1;
+    state.sharedEventSlug = String(params.get("event") || "").trim().slice(0, 120);
   }
 
   function writeUrlState({ replace = false } = {}) {
@@ -412,6 +430,7 @@
     if (state.sort !== "newest") params.set("sort", state.sort);
     if (state.search.trim()) params.set("q", state.search.trim());
     if (state.albumPage > 1) params.set("page", String(state.albumPage));
+    if (state.sharedEventSlug) params.set("event", state.sharedEventSlug);
     const next = `${location.pathname}${params.toString() ? `?${params}` : ""}${location.hash || ""}`;
     history[replace ? "replaceState" : "pushState"]({ poseGallery: true }, "", next);
   }
@@ -447,6 +466,14 @@
   }
 
   function applyFilters({ resetPage = true, updateUrl = true, replaceUrl = false } = {}) {
+    if (resetPage) state.albumPage = 1;
+
+    if (state.serverPagination) {
+      if (updateUrl) writeUrlState({ replace: replaceUrl });
+      loadGallery({ restoreScroll: false, preserveSharedEvent: true });
+      return;
+    }
+
     const query = state.search.toLowerCase().trim();
     state.visible = state.collections.filter((collection) => {
       const categoryMatch =
@@ -471,7 +498,6 @@
       const bTime = b.date?.valueOf() || 0;
       return state.sort === "oldest" ? aTime - bTime : bTime - aTime;
     });
-    if (resetPage) state.albumPage = 1;
     const pages = Math.max(1, Math.ceil(state.visible.length / albumPageSize()));
     state.albumPage = Math.min(Math.max(state.albumPage, 1), pages);
     render();
@@ -517,9 +543,18 @@
       "corporate",
       "other",
     ];
-    const available = new Set(
-      state.collections.map((collection) => collection.category),
-    );
+
+    let available;
+    if (state.serverPagination && state.facets) {
+      available = new Set(
+        categoryOrder.filter((category) => Number(state.facets[category] || 0) > 0),
+      );
+    } else {
+      available = new Set(
+        state.collections.map((collection) => collection.category),
+      );
+    }
+
     els.eventFilters.innerHTML = [
       `<button class="event-filter is-active" type="button" data-event="all" aria-pressed="true">All events</button>`,
       ...categoryOrder
@@ -536,6 +571,7 @@
         applyFilters();
       }),
     );
+    syncControlsFromState();
   }
 
   function render() {
@@ -548,15 +584,16 @@
       const totalPages = albumPageCount();
       state.albumPage = Math.min(Math.max(state.albumPage, 1), totalPages);
       const size = albumPageSize();
-      const start = (state.albumPage - 1) * size;
+      const startIndex = state.serverPagination ? 0 : (state.albumPage - 1) * size;
       const pageItems = albumPageItems();
       els.grid.innerHTML = pageItems
-        .map((collection, pageIndex) => collectionMarkup(collection, start + pageIndex))
+        .map((collection, pageIndex) => collectionMarkup(collection, startIndex + pageIndex))
         .join("");
       els.grid.querySelectorAll("[data-collection-index]").forEach((button) => {
         button.addEventListener("click", () => {
-          const collection =
-            state.visible[Number(button.dataset.collectionIndex)];
+          const collection = state.serverPagination
+            ? state.visible[Number(button.dataset.collectionIndex)]
+            : state.visible[Number(button.dataset.collectionIndex)];
           openViewer(collection, 0);
         });
       });
@@ -564,14 +601,32 @@
 
     renderAlbumPagination();
 
-    const photoCount = state.visible.reduce(
-      (sum, collection) =>
-        sum + (collection.itemCount || collection.photos.length),
-      0,
-    );
+    const eventCount = state.serverPagination ? state.totalEvents : state.visible.length;
+    const itemCount = state.serverPagination
+      ? state.totalItems
+      : state.visible.reduce(
+          (sum, collection) =>
+            sum + (collection.itemCount || collection.photos.length),
+          0,
+        );
+
     els.count.textContent = hasResults
-      ? `${state.visible.length} ${state.visible.length === 1 ? "event" : "events"} · ${photoCount} ${photoCount === 1 ? "moment" : "photos & videos"}${state.visible.length > albumPageSize() ? ` · Page ${state.albumPage} of ${albumPageCount()}` : ""}`
+      ? `${eventCount} ${eventCount === 1 ? "event" : "events"} · ${itemCount} ${itemCount === 1 ? "moment" : "photos & videos"}${albumPageCount() > 1 ? ` · Page ${state.albumPage} of ${albumPageCount()}` : ""}`
       : "No matching events";
+  }
+
+  function preloadViewerNeighbors() {
+    const collection = state.currentCollection;
+    if (!collection?.photos?.length) return;
+    const indexes = [state.currentIndex - 1, state.currentIndex + 1]
+      .filter((index) => index >= 0 && index < collection.photos.length);
+    indexes.forEach((index) => {
+      const item = collection.photos[index];
+      if (!item || item.mediaType === "video" || !item.url) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = item.url;
+    });
   }
 
   function renderViewer() {
@@ -586,6 +641,22 @@
       els.viewerImage.hidden = isVideo;
       els.viewerVideo.hidden = !isVideo;
       els.viewerVideo.src = isVideo ? photo.preview : "about:blank";
+      els.viewerImage.dataset.retryCount = "0";
+      els.viewerImage.onerror = () => {
+        if (isVideo) return;
+        const attempts = Number(els.viewerImage.dataset.retryCount || "0");
+        if (attempts < 1) {
+          els.viewerImage.dataset.retryCount = "1";
+          setTimeout(() => {
+            const retryUrl = new URL(photo.url, location.href);
+            retryUrl.searchParams.set("_poseRetry", String(Date.now()));
+            els.viewerImage.src = retryUrl.toString();
+          }, 500);
+          return;
+        }
+        els.viewerImage.classList.remove("is-changing");
+        showToast("This image could not be loaded. Try the next photo.");
+      };
       els.viewerImage.src = isVideo ? "" : photo.url;
       els.viewerImage.alt =
         photo.description ||
@@ -625,6 +696,7 @@
       block: "nearest",
     });
     renderViewerPagination(collection);
+    preloadViewerNeighbors();
   }
 
   function pageSize() {
@@ -666,6 +738,24 @@
     collection.loadedCount = collection.photos.length;
   }
 
+  function clientKey() {
+    const storageKey = "pose.gallery.clientKey";
+    try {
+      let key = sessionStorage.getItem(storageKey);
+      if (!key) {
+        key =
+          (crypto?.randomUUID?.() ||
+            `pose-${Date.now()}-${Math.random().toString(36).slice(2, 14)}`)
+            .replace(/[^a-zA-Z0-9_-]/g, "")
+            .slice(0, 64);
+        sessionStorage.setItem(storageKey, key);
+      }
+      return key;
+    } catch {
+      return `pose-${Date.now()}`;
+    }
+  }
+
   async function fetchCollectionPage(collection, pin = "", reset = false) {
     const limit = pageSize();
     if (reset) {
@@ -690,6 +780,7 @@
     if (collection.nextPageToken) url.searchParams.set("pageToken", collection.nextPageToken);
     const activePin = pin || collection.accessPin || "";
     if (activePin) url.searchParams.set("pin", activePin);
+    url.searchParams.set("clientKey", clientKey());
 
     const response = await fetch(url, { cache: "no-store" });
     const payload = await response.json();
@@ -726,6 +817,7 @@
 
     collection.loaded = true;
     collection.locked = false;
+    if (event.slug) collection.slug = String(event.slug);
     if (activePin) collection.accessPin = activePin;
     collection.photoCount = Number(event.photoCount ?? collection.photoCount);
     collection.videoCount = Number(event.videoCount ?? collection.videoCount);
@@ -800,6 +892,10 @@
     }
     state.currentCollection = collection;
     state.currentIndex = index;
+    if (collection.slug) {
+      state.sharedEventSlug = collection.slug;
+      writeUrlState({ replace: true });
+    }
     renderViewer();
     document.body.classList.add("is-locked");
     els.viewer.showModal();
@@ -809,6 +905,10 @@
     if (els.viewer.open) els.viewer.close();
     els.viewerVideo.src = "about:blank";
     document.body.classList.remove("is-locked");
+    if (state.sharedEventSlug) {
+      state.sharedEventSlug = "";
+      writeUrlState({ replace: true });
+    }
   }
 
   async function moveViewer(direction) {
@@ -845,6 +945,32 @@
   function hideToast() {
     clearTimeout(showToast.timer);
     els.toast.classList.remove("is-visible");
+  }
+
+  function albumShareUrl(collection = state.currentCollection) {
+    const url = new URL(location.origin + location.pathname);
+    if (collection?.slug) url.searchParams.set("event", collection.slug);
+    return url.toString();
+  }
+
+  async function shareAlbum() {
+    const collection = state.currentCollection;
+    if (!collection) return;
+    const shareData = {
+      title: `${collection.title} — POSE Photobooth`,
+      text: `View ${collection.title} on the POSE Photobooth gallery.`,
+      url: albumShareUrl(collection),
+    };
+    try {
+      if (navigator.share) await navigator.share(shareData);
+      else {
+        await navigator.clipboard.writeText(shareData.url);
+        showToast("Album link copied");
+      }
+    } catch (error) {
+      if (error?.name !== "AbortError")
+        showToast("Sharing is unavailable right now");
+    }
   }
 
   async function shareCurrent() {
@@ -968,15 +1094,33 @@
     return escapeHtml(value);
   }
 
-  async function loadGallery() {
+  async function loadGallery({ restoreScroll = false, preserveSharedEvent = true } = {}) {
     if (!config.endpoint) return showLoadError();
+
+    if (state.listController) state.listController.abort();
     const controller = new AbortController();
+    state.listController = controller;
+
+    els.loading.hidden = false;
+    els.grid.hidden = true;
+    els.empty.hidden = true;
+    els.albumPagination.hidden = true;
+
     const slowNotice = setTimeout(() => {
       els.count.textContent = "Preparing your photos and videos…";
     }, 10000);
     const timeout = setTimeout(() => controller.abort(), 90000);
+
     try {
-      const response = await fetch(config.endpoint, {
+      const url = new URL(config.endpoint);
+      url.searchParams.set("page", String(state.albumPage || 1));
+      url.searchParams.set("limit", String(albumPageSize()));
+      if (state.eventFilter !== "all") url.searchParams.set("category", state.eventFilter);
+      if (state.mediaFilter !== "all") url.searchParams.set("media", state.mediaFilter);
+      if (state.sort !== "newest") url.searchParams.set("sort", state.sort);
+      if (state.search.trim()) url.searchParams.set("q", state.search.trim());
+
+      const response = await fetch(url, {
         method: "GET",
         mode: "cors",
         cache: "no-store",
@@ -991,18 +1135,61 @@
       } catch {
         throw new Error("Gallery returned an unexpected format");
       }
+      if (payload?.ok === false) throw new Error(payload.message || "Unable to load gallery.");
+
       state.collections = extractCollections(payload);
-      if (!state.collections.length)
-        throw new Error("Gallery is currently empty");
-      renderEventFilters();
-      readUrlState();
-      if (!els.eventFilters.querySelector(`[data-event="${CSS.escape(state.eventFilter)}"]`)) {
-        state.eventFilter = "all";
+      state.visible = state.collections.slice();
+
+      const pagination = payload?.pagination;
+      state.serverPagination = Boolean(
+        pagination &&
+          Number.isFinite(Number(pagination.totalEvents)) &&
+          Number.isFinite(Number(pagination.totalPages)),
+      );
+
+      if (state.serverPagination) {
+        state.totalEvents = Number(pagination.totalEvents || 0);
+        state.totalItems = Number(pagination.totalItems || 0);
+        state.totalPages = Math.max(1, Number(pagination.totalPages || 1));
+        state.albumPage = Math.min(
+          Math.max(1, Number(pagination.page || state.albumPage || 1)),
+          state.totalPages,
+        );
+        state.facets = payload?.facets || {};
+      } else {
+        state.totalEvents = state.collections.length;
+        state.totalItems = state.collections.reduce(
+          (sum, collection) => sum + (collection.itemCount || 0),
+          0,
+        );
+        state.totalPages = Math.max(
+          1,
+          Math.ceil(state.collections.length / albumPageSize()),
+        );
       }
+
+      if (!state.collections.length && !state.serverPagination) {
+        throw new Error("Gallery is currently empty");
+      }
+
+      renderEventFilters();
       syncControlsFromState();
-      applyFilters({ resetPage: false, updateUrl: true, replaceUrl: true });
-      restoreScrollPosition();
+
+      if (state.serverPagination) {
+        render();
+      } else {
+        applyFilters({ resetPage: false, updateUrl: false });
+      }
+
+      writeUrlState({ replace: true });
+
+      if (restoreScroll) restoreScrollPosition();
+
+      if (preserveSharedEvent && state.sharedEventSlug) {
+        await openSharedEvent(state.sharedEventSlug);
+      }
     } catch (error) {
+      if (error?.name === "AbortError" && state.listController !== controller) return;
       const message =
         error && error.name === "AbortError"
           ? "The gallery request timed out"
@@ -1012,6 +1199,29 @@
     } finally {
       clearTimeout(slowNotice);
       clearTimeout(timeout);
+      if (state.listController === controller) state.listController = null;
+    }
+  }
+
+  async function openSharedEvent(slug) {
+    if (!slug) return;
+    const existing = state.collections.find((collection) => collection.slug === slug);
+    if (existing) {
+      if (!els.viewer.open && !els.pinDialog.open) await openViewer(existing, 0);
+      return;
+    }
+
+    try {
+      const url = new URL(config.endpoint);
+      url.searchParams.set("slug", slug);
+      const response = await fetch(url, { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || !payload?.ok || !payload?.event) return;
+      const [collection] = extractCollections({ events: [payload.event] });
+      if (!collection) return;
+      if (!els.viewer.open && !els.pinDialog.open) await openViewer(collection, 0);
+    } catch (error) {
+      console.warn("POSE shared gallery:", error);
     }
   }
 
@@ -1100,6 +1310,7 @@
     els.viewerPrev.addEventListener("click", () => moveViewer(-1));
     els.viewerNext.addEventListener("click", () => moveViewer(1));
     els.share.addEventListener("click", shareCurrent);
+    els.shareAlbum?.addEventListener("click", shareAlbum);
     els.albumDownload.addEventListener("click", downloadCurrentAlbum);
     els.viewerLoadMore?.addEventListener("click", () => loadMoreCurrentCollection());
     els.viewer.addEventListener("close", () =>
@@ -1115,7 +1326,11 @@
     addEventListener("popstate", () => {
       readUrlState();
       syncControlsFromState();
-      applyFilters({ resetPage: false, updateUrl: false });
+      if (state.serverPagination) {
+        loadGallery({ restoreScroll: false, preserveSharedEvent: true });
+      } else {
+        applyFilters({ resetPage: false, updateUrl: false });
+      }
     });
 
     let touchStart = 0;
@@ -1136,11 +1351,13 @@
     );
   }
 
+  readUrlState();
+  syncControlsFromState();
   initInteractions();
   try {
     (window.adsbygoogle = window.adsbygoogle || []).push({});
   } catch (error) {
     console.warn("POSE gallery ad could not be initialized.", error);
   }
-  loadGallery();
+  loadGallery({ restoreScroll: true, preserveSharedEvent: true });
 })();

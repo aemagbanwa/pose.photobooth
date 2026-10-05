@@ -60,3 +60,6 @@ Generating a replacement client link invalidates the previous management link. T
 The main page and gallery now use `/partials/header.html` and `/partials/footer.html`.
 `/assets/js/partials.js` injects the shared partials, handles the mobile navigation, marks Gallery active, and updates the copyright year.
 Edit the partial files once to update both pages.
+
+## Gallery scaling update (October 2026)
+See `README-GALLERY-SCALING.md`. After deploying the included Apps Script backend, run `setupGalleryIndex()` once before testing the optimized gallery.
