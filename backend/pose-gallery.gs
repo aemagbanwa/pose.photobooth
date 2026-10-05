@@ -5,6 +5,8 @@ const CONFIG_SHEET_ID = '1F6c8ndtnvJ6F_40JGO9kj5VfbkQMIxLBIgXegXMt2vU';
 const PIN_SALT_PROPERTY = 'POSE_GALLERY_PIN_SALT';
 const MANAGE_SALT_PROPERTY = 'POSE_GALLERY_MANAGE_SALT';
 const CLIENT_MANAGE_URL = 'https://poseph.com/gallery/manage/';
+const ADMIN_URL = 'https://poseph.com/gallery/admin/';
+const ADMIN_TOKEN_HASH_PROPERTY = 'POSE_GALLERY_ADMIN_TOKEN_HASH';
 const CONFIG_SHEET_NAME = 'Events';
 const GALLERY_CACHE_KEY = 'pose-gallery-index-v9';
 const INDEX_SHEET_NAME = 'Gallery Index';
@@ -36,7 +38,8 @@ const CONFIG_HEADERS = [
   'Updated At',
   'Client Management Link',
   'Management Token Hash',
-  'Generate Link'
+  'Generate Link',
+  'Published'
 ];
 
 function doGet(request) {
@@ -44,6 +47,7 @@ function doGet(request) {
     requestConfigMemo_ = undefined;
     const params = (request && request.parameter) || {};
 
+    if (params.admin === '1' && params.token) return adminDashboardData_(params.token);
     if (params.manage === '1' && params.token) return managementEvent_(params.token);
     if (params.eventId) return unlockEvent_(params.eventId, params.pin || '', params);
     if (params.slug) return eventBySlug_(params.slug);
@@ -81,6 +85,7 @@ function galleryIndexResponse_(params) {
   const config = galleryConfig_() || {};
   const visible = rows.filter(function (row) {
     const settings = config[row.id] || {};
+    if (settings.published === false) return false;
     if (settings.expires && new Date(settings.expires + 'T23:59:59') < now) return false;
     if (category !== 'all' && row.eventType !== category) return false;
     if (media === 'image' && row.photoCount < 1) return false;
@@ -152,8 +157,11 @@ function eventBySlug_(slug) {
   const row = rows.find(function (item) { return item.slug === slug; });
   if (!row) return jsonResponse_({ ok: false, code: 'EVENT_NOT_FOUND', message: 'That event could not be found.' });
   const settings = row.id === ROOT_FOLDER_ID
-    ? { pinEnabled: false, downloadsEnabled: true }
+    ? { pinEnabled: false, downloadsEnabled: true, published: true, expires: '' }
     : settingsFor_(row.id);
+  if (settings.published === false || (settings.expires && new Date(settings.expires + 'T23:59:59') < new Date())) {
+    return jsonResponse_({ ok: false, code: 'EVENT_NOT_FOUND', message: 'That event could not be found.' });
+  }
   return jsonResponse_({
     ok: true,
     event: {
@@ -321,6 +329,9 @@ function doPost(request) {
   try {
     const body = JSON.parse((request && request.postData && request.postData.contents) || '{}');
     if (body.action === 'setClientPin') return setClientPin_(body.token || '', body.pin || '');
+    if (body.action === 'adminUpdateEvent') return adminUpdateEvent_(body);
+    if (body.action === 'adminRefreshIndex') return adminRefreshIndex_(body.token || '');
+    if (body.action === 'adminGenerateClientLink') return adminGenerateClientLink_(body.token || '', body.eventId || '');
     return jsonResponse_({ ok: false, code: 'BAD_REQUEST', message: 'Unsupported request.' });
   } catch (error) {
     console.error(error);
@@ -427,8 +438,11 @@ function unlockEvent_(folderId, suppliedPin, params) {
   }
   const folder = DriveApp.getFolderById(folderId);
   const settings = isRootFolder
-    ? { pinEnabled: false, coverFileId: '', downloadsEnabled: true, expires: '' }
+    ? { pinEnabled: false, coverFileId: '', downloadsEnabled: true, published: true, expires: '' }
     : settingsFor_(folderId);
+  if (settings.published === false || (settings.expires && new Date(settings.expires + 'T23:59:59') < new Date())) {
+    return jsonResponse_({ ok: false, code: 'EVENT_NOT_FOUND', message: 'That event could not be found.' });
+  }
   params = params || {};
   const clientKey = String(params.clientKey || '');
   if (settings.pinEnabled) {
@@ -569,6 +583,7 @@ function settingsFor_(folderId) {
     // If the private configuration cannot be read, lock event folders rather
     // than accidentally exposing a protected gallery.
     pinEnabled: config === null || configured.pinEnabled === true,
+    published: configured.published !== false,
     coverFileId: String(configured.coverFileId || ''),
     downloadsEnabled: configured.downloadsEnabled !== false,
     expires: String(configured.expires || '')
@@ -616,6 +631,81 @@ function setupGalleryConfig() {
   }
 }
 
+
+
+
+function setupGalleryAdmin() {
+  const token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
+  PropertiesService.getScriptProperties().setProperty(ADMIN_TOKEN_HASH_PROPERTY, hashManageToken_(token));
+  const url = ADMIN_URL + '?token=' + encodeURIComponent(token);
+  console.log('POSE Gallery Admin: ' + url);
+  return url;
+}
+
+function adminTokenValid_(token) {
+  const stored = PropertiesService.getScriptProperties().getProperty(ADMIN_TOKEN_HASH_PROPERTY) || '';
+  return stored && secureEquals_(hashManageToken_(String(token || '').trim()), stored);
+}
+
+function adminDashboardData_(token) {
+  if (!adminTokenValid_(token)) return jsonResponse_({ ok:false, code:'INVALID_ADMIN_TOKEN', message:'Admin link is invalid or has been replaced.' });
+  const rows = readGalleryIndex_();
+  const config = galleryConfig_() || {};
+  const events = rows.filter(function(r){ return r.id !== ROOT_FOLDER_ID; }).map(function(r){
+    const c = config[r.id] || {};
+    return { id:r.id, slug:r.slug, eventName:r.eventName, eventDate:r.eventDate, eventType:r.eventType,
+      itemCount:r.itemCount, photoCount:r.photoCount, videoCount:r.videoCount, coverFileId:r.coverFileId, coverUrl:r.coverUrl,
+      pinEnabled:c.pinEnabled === true, downloadsEnabled:c.downloadsEnabled !== false, expires:String(c.expires || ''), published:c.published !== false };
+  });
+  return jsonResponse_({ok:true, events:events, updatedAt:new Date().toISOString()});
+}
+
+function adminUpdateEvent_(body) {
+  if (!adminTokenValid_(body.token || '')) return jsonResponse_({ok:false, code:'INVALID_ADMIN_TOKEN', message:'Admin link is invalid.'});
+  const id = String(body.eventId || '').trim();
+  const spreadsheet = configSpreadsheet_();
+  const sheet = spreadsheet && spreadsheet.getSheetByName(CONFIG_SHEET_NAME);
+  if (!sheet) return jsonResponse_({ok:false, message:'Events sheet is unavailable.'});
+  if (sheet.getLastRow() < 2) return jsonResponse_({ok:false, message:'No events are configured.'});
+  const vals = sheet.getRange(2,1,sheet.getLastRow()-1,CONFIG_HEADERS.length).getValues();
+  let row = 0;
+  for (let i=0;i<vals.length;i++) if (String(vals[i][0]||'')===id) { row=i+2; break; }
+  if (!row) return jsonResponse_({ok:false, message:'Event not found.'});
+  const expires = String(body.expires || '').trim();
+  const coverFileId = String(body.coverFileId || '').trim();
+  sheet.getRange(row,5).setValue(Boolean(body.pinEnabled));
+  sheet.getRange(row,6).setValue(body.downloadsEnabled !== false);
+  sheet.getRange(row,7).setValue(expires);
+  sheet.getRange(row,8).setValue(coverFileId);
+  sheet.getRange(row,9).setValue(new Date());
+  sheet.getRange(row,13).setValue(body.published !== false);
+  if (body.newPin) {
+    const pin=String(body.newPin).trim();
+    if (pin.length<4 || pin.length>32) return jsonResponse_({ok:false,message:'PIN must contain 4–32 characters.'});
+    sheet.getRange(row,4).setValue(hashPin_(pin));
+    sheet.getRange(row,5).setValue(true);
+  }
+  clearGalleryCache_(); requestConfigMemo_=undefined;
+  return jsonResponse_({ok:true, message:'Event settings updated.'});
+}
+
+function adminRefreshIndex_(token) {
+  if (!adminTokenValid_(token)) return jsonResponse_({ok:false, message:'Admin link is invalid.'});
+  const count = refreshGalleryIndex();
+  return jsonResponse_({ok:true, count:count, message:'Gallery index refreshed.'});
+}
+
+function adminGenerateClientLink_(token, eventId) {
+  if (!adminTokenValid_(token)) return jsonResponse_({ok:false, message:'Admin link is invalid.'});
+  const spreadsheet=configSpreadsheet_(); const sheet=spreadsheet && spreadsheet.getSheetByName(CONFIG_SHEET_NAME);
+  if (!sheet) return jsonResponse_({ok:false,message:'Events sheet is unavailable.'});
+  if (sheet.getLastRow() < 2) return jsonResponse_({ok:false,message:'No events are configured.'});
+  const vals=sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues();
+  for (let i=0;i<vals.length;i++) if(String(vals[i][0]||'')===String(eventId||'')) {
+    const link=generateClientManagementLinkForRow_(sheet,i+2); return jsonResponse_({ok:true,link:link});
+  }
+  return jsonResponse_({ok:false,message:'Event not found.'});
+}
 
 /**
  * Run once after deploying this version. It builds the lightweight gallery
@@ -707,6 +797,7 @@ function galleryConfig_() {
       pinHash: String(row[3] || ''),
       pinEnabled: checkboxValue_(row[4]),
       downloadsEnabled: row[5] === '' ? true : checkboxValue_(row[5]),
+      published: row[12] === '' ? true : checkboxValue_(row[12]),
       expires: dateValue_(row[6]),
       coverFileId: String(row[7] || '').trim()
     };
@@ -737,7 +828,7 @@ function prepareConfigSheet_(spreadsheet) {
   sheet.getRange(1, 1, 1, CONFIG_HEADERS.length).setValues([CONFIG_HEADERS]);
   sheet.setFrozenRows(1);
   sheet.getRange('E2:F').insertCheckboxes();
-  sheet.getRange('L2:L').insertCheckboxes();
+  sheet.getRange('L2:M').insertCheckboxes();
   sheet.getRange('G2:G').setNumberFormat('yyyy-mm-dd');
   sheet.getRange('I2:I').setNumberFormat('yyyy-mm-dd hh:mm:ss');
   sheet.hideColumns(4);
@@ -763,7 +854,7 @@ function syncConfigRows_(sheet) {
     if (existing[id]) {
       sheet.getRange(existing[id], 2).setValue(parseEventFolder_(folder.getName()).eventName);
     } else {
-      newRows.push([id, parseEventFolder_(folder.getName()).eventName, '', '', false, true, '', '', new Date(), '', '', false]);
+      newRows.push([id, parseEventFolder_(folder.getName()).eventName, '', '', false, true, '', '', new Date(), '', '', false, true]);
     }
   }
   if (newRows.length) {
