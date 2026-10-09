@@ -482,3 +482,10 @@
 .mt-ai-quote{font-size:25px;font-weight:800;line-height:1.2;color:var(--mt-gold);margin:20px 0 12px}
 @media(max-width:800px){.mt-ai-panel,.mt-ai-styles{grid-template-columns:1fr;gap:28px}.mt-ai-service{grid-template-columns:180px 1fr}.mt-ai-inclusions{gap:18px}}
 @media(max-width:540px){.mt-ai-service{grid-template-columns:1fr}.mt-ai-symbol{min-height:160px;font-size:72px}.mt-ai-service .mt-service-body,.mt-ai-flow{padding:22px}.mt-ai-inclusions{grid-template-columns:1fr}.mt-ai-styles ul{gap:8px}.mt-ai-styles li{padding:12px;font-size:12px}}
+
+/* Genuine gallery previews: show complete prints and natural photo colors. */
+.mt-gallery-feature .mt-mini-grid img,
+.mt-gallery-feature .mt-laptop-grid img {
+  width:100%; height:auto; aspect-ratio:3/2; object-fit:contain;
+  background:#111923; filter:none;
+}
