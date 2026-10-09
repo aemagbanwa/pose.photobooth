@@ -1,0 +1,77 @@
+/* POSE Photo Wall: navy and gold, matched to the supplied main-page reference. */
+:root {
+  color-scheme: dark;
+  --paper: #0d141e;
+  --paper-warm: #141d28;
+  --ink: #f7f8fa;
+  --ink-soft: #e6ebf2;
+  --muted: #a0adbd;
+  --line: #2c3540;
+  --accent: #f2c163;
+  --accent-dark: #e7ae4b;
+  --pose-pink: var(--accent);
+  --pink: var(--accent);
+  --gold-fill: linear-gradient(110deg, #f7d484, #e9b04f);
+}
+body { color: var(--ink); background: var(--paper); }
+.site-header, .site-header.is-scrolled {
+  color: var(--ink); background: rgba(13,20,30,.95); border-color: var(--line);
+}
+/* Use the supplied white artwork on the gallery's dark shared surfaces. */
+.site-header .brand img, .site-footer .footer-grid img {
+  content: url('/assets/images/pose-logo-white.png?v=33'); filter: none;
+}
+.site-header .brand img { width: 132px; height: 54px; }
+.nav nav > a:not(.pill):hover, .nav nav a[aria-current="page"] { color: var(--accent); }
+.pill, .menu, .button--dark, .button--accent, .pin-dialog .button {
+  background: var(--gold-fill); color: #13110b;
+}
+.gallery-intro .eyebrow, .gallery-intro h1 span { color: var(--accent); }
+.gallery-intro h1 { color: var(--ink); }
+.gallery-intro__copy, .results-line p, .results-line__note { color: var(--muted); }
+.gallery-tools .search-box, .gallery-tools .sort-control, .media-filter {
+  background: #141d28; border: 1px solid var(--line);
+}
+.search-box input, .sort-control select { color: var(--ink); }
+.search-box input::placeholder { color: #a0adbd; }
+.sort-control option { background: #141d28; color: var(--ink); }
+.search-box:focus-within { outline-color: var(--accent); }
+.event-filter { background: #17212d; border-color: var(--line); color: #c0cad6; }
+.event-filter:hover { border-color: var(--accent); color: var(--ink); }
+.event-filter.is-active, .media-filter button.is-active {
+  background: var(--gold-fill); border-color: transparent; color: #17120a;
+}
+.media-filter button { color: #a0adbd; }
+.event-card__cover { background: #18222f; border: 1px solid #2c3540; }
+.event-card__title { color: var(--ink); }
+.event-card__meta, .event-card__meta strong { color: var(--muted); }
+.event-card__cta { color: var(--accent); }
+.event-card__type, .event-card__lock { background: rgba(13,20,30,.9); color: #f7f8fa; }
+.event-card__lock svg { stroke: #f2c163; }
+.event-card__button:hover .event-card__cover {
+  border-color: #cba259; box-shadow: 0 12px 32px rgba(0,0,0,.28);
+}
+.event-card__button:focus-visible, .event-filter:focus-visible,
+.media-filter button:focus-visible { outline-color: var(--accent); }
+.event-card__image-fallback, .event-card__placeholder { background: linear-gradient(135deg,#172534,#253548); color: #f2c163; }
+.skeleton { background: linear-gradient(100deg,#17212d 15%,#263344 35%,#17212d 55%); background-size: 200% 100%; }
+.album-pagination__page, .album-pagination__nav { background: #141d28; border-color: var(--line); color: var(--ink); }
+.album-pagination__page.is-active { background: var(--gold-fill); border-color: transparent; color: #17120a; }
+.album-pagination__page:hover, .album-pagination__nav:hover:not(:disabled),
+.album-pagination__page:focus-visible, .album-pagination__nav:focus-visible {
+  background: #263344; border-color: var(--accent); color: var(--ink);
+}
+.empty-state { border-color: #3b4859; }
+.empty-state__mark, .toast { background: var(--gold-fill); color: #17120a; }
+.gallery-ad { background: #111a25; border-color: var(--line); }
+.site-footer { color: var(--ink); background: #101923; border-top: 1px solid var(--line); }
+.site-footer .footer-grid p, .site-footer .copyright { color: var(--muted); }
+.site-footer .footer-grid a:hover { color: var(--accent); }
+.pin-dialog { background: #141d28; color: var(--ink); }
+.pin-dialog input { background: #0d141e; color: var(--ink); }
+.pin-dialog input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #f2c16326; }
+.pin-dialog__close, .pin-field__toggle { background: #273342; color: var(--ink); }
+.pin-dialog .pin-dialog__error { color: #ffaaaa; }
+.album-download:hover, .icon-button:hover, .viewer__nav:hover { color: #17120a; background: var(--gold-fill); }
+.skip-link { color: #17120a; }
+@media(max-width:850px) { .nav nav { background: #111a25; border-color: var(--line); } }

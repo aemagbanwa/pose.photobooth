@@ -517,11 +517,12 @@
       <article class="event-card">
         <button class="event-card__button" type="button" data-collection-index="${index}" aria-label="${escapeAttr(label)}">
           <span class="event-card__cover">
-            ${cover ? `<img src="${escapeAttr(cover)}" alt="${escapeAttr(`${collection.title} event thumbnail`)}" loading="${index < 4 ? "eager" : "lazy"}" decoding="async" fetchpriority="${index < 2 ? "high" : "auto"}" onerror="this.hidden=true;this.nextElementSibling?.classList.add('is-visible')"><span class="event-card__image-fallback" aria-hidden="true">POSE</span>` : `<span class="event-card__placeholder">POSE</span>`}
+            ${cover ? `<img src="${escapeAttr(cover)}" alt="${escapeAttr(`${collection.title} event thumbnail`)}" loading="${index < 4 ? "eager" : "lazy"}" decoding="async" onload="if(this.naturalHeight>this.naturalWidth)this.dataset.portrait='true'" fetchpriority="${index < 2 ? "high" : "auto"}" onerror="this.hidden=true;this.nextElementSibling?.classList.add('is-visible')"><span class="event-card__image-fallback" aria-hidden="true">POSE</span>` : `<span class="event-card__placeholder">POSE</span>`}
             <span class="event-card__shade"></span>
             <span class="event-card__type">${escapeHtml(categoryLabel(collection.category))}</span>
-            <span class="event-card__title"><strong title="${escapeAttr(collection.title)}">${escapeHtml(collection.title)}</strong></span>
+            ${collection.locked ? `<span class="event-card__lock" title="PIN protected" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>` : ""}
           </span>
+          <span class="event-card__title"><strong>${escapeHtml(collection.title)}</strong></span>
           <span class="event-card__footer">
             <span class="event-card__meta">
               <span>${escapeHtml(formatDate(collection.date))}</span>
@@ -574,6 +575,19 @@
     syncControlsFromState();
   }
 
+  // Keep DOM, keyboard and sort order intact while packing variable-height cards.
+  let wallFrame;
+  const wallObserver = new ResizeObserver(() => layoutPhotoWall());
+  function layoutPhotoWall() {
+    cancelAnimationFrame(wallFrame);
+    wallFrame = requestAnimationFrame(() => {
+      els.grid.querySelectorAll(".event-card").forEach(card => {
+        const button = card.querySelector(".event-card__button");
+        card.style.gridRowEnd = `span ${Math.ceil((button.getBoundingClientRect().height + 24) / 8)}`;
+      });
+    });
+  }
+
   function render() {
     els.loading.hidden = true;
     const hasResults = state.visible.length > 0;
@@ -586,10 +600,12 @@
       const size = albumPageSize();
       const startIndex = state.serverPagination ? 0 : (state.albumPage - 1) * size;
       const pageItems = albumPageItems();
+      wallObserver.disconnect();
       els.grid.innerHTML = pageItems
         .map((collection, pageIndex) => collectionMarkup(collection, startIndex + pageIndex))
         .join("");
       els.grid.querySelectorAll("[data-collection-index]").forEach((button) => {
+        wallObserver.observe(button);
         button.addEventListener("click", () => {
           const collection = state.serverPagination
             ? state.visible[Number(button.dataset.collectionIndex)]
@@ -599,6 +615,7 @@
       });
     }
 
+    layoutPhotoWall();
     renderAlbumPagination();
 
     const eventCount = state.serverPagination ? state.totalEvents : state.visible.length;
