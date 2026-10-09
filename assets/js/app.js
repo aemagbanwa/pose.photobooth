@@ -68,6 +68,11 @@ const packageSelect = document.querySelector("#packageSelect");
 document.querySelectorAll("[data-package]").forEach((link) =>
   link.addEventListener("click", () => {
     if (packageSelect) packageSelect.value = link.dataset.package;
+    const serviceSelect = form?.querySelector('[name="service"]');
+    if (serviceSelect && link.dataset.service) serviceSelect.value = link.dataset.service;
+    else if (serviceSelect?.value === "AI Photobooth") {
+      serviceSelect.value = link.dataset.package.startsWith("Photoman") ? "Roaming Photobooth" : link.dataset.package === "360 Package" ? "360 Video Booth" : "Photobooth";
+    }
   }),
 );
 
@@ -147,4 +152,15 @@ form?.addEventListener("submit", async (e) => {
     submitBtn.disabled = false;
     submitBtn.textContent = original;
   }
+});
+
+// Keep AI inquiries complete whether visitors use a CTA or the form directly.
+const serviceSelect = form?.querySelector('[name="service"]');
+serviceSelect?.addEventListener('change', () => {
+  if (serviceSelect.value === 'AI Photobooth' && packageSelect) packageSelect.value = 'AI Photobooth';
+  else if (packageSelect?.value === 'AI Photobooth') packageSelect.value = '';
+});
+packageSelect?.addEventListener('change', () => {
+  if (packageSelect.value === 'AI Photobooth' && serviceSelect) serviceSelect.value = 'AI Photobooth';
+  else if (serviceSelect?.value === 'AI Photobooth') serviceSelect.value = '';
 });
