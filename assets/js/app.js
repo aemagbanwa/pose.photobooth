@@ -1,14 +1,4 @@
-const menu = document.querySelector(".menu");
-const nav = document.querySelector("#primary-nav");
-menu?.addEventListener("click", () => {
-  const open = nav.classList.toggle("open");
-  menu.setAttribute("aria-expanded", open);
-});
-document
-  .querySelectorAll("#primary-nav a")
-  .forEach((a) =>
-    a.addEventListener("click", () => nav.classList.remove("open")),
-  );
+// Shared header menu behavior is owned by assets/js/partials.js.
 const yearEl = document.querySelector("#year");
 if (yearEl) yearEl.textContent = new Date().getFullYear();
 

@@ -489,3 +489,52 @@
   width:100%; height:auto; aspect-ratio:3/2; object-fit:contain;
   background:#111923; filter:none;
 }
+
+/* Mobile navigation and native iOS date-field sizing. */
+@media (max-width:850px) {
+  .modern-home .site-header nav#primary-nav {
+    top:100%; background:#101923; color:#f5f7fb;
+    border-bottom:1px solid rgba(255,255,255,.14);
+    padding:16px 22px 22px; gap:4px;
+    max-height:calc(100vh - 100px); max-height:calc(100dvh - 100px);
+    overflow-y:auto; overscroll-behavior:contain;
+    box-shadow:0 18px 32px rgba(0,0,0,.3);
+  }
+  .modern-home .site-header nav#primary-nav > a:not(.pill) {
+    display:block; color:#f5f7fb; padding:12px 10px;
+    min-height:44px; border-radius:8px;
+  }
+  .modern-home .site-header nav#primary-nav > a:not(.pill):hover,
+  .modern-home .site-header nav#primary-nav > a:not(.pill):focus-visible {
+    background:#202d3b; color:#f0bf68;
+  }
+  .modern-home .site-header nav#primary-nav > .pill { margin-top:12px; }
+}
+.modern-home .mt-contact-grid > *,
+.modern-home .mt-form, .modern-home .mt-form .form-row,
+.modern-home .mt-form label { min-width:0; }
+.modern-home .mt-form .form-row { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.modern-home .mt-form input:not([type="checkbox"]), .modern-home .mt-form select {
+  box-sizing:border-box; min-width:0; max-width:100%; width:100%;
+  font-size:16px; color-scheme:dark;
+}
+.event-date-control { display:block; position:relative; min-width:0; width:100%; }
+.modern-home .mt-form input[type="date"] {
+  display:block; -webkit-appearance:none; appearance:none;
+  min-height:50px; text-align:left; padding:0 14px;
+}
+.modern-home .mt-form input[type="date"]::-webkit-date-and-time-value {
+  min-height:1.2em; text-align:left;
+}
+.modern-home .mt-form input[type="date"]::-webkit-datetime-edit { padding:0; }
+.event-date-placeholder {
+  display:none; position:absolute; top:50%; left:15px; right:42px;
+  transform:translateY(-50%); color:#aab5c4; font-size:16px;
+  pointer-events:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.event-date-control input:invalid:not(:focus) { color:transparent; }
+.event-date-control input:invalid:not(:focus)::-webkit-date-and-time-value { color:transparent; }
+.event-date-control input:invalid:not(:focus) + .event-date-placeholder { display:block; }
+@media(max-width:640px) {
+  .modern-home .mt-form .form-row { grid-template-columns:minmax(0,1fr); }
+}
