@@ -161,7 +161,7 @@ function eventBySlug_(slug) {
   const settings = row.id === ROOT_FOLDER_ID
     ? { pinEnabled: false, downloadsEnabled: true, published: true, expires: '' }
     : settingsFor_(row.id);
-  if (!isRootFolder && (!settings.configured || settings.published !== true)) {
+  if (row.id !== ROOT_FOLDER_ID && (!settings.configured || settings.published !== true)) {
     return jsonResponse_({ ok: false, code: 'EVENT_NOT_FOUND', message: 'That event could not be found.' });
   }
   if (settings.expires && new Date(settings.expires + 'T23:59:59') < new Date()) {
@@ -685,7 +685,7 @@ function adminDashboardData_(token) {
       itemCount:Number(r.itemCount || 0),
       photoCount:Number(r.photoCount || 0),
       videoCount:Number(r.videoCount || 0),
-      coverFileId:c.coverFileId || r.coverFileId || '',
+      coverFileId:c.coverFileId || '',
       coverUrl:r.coverUrl || '',
       pinEnabled:c.pinEnabled === true,
       downloadsEnabled:c.downloadsEnabled !== false,
@@ -754,7 +754,7 @@ function adminUpdateEvent_(body) {
     const eventDate = String(body.eventDate || '').trim();
     const eventType = normalizeEventType_(body.eventType);
     const expires = String(body.expires || '').trim();
-    const coverFileId = String(body.coverFileId || '').trim();
+    const coverFileId = normalizeCoverFileId_(body.coverFileId);
     const newPin = String(body.newPin || '').trim();
 
     if (!eventName) return jsonResponse_({ok:false, code:'EVENT_NAME_REQUIRED', message:'Event name is required.'});
@@ -765,6 +765,21 @@ function adminUpdateEvent_(body) {
     if (pinEnabled && !newPin && !currentPinHash) {
       return jsonResponse_({ok:false, code:'PIN_REQUIRED', message:'Set a PIN before enabling PIN protection.'});
     }
+
+    // Resolve and validate before writing any settings. Only rescan this album
+    // when its cover changed or a previous save left its index out of sync.
+    const currentCoverId = String(sheet.getRange(row, columns['Cover File ID']).getDisplayValue() || '').trim();
+    const indexed = readGalleryIndex_().find(function(item) { return item.id === id; });
+    let resolvedCoverId = indexed ? indexed.coverFileId : '';
+    if (coverFileId !== currentCoverId || !indexed || (coverFileId && coverFileId !== resolvedCoverId)) {
+      const media = readMedia_(DriveApp.getFolderById(id), false);
+      if (coverFileId && !media.some(function(item) { return item.id === coverFileId; })) {
+        return jsonResponse_({ok:false, code:'INVALID_COVER', message:'Choose an image or video file inside this event’s Drive folder. Paste its file link or file ID.'});
+      }
+      const selected = selectCover_(media, coverFileId);
+      resolvedCoverId = selected ? selected.id : '';
+    }
+    const resolvedCoverUrl = resolvedCoverId ? driveThumbnailUrl_(resolvedCoverId, 640) : '';
 
     // Batch the whole record into one Sheet write. Apps Script calls to Sheets
     // are comparatively expensive, so one setValues() is much faster than
@@ -797,7 +812,7 @@ function adminUpdateEvent_(body) {
     const savedExpires = dateValue_(get('Expiry Date'));
     const savedCoverFileId = String(get('Cover File ID') || '').trim();
 
-    if (savedPinEnabled !== pinEnabled || savedDownloadsEnabled !== downloadsEnabled || savedPublished !== published) {
+    if (savedPinEnabled !== pinEnabled || savedDownloadsEnabled !== downloadsEnabled || savedPublished !== published || savedCoverFileId !== coverFileId) {
       return jsonResponse_({
         ok:false,
         code:'SAVE_VERIFY_FAILED',
@@ -806,6 +821,8 @@ function adminUpdateEvent_(body) {
       });
     }
 
+    updateIndexedCover_(spreadsheet, id, resolvedCoverId, resolvedCoverUrl);
+    SpreadsheetApp.flush();
     clearGalleryCache_();
     requestConfigMemo_ = undefined;
 
@@ -819,6 +836,7 @@ function adminUpdateEvent_(body) {
         published:savedPublished,
         expires:savedExpires,
         coverFileId:savedCoverFileId,
+        coverUrl:resolvedCoverUrl,
         eventName:eventName,
         eventDate:eventDate,
         eventType:eventType
@@ -1253,6 +1271,27 @@ function readMedia_(folder, includeDetails) {
 
 function driveThumbnailUrl_(fileId, size) {
   return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(fileId) + '&sz=w' + size;
+}
+
+function normalizeCoverFileId_(input) {
+  const text = String(input || '').trim();
+  if (!text) return '';
+  if (/^[a-zA-Z0-9_-]+$/.test(text)) return text;
+  const link = text.match(/^https:\/\/(?:drive|docs)\.google\.com\//i);
+  const match = link && (text.match(/\/d\/([a-zA-Z0-9_-]+)/) || text.match(/[?&]id=([a-zA-Z0-9_-]+)/));
+  if (!match) throw new Error('Use a Google Drive file link or file ID for the album cover.');
+  return match[1];
+}
+
+function updateIndexedCover_(spreadsheet, eventId, coverId, coverUrl) {
+  const sheet = spreadsheet.getSheetByName(INDEX_SHEET_NAME);
+  if (!sheet || sheet.getLastRow() < 2) return;
+  const ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+  for (let i = 0; i < ids.length; i += 1) {
+    if (String(ids[i][0]) !== eventId) continue;
+    sheet.getRange(i + 2, 9, 1, 3).setValues([[coverId, coverUrl, new Date()]]);
+    return;
+  }
 }
 
 function selectCover_(items, configuredId) {

@@ -260,7 +260,7 @@
               <div class="field"><label>Event date</label><input type="date" data-field="eventDate" value="${esc(e.eventDate||'')}" /></div>
               <div class="field"><label>Category</label><select data-field="eventType"><option value="birthday" ${e.eventType==='birthday'?'selected':''}>Birthday</option><option value="wedding" ${e.eventType==='wedding'?'selected':''}>Wedding</option><option value="debut" ${e.eventType==='debut'?'selected':''}>Debut</option><option value="corporate" ${e.eventType==='corporate'?'selected':''}>Corporate</option><option value="dedication" ${e.eventType==='dedication'?'selected':''}>Dedication</option><option value="other" ${e.eventType==='other'?'selected':''}>Other</option></select></div>
               <div class="field"><label>Expiry date</label><input type="date" data-field="expires" value="${esc(e.expires||'')}" /></div>
-              <div class="field"><label>Cover file ID</label><input type="text" data-field="coverFileId" value="${esc(e.coverFileId||'')}" placeholder="Google Drive file ID" /></div>
+              <div class="field"><label>Cover file link or ID</label><input type="text" data-field="coverFileId" value="${esc(e.coverFileId||'')}" placeholder="Drive file link or ID; blank = automatic" /></div>
               <div class="field full"><label>New PIN <span style="font-weight:500;color:#aaa">(optional)</span></label><input type="password" data-field="newPin" placeholder="Leave blank to keep the current PIN" autocomplete="new-password" /></div>
 
               <div class="toggle-row">
@@ -349,6 +349,8 @@
             val('downloadsEnabled').checked=d.event.downloadsEnabled!==false;
             val('expires').value=d.event.expires||'';
             val('coverFileId').value=d.event.coverFileId||'';
+            const preview=card.querySelector('.cover');
+            if(preview && 'coverUrl' in d.event)preview.src=d.event.coverUrl||'../../assets/images/photobooth.webp';
             const local=events.find(e=>String(e.id)===String(id));
             if(local)Object.assign(local,d.event);
           }
