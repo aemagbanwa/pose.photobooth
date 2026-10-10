@@ -1315,9 +1315,12 @@
       els.pinToggle.setAttribute("aria-pressed", String(show));
       els.pinInput.focus();
     });
+    els.pinForm.querySelector(".pin-dialog__close").addEventListener("click", () => {
+      els.pinDialog.close();
+    });
     els.pinForm.addEventListener("submit", (event) => {
-      if (event.submitter?.value === "cancel") return;
       event.preventDefault();
+      if (els.pinSubmit.disabled) return;
       unlockPendingEvent();
     });
     els.clear.addEventListener("click", resetFilters);
