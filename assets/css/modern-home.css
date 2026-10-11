@@ -538,3 +538,49 @@
 @media(max-width:640px) {
   .modern-home .mt-form .form-row { grid-template-columns:minmax(0,1fr); }
 }
+
+/* Mobile hero: a wider photo crop and an edge-to-edge readability gradient. */
+@media (max-width:640px) {
+  .mt-hero.mt-hero-full {
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    background:#080d14 url("../images/hero-visual-inspired.webp") 67% top / auto 700px no-repeat;
+  }
+  .mt-hero.mt-hero-full::before {
+    background:linear-gradient(180deg,
+      rgba(8,13,20,.08) 0%,
+      rgba(8,13,20,.32) 12%,
+      rgba(8,13,20,.72) 32%,
+      rgba(8,13,20,.88) 60%,
+      #080d14 88%);
+  }
+  .mt-hero.mt-hero-full .mt-hero-grid {
+    width:calc(100% - 36px);
+    min-height:0;
+    padding:100px 0 32px;
+    align-items:flex-start;
+  }
+  .mt-hero.mt-hero-full .mt-hero-copy-overlay {
+    width:100%;
+    max-width:100%;
+    padding:0;
+    background:none;
+  }
+  .mt-hero .mt-kicker { font-size:12px; margin-bottom:20px; }
+  .mt-hero.mt-hero-full h1 {
+    font-size:clamp(36px,10.5vw,60px);
+    line-height:.98;
+  }
+  .mt-hero .mt-subline { margin-top:22px; }
+  .mt-hero .mt-lead { margin-top:16px; }
+  .mt-hero .mt-actions { margin-top:24px; }
+  .mt-hero .mt-actions .mt-btn { flex:1 1 155px; min-height:52px; }
+  .mt-hero.mt-hero-full .mt-feature-strip-inside {
+    position:relative !important;
+    width:100%;
+    background:transparent;
+    padding-bottom:16px;
+  }
+}
