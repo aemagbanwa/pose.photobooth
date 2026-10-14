@@ -1012,50 +1012,105 @@
 
   async function downloadCurrentAlbum() {
     const collection = state.currentCollection;
-    if (!collection || collection.locked || !collection.downloadsEnabled)
-      return;
-
-    if (collection.hasMore) {
-      showToast("Preparing the full album…");
-      while (collection.hasMore) {
-        const ok = await loadMoreCurrentCollection({ quiet: true });
-        if (!ok) break;
-      }
+    if (!collection || collection.locked || !collection.downloadsEnabled || state.albumZipBusy) return;
+    state.albumZipBusy = true;
+    const button = els.albumDownload;
+    const label = button.querySelector("span");
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    if (label) label.textContent = "Preparing ZIP…";
+    const dialog = document.createElement("dialog");
+    dialog.className = "album-zip-dialog";
+    const heading = document.createElement("h2");
+    heading.textContent = "Download album ZIP";
+    const status = document.createElement("p");
+    status.setAttribute("role", "status");
+    status.textContent = "Checking the complete album…";
+    const list = document.createElement("div");
+    list.className = "album-zip-parts";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.textContent = "Close";
+    dialog.append(heading, status, list, close);
+    document.body.append(dialog);
+    const controller = new AbortController();
+    const objectUrls = [];
+    let closed = false;
+    dialog.addEventListener("close", () => {
+      closed = true;
+      controller.abort();
+      // Allow an in-progress browser download to acquire the blob first.
+      setTimeout(() => objectUrls.forEach(url => URL.revokeObjectURL(url)), 60000);
+      dialog.remove();
+      state.albumZipBusy = false;
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      if (label) label.textContent = "Download album ZIP";
+    }, { once: true });
+    close.addEventListener("click", () => dialog.close());
+    dialog.showModal();
+    async function requestZip(extra = {}) {
+      const url = new URL(config.endpoint);
+      url.searchParams.set("eventId", collection.id);
+      url.searchParams.set("albumZip", "1");
+      url.searchParams.set("clientKey", clientKey());
+      if (collection.accessPin) url.searchParams.set("pin", collection.accessPin);
+      Object.entries(extra).forEach(([key, value]) => url.searchParams.set(key, String(value)));
+      const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.message || "Unable to prepare this ZIP. Please try again.");
+      if (!payload.albumZip) throw new Error("Album ZIP downloads need the updated Google Apps Script deployment.");
+      return payload.albumZip;
     }
-
-    const files = collection.photos.filter((item) => item.download);
-    if (!files.length) return showToast("Album downloads are unavailable");
-
-    const label = els.albumDownload.querySelector("span");
-    els.albumDownload.disabled = true;
-    els.albumDownload.setAttribute("aria-busy", "true");
-    if (label) label.textContent = "Starting…";
-
     try {
-      files.forEach((file, index) => {
-        setTimeout(() => {
-          const frame = document.createElement("iframe");
-          frame.hidden = true;
-          frame.title = "";
-          frame.src = file.download;
-          document.body.append(frame);
-          setTimeout(() => frame.remove(), 60000);
-        }, index * 700);
-      });
-      showToast(
-        files.length === 1
-          ? "Download started"
-          : `${files.length} downloads started — allow multiple downloads if asked`,
-      );
-    } finally {
-      setTimeout(
-        () => {
-          els.albumDownload.disabled = false;
-          els.albumDownload.removeAttribute("aria-busy");
-          if (label) label.textContent = "Download album";
-        },
-        Math.min(files.length * 700 + 800, 12000),
-      );
+      const manifest = await requestZip();
+      heading.textContent = manifest.title;
+      status.textContent = `${manifest.fileCount} files • ${manifest.partCount} ZIP ${manifest.partCount === 1 ? "file" : "parts"}. Original quality preserved. Prepare each ZIP, then save it.`;
+      let preparing = false;
+      for (let part = 0; part < manifest.partCount; part++) {
+        const row = document.createElement("div");
+        const prepare = document.createElement("button");
+        prepare.type = "button";
+        const partLabel = manifest.partCount === 1 ? "ZIP" : `ZIP part ${part + 1} of ${manifest.partCount}`;
+        prepare.textContent = `Prepare ${partLabel}`;
+        row.append(prepare);
+        list.append(row);
+        prepare.addEventListener("click", async () => {
+          if (preparing) return;
+          preparing = true;
+          list.querySelectorAll("button").forEach(item => item.disabled = true);
+          prepare.textContent = `Compressing ${partLabel}…`;
+          status.textContent = "Preparing original files. Please keep this window open…";
+          try {
+            const archive = await requestZip({ zipPart: part, zipSignature: manifest.signature });
+            if (closed) return;
+            const binary = atob(archive.data);
+            const chunks = [];
+            for (let offset = 0; offset < binary.length; offset += 65536) {
+              chunks.push(Uint8Array.from(binary.slice(offset, offset + 65536), char => char.charCodeAt(0)));
+            }
+            const blobUrl = URL.createObjectURL(new Blob(chunks, { type: "application/zip" }));
+            objectUrls.push(blobUrl);
+            const save = document.createElement("a");
+            save.href = blobUrl;
+            save.download = archive.name;
+            save.textContent = `Save ${partLabel} (${(binary.length / 1048576).toFixed(1)} MB)`;
+            row.replaceChildren(save);
+            status.textContent = "ZIP ready. Click Save to download it.";
+          } catch (error) {
+            if (!closed) {
+              status.textContent = error.message || "ZIP preparation failed. Please try again.";
+              prepare.textContent = `Retry ${partLabel}`;
+            }
+          } finally {
+            preparing = false;
+            list.querySelectorAll("button").forEach(item => item.disabled = false);
+          }
+        });
+        if (manifest.partCount === 1) prepare.click();
+      }
+    } catch (error) {
+      if (!closed) status.textContent = error.message || "Unable to prepare this album.";
     }
   }
 

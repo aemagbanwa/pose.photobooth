@@ -483,6 +483,8 @@ function unlockEvent_(folderId, suppliedPin, params) {
     clearPinFailures_(folderId, clientKey);
   }
 
+  if (params.albumZip === '1') return albumZip_(folder, settings, params);
+
   const requestedLimit = Number(params.limit || 30);
   const limit = Math.min(Math.max(Number.isFinite(requestedLimit) ? Math.floor(requestedLimit) : 30, 12), 60);
   const tokenOffset = Number(params.pageToken || '');
@@ -490,6 +492,59 @@ function unlockEvent_(folderId, suppliedPin, params) {
   const offset = Math.max(0, Number.isFinite(tokenOffset) && String(params.pageToken || '') !== '' ? Math.floor(tokenOffset) : (Number.isFinite(requestedOffset) ? Math.floor(requestedOffset) : 0));
 
   return jsonResponse_({ ok: true, event: paginatedEvent_(folder, settings, offset, limit) });
+}
+
+// ZIP responses stay private: no public temporary Drive files are created.
+// Bound each request's memory/runtime; larger albums become independent ZIP parts.
+function albumZip_(folder, settings, params) {
+  if (settings.downloadsEnabled === false) {
+    return jsonResponse_({ ok: false, message: 'Downloads are disabled for this album.' });
+  }
+  const maxBytes = 20 * 1024 * 1024;
+  const files = [];
+  const iterator = folder.getFiles();
+  while (iterator.hasNext()) {
+    const file = iterator.next();
+    if (!/^(image|video)\//.test(file.getMimeType())) continue;
+    const size = file.getSize();
+    if (size > maxBytes) {
+      return jsonResponse_({ ok: false, message: 'This album contains a file larger than 20 MB. Please download large files individually using the photo/video download button.' });
+    }
+    files.push({ file: file, id: file.getId(), size: size, name: file.getName(), modified: file.getLastUpdated().toISOString() });
+  }
+  files.sort(function (a, b) { return a.id.localeCompare(b.id); });
+  if (!files.length) return jsonResponse_({ ok: false, message: 'This album has no files to download.' });
+  const signature = Utilities.base64EncodeWebSafe(Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    JSON.stringify(files.map(function (f) { return [f.id, f.size, f.name, f.modified]; })),
+    Utilities.Charset.UTF_8
+  ));
+  const parts = [];
+  let current = [], bytes = 0;
+  files.forEach(function (entry, index) {
+    if (current.length && (bytes + entry.size > maxBytes || current.length >= 40)) {
+      parts.push(current); current = []; bytes = 0;
+    }
+    // Prefix guarantees unique, safe filenames even when Drive names repeat.
+    entry.zipName = String(index + 1).padStart(4, '0') + '_' + entry.name.replace(/[\\/\x00-\x1f<>:"|?*]/g, '_');
+    current.push(entry); bytes += entry.size;
+  });
+  if (current.length) parts.push(current);
+  const title = String(settings.eventName || folder.getName() || 'POSE Album').replace(/[\\/\x00-\x1f<>:"|?*]/g, '_').slice(0, 100);
+  if (params.zipPart === undefined || params.zipPart === '') {
+    return jsonResponse_({ ok: true, albumZip: { title: title, signature: signature, fileCount: files.length, partCount: parts.length } });
+  }
+  if (params.zipSignature !== signature) {
+    return jsonResponse_({ ok: false, message: 'The album changed. Close this window and prepare the album again.' });
+  }
+  const part = Number(params.zipPart);
+  if (!Number.isInteger(part) || part < 0 || part >= parts.length) {
+    return jsonResponse_({ ok: false, message: 'Invalid ZIP part.' });
+  }
+  const name = title + (parts.length > 1 ? '-part-' + (part + 1) + '-of-' + parts.length : '') + '.zip';
+  const blobs = parts[part].map(function (entry) { return entry.file.getBlob().setName(entry.zipName); });
+  const zip = Utilities.zip(blobs, name);
+  return jsonResponse_({ ok: true, albumZip: { name: name, data: Utilities.base64Encode(zip.getBytes()), fileCount: parts[part].length } });
 }
 
 function buildEvent_(folder, unlocked, includeItems) {
