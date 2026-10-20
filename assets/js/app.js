@@ -61,7 +61,7 @@ document.querySelectorAll("[data-package]").forEach((link) =>
     const serviceSelect = form?.querySelector('[name="service"]');
     if (serviceSelect && link.dataset.service) serviceSelect.value = link.dataset.service;
     else if (serviceSelect?.value === "AI Photobooth") {
-      serviceSelect.value = link.dataset.package.startsWith("Photoman") ? "Roaming Photobooth" : link.dataset.package === "360 Package" ? "360 Video Booth" : "Photobooth";
+      serviceSelect.value = link.dataset.package.startsWith("Photoman") ? "Photoman" : link.dataset.package === "360 Package" ? "360 Video Booth" : link.dataset.package === "Studio Promo" ? "Onsite Photo Studio" : link.dataset.package === "Signature Booth" ? "Premium Photobooth" : "Classic Photobooth";
     }
   }),
 );
