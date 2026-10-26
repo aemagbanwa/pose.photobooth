@@ -1007,46 +1007,84 @@
     await copyLink(albumShareUrl(collection), "Album link copied");
   }
 
-  async function shareAlbum() {
+  // Use an in-page share sheet on desktop: the Windows native share dialog can
+  // keep its Promise pending after closing, and copying alone gave no share UI.
+  // Keep native Web Share on phones and tablets.
+  function showDesktopShareSheet({ title, url }) {
+    document.querySelector("#pose-share-dialog")?.remove();
+    const dialog = document.createElement("dialog");
+    dialog.id = "pose-share-dialog";
+    dialog.setAttribute("aria-label", "Share link");
+    dialog.style.cssText = "border:1px solid #444;border-radius:16px;background:#18171b;color:#fff;padding:24px;max-width:min(440px,calc(100vw - 32px));width:100%;box-shadow:0 24px 70px #0009;font:inherit";
+    const heading = document.createElement("h2");
+    heading.textContent = title;
+    heading.style.cssText = "font-size:18px;margin:0 0 14px";
+    const field = document.createElement("input");
+    field.type = "text";
+    field.readOnly = true;
+    field.value = url;
+    field.setAttribute("aria-label", "Shareable link");
+    field.style.cssText = "box-sizing:border-box;width:100%;background:#2a2930;color:#fff;border:1px solid #555;border-radius:8px;padding:11px;margin-bottom:16px";
+    field.addEventListener("focus", () => field.select());
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end";
+    const copy = document.createElement("button");
+    copy.type = "button";
+    copy.textContent = "Copy link";
+    const close = document.createElement("button");
+    close.type = "button";
+    close.textContent = "Close";
+    for (const btn of [copy, close]) btn.style.cssText = "background:#333;color:#fff;border:1px solid #666;border-radius:8px;padding:10px 15px;cursor:pointer";
+    copy.style.background = "#c41e79";
+    copy.style.borderColor = "#c41e79";
+    copy.addEventListener("click", async () => {
+      const success = await copyLink(url, "Link copied");
+      if (success) dialog.close();
+      else { field.focus(); field.select(); }
+    });
+    close.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("close", () => dialog.remove(), { once: true });
+    row.append(close, copy);
+    dialog.append(heading, field, row);
+    document.body.append(dialog);
+    try { dialog.showModal(); }
+    catch (_) { dialog.setAttribute("open", ""); }
+  }
+
+  function shareLink(shareData, label) {
+    // Called synchronously in the actual click handler, preserving browser
+    // user activation for navigator.share on mobile devices.
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile && typeof navigator.share === "function") {
+      try {
+        Promise.resolve(navigator.share(shareData)).catch((error) => {
+          if (error?.name !== "AbortError") showDesktopShareSheet({ title: label, url: shareData.url });
+        });
+      } catch (_) { showDesktopShareSheet({ title: label, url: shareData.url }); }
+      return;
+    }
+    showDesktopShareSheet({ title: label, url: shareData.url });
+  }
+
+  function shareAlbum() {
     const collection = state.currentCollection;
-    if (!collection) return;
-    const shareData = {
+    if (!collection) { showToast("Open an album first"); return; }
+    shareLink({
       title: `${collection.title} — POSE Photobooth`,
       text: `View ${collection.title} on the POSE Photobooth gallery.`,
       url: albumShareUrl(collection),
-    };
-    // Desktop Windows share sheets can become unusable on subsequent shares.
-    // Copy the selected album's fresh URL directly on desktop; keep native
-    // sharing on mobile devices where the share sheet is expected.
-    if (!navigator.share || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      await copyAlbumLink();
-      return;
-    }
-    try {
-      await navigator.share(shareData);
-    } catch (error) {
-      if (error?.name !== "AbortError") await copyAlbumLink();
-    }
+    }, "Share album");
   }
 
-  async function shareCurrent() {
+  function shareCurrent() {
     const collection = state.currentCollection;
     const photo = collection?.photos[state.currentIndex];
-    if (!photo) return;
-    const shareData = {
+    if (!photo) { showToast("Open a photo first"); return; }
+    shareLink({
       title: `${collection.title} — POSE Photobooth`,
       text: "A moment captured by POSE Photobooth.",
       url: photo.original || photo.url,
-    };
-    if (!navigator.share || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      await copyLink(shareData.url, "Photo link copied");
-      return;
-    }
-    try {
-      await navigator.share(shareData);
-    } catch (error) {
-      if (error?.name !== "AbortError") await copyLink(shareData.url, "Photo link copied");
-    }
+    }, "Share photo");
   }
 
   async function downloadCurrentAlbum() {
@@ -1418,20 +1456,28 @@
       unlockPendingEvent();
     });
     els.clear.addEventListener("click", resetFilters);
-    // Route toolbar actions from the stable viewer element. Individual toolbar
-    // buttons can be replaced or re-rendered without losing click handlers.
-    els.viewer.addEventListener("click", (event) => {
-      const button = event.target.closest("button, a");
-      if (!button || !els.viewer.contains(button)) return;
-      if (button.matches("[data-close-viewer]")) return closeViewer();
-      switch (button.id) {
-        case "viewer-prev": return void moveViewer(-1);
-        case "viewer-next": return void moveViewer(1);
-        case "share-photo": return void shareCurrent();
-        case "share-album": return void shareAlbum();
-        case "copy-album-link": return void copyAlbumLink();
-        case "download-album": return void downloadCurrentAlbum();
-      }
+    // Attach directly to persistent toolbar controls. This avoids relying on
+    // bubbling from SVG clicks, and keeps share activation synchronous.
+    els.shareAlbum?.addEventListener("click", (event) => {
+      event.preventDefault();
+      shareAlbum();
+    });
+    els.share?.addEventListener("click", (event) => {
+      event.preventDefault();
+      shareCurrent();
+    });
+    els.copyAlbum?.addEventListener("click", (event) => {
+      event.preventDefault();
+      void copyAlbumLink();
+    });
+    els.albumDownload?.addEventListener("click", (event) => {
+      event.preventDefault();
+      void downloadCurrentAlbum();
+    });
+    els.viewerPrev?.addEventListener("click", () => moveViewer(-1));
+    els.viewerNext?.addEventListener("click", () => moveViewer(1));
+    els.viewer.querySelectorAll("[data-close-viewer]").forEach((button) => {
+      button.addEventListener("click", closeViewer);
     });
     els.viewerLoadMore?.addEventListener("click", () => loadMoreCurrentCollection());
     els.viewer.addEventListener("close", () =>
