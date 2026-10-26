@@ -976,7 +976,10 @@
   async function copyLink(url, successMessage = "Link copied") {
     try {
       if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
-      await navigator.clipboard.writeText(url);
+      await Promise.race([
+        navigator.clipboard.writeText(url),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Clipboard timed out")), 2500)),
+      ]);
     } catch (_) {
       // Fallback for browsers that deny Clipboard API access.
       const input = document.createElement("textarea");
@@ -1415,15 +1418,21 @@
       unlockPendingEvent();
     });
     els.clear.addEventListener("click", resetFilters);
-    document
-      .querySelectorAll("[data-close-viewer]")
-      .forEach((button) => button.addEventListener("click", closeViewer));
-    els.viewerPrev.addEventListener("click", () => moveViewer(-1));
-    els.viewerNext.addEventListener("click", () => moveViewer(1));
-    els.share.addEventListener("click", shareCurrent);
-    els.shareAlbum?.addEventListener("click", shareAlbum);
-    els.copyAlbum?.addEventListener("click", copyAlbumLink);
-    els.albumDownload.addEventListener("click", downloadCurrentAlbum);
+    // Route toolbar actions from the stable viewer element. Individual toolbar
+    // buttons can be replaced or re-rendered without losing click handlers.
+    els.viewer.addEventListener("click", (event) => {
+      const button = event.target.closest("button, a");
+      if (!button || !els.viewer.contains(button)) return;
+      if (button.matches("[data-close-viewer]")) return closeViewer();
+      switch (button.id) {
+        case "viewer-prev": return void moveViewer(-1);
+        case "viewer-next": return void moveViewer(1);
+        case "share-photo": return void shareCurrent();
+        case "share-album": return void shareAlbum();
+        case "copy-album-link": return void copyAlbumLink();
+        case "download-album": return void downloadCurrentAlbum();
+      }
+    });
     els.viewerLoadMore?.addEventListener("click", () => loadMoreCurrentCollection());
     els.viewer.addEventListener("close", () =>
       document.body.classList.remove("is-locked"),
