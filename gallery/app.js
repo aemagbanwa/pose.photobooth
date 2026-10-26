@@ -56,6 +56,7 @@
     viewerStage: document.querySelector("#viewer-stage"),
     share: document.querySelector("#share-photo"),
     shareAlbum: document.querySelector("#share-album"),
+    copyAlbum: document.querySelector("#copy-album-link"),
     download: document.querySelector("#download-media"),
     albumDownload: document.querySelector("#download-album"),
     pinDialog: document.querySelector("#pin-dialog"),
@@ -970,6 +971,39 @@
     return url.toString();
   }
 
+  // Copy URLs directly instead of relying on the Windows native share panel.
+  // The native panel may stay pending after its first use until the page reloads.
+  async function copyLink(url, successMessage = "Link copied") {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
+      await navigator.clipboard.writeText(url);
+    } catch (_) {
+      // Fallback for browsers that deny Clipboard API access.
+      const input = document.createElement("textarea");
+      input.value = url;
+      input.setAttribute("readonly", "");
+      input.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+      document.body.appendChild(input);
+      input.focus();
+      input.select();
+      let copied = false;
+      try { copied = document.execCommand("copy"); } catch (_) { /* unavailable */ }
+      input.remove();
+      if (!copied) {
+        showToast("Could not copy. Please copy the URL from your address bar.");
+        return false;
+      }
+    }
+    showToast(successMessage);
+    return true;
+  }
+
+  async function copyAlbumLink() {
+    const collection = state.currentCollection;
+    if (!collection) return;
+    await copyLink(albumShareUrl(collection), "Album link copied");
+  }
+
   async function shareAlbum() {
     const collection = state.currentCollection;
     if (!collection) return;
@@ -978,35 +1012,37 @@
       text: `View ${collection.title} on the POSE Photobooth gallery.`,
       url: albumShareUrl(collection),
     };
+    // Desktop Windows share sheets can become unusable on subsequent shares.
+    // Copy the selected album's fresh URL directly on desktop; keep native
+    // sharing on mobile devices where the share sheet is expected.
+    if (!navigator.share || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      await copyAlbumLink();
+      return;
+    }
     try {
-      if (navigator.share) await navigator.share(shareData);
-      else {
-        await navigator.clipboard.writeText(shareData.url);
-        showToast("Album link copied");
-      }
+      await navigator.share(shareData);
     } catch (error) {
-      if (error?.name !== "AbortError")
-        showToast("Sharing is unavailable right now");
+      if (error?.name !== "AbortError") await copyAlbumLink();
     }
   }
 
   async function shareCurrent() {
-    const photo = state.currentCollection?.photos[state.currentIndex];
+    const collection = state.currentCollection;
+    const photo = collection?.photos[state.currentIndex];
     if (!photo) return;
     const shareData = {
-      title: `${state.currentCollection.title} — POSE Photobooth`,
+      title: `${collection.title} — POSE Photobooth`,
       text: "A moment captured by POSE Photobooth.",
       url: photo.original || photo.url,
     };
+    if (!navigator.share || !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      await copyLink(shareData.url, "Photo link copied");
+      return;
+    }
     try {
-      if (navigator.share) await navigator.share(shareData);
-      else {
-        await navigator.clipboard.writeText(shareData.url);
-        showToast("Photo link copied");
-      }
+      await navigator.share(shareData);
     } catch (error) {
-      if (error?.name !== "AbortError")
-        showToast("Sharing is unavailable right now");
+      if (error?.name !== "AbortError") await copyLink(shareData.url, "Photo link copied");
     }
   }
 
@@ -1386,6 +1422,7 @@
     els.viewerNext.addEventListener("click", () => moveViewer(1));
     els.share.addEventListener("click", shareCurrent);
     els.shareAlbum?.addEventListener("click", shareAlbum);
+    els.copyAlbum?.addEventListener("click", copyAlbumLink);
     els.albumDownload.addEventListener("click", downloadCurrentAlbum);
     els.viewerLoadMore?.addEventListener("click", () => loadMoreCurrentCollection());
     els.viewer.addEventListener("close", () =>
