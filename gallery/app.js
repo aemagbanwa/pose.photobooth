@@ -54,8 +54,6 @@
     viewerPrev: document.querySelector("#viewer-prev"),
     viewerNext: document.querySelector("#viewer-next"),
     viewerStage: document.querySelector("#viewer-stage"),
-    share: document.querySelector("#share-photo"),
-    shareAlbum: document.querySelector("#share-album"),
     copyAlbum: document.querySelector("#copy-album-link"),
     download: document.querySelector("#download-media"),
     albumDownload: document.querySelector("#download-album"),
@@ -1456,16 +1454,6 @@
       unlockPendingEvent();
     });
     els.clear.addEventListener("click", resetFilters);
-    // Attach directly to persistent toolbar controls. This avoids relying on
-    // bubbling from SVG clicks, and keeps share activation synchronous.
-    els.shareAlbum?.addEventListener("click", (event) => {
-      event.preventDefault();
-      shareAlbum();
-    });
-    els.share?.addEventListener("click", (event) => {
-      event.preventDefault();
-      shareCurrent();
-    });
     els.copyAlbum?.addEventListener("click", (event) => {
       event.preventDefault();
       void copyAlbumLink();
