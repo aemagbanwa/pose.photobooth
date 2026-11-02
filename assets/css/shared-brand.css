@@ -1,0 +1,44 @@
+/* Shared main/gallery navigation and brand sizing. Keep after page styles. */
+.site-header, .site-footer {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif;
+}
+.site-header .nav, .modern-home .site-header .nav { height: 90px; }
+.site-header .wrap, .site-footer .wrap, .modern-home .site-header .wrap, .modern-home .site-footer .wrap {
+  width: min(calc(100% - 40px), 1180px);
+}
+.site-header .brand img, .modern-home .site-header .brand img {
+  content: normal; width: 148px; height: 62px; object-fit: contain; filter: none;
+}
+.site-footer .footer-grid img { content: normal; width: 150px; height: auto; object-fit: contain; filter: none; }
+.site-header nav, .modern-home .site-header nav { gap: 30px; font-size: 14px; }
+.site-header .pill, .modern-home .site-header .pill {
+  background: linear-gradient(135deg, #ffd77b, #efad37); color: #111;
+  padding: 10px 16px; font-weight: 600;
+  box-shadow: 0 12px 28px rgba(238, 171, 51, 0.18);
+}
+.site-header .menu { background: #070707; color: #fff; }
+@media (max-width: 920px) {
+  .site-header .nav, .modern-home .site-header .nav { height: 76px; }
+  .site-header .brand img, .modern-home .site-header .brand img { width: 128px; height: 54px; }
+}
+@media (max-width: 850px) {
+  .site-header nav#primary-nav, .modern-home .site-header nav#primary-nav {
+    top: 100%; background: #101923; color: #f5f7fb;
+    border-bottom: 1px solid rgba(255,255,255,.14);
+    padding: 16px 22px 22px; gap: 4px;
+    max-height: calc(100vh - 100px); max-height: calc(100dvh - 100px);
+    overflow-y: auto; overscroll-behavior: contain;
+    box-shadow: 0 18px 32px rgba(0,0,0,.3);
+  }
+  .site-header nav#primary-nav > a:not(.pill) {
+    display: block; color: #f5f7fb; padding: 12px 10px; min-height: 44px; border-radius: 8px;
+  }
+  .site-header nav#primary-nav > a:not(.pill):hover,
+  .site-header nav#primary-nav > a:not(.pill):focus-visible { background: #202d3b; color: #f0bf68; }
+  .site-header nav#primary-nav > .pill { margin-top: 12px; }
+}
+@media (max-width: 640px) {
+  .site-header .nav, .modern-home .site-header .nav { height: 68px; }
+  .site-header .brand img, .modern-home .site-header .brand img { width: 112px; height: 46px; }
+}
+.site-header nav#primary-nav a[aria-current="page"] { color: #f0bf68; }
