@@ -8,7 +8,7 @@
  * visitor provides an email address—sends a simple confirmation email.
  */
 
-const SYSTEM_VERSION = "v20.0";
+const SYSTEM_VERSION = "v22.0";
 const NOTIFY_EMAIL = "adrian.magbanwa@gmail.com";
 const SPREADSHEET_NAME = "POSE Website Inquiries";
 const SHEET_NAME = "Inquiries";
@@ -29,6 +29,9 @@ const HEADERS = [
   "Client Submitted At",
   "Notes",
   "Package",
+  "Requested Add-ons",
+  "Estimated Total",
+  "Extra Hours",
 ];
 
 function doGet() {
@@ -57,6 +60,9 @@ function doPost(e) {
       location: clean_(p.location, 200),
       service: clean_(p.service, 120),
       package: clean_(p.package, 120),
+      addons: clean_(p.addons, 900),
+      estimate: clean_(p.estimate, 100),
+      extraHours: clean_(p.extraHours, 20),
       name: clean_(p.name, 120),
       contact: clean_(p.contact, 160),
       email: clean_(p.email, 180).toLowerCase(),
@@ -159,8 +165,10 @@ function ensureHeaders_(sheet) {
       sheet.getRange(1, 5).setValue("Email");
     }
 
-    // Normalize expected headers so new rows line up correctly.
-    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    // Append missing new fields without overwriting existing manually arranged columns.
+    const current = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0];
+    const missing = HEADERS.filter(h => !current.includes(h));
+    if (missing.length) sheet.getRange(1, current.length + 1, 1, missing.length).setValues([missing]);
   }
 
   sheet.setFrozenRows(1);
@@ -193,6 +201,9 @@ function appendInquiryRow_(sheet, inquiry, received) {
     "Client Submitted At": inquiry.clientSubmittedAt,
     Notes: "",
     Package: inquiry.package,
+    "Requested Add-ons": inquiry.addons,
+    "Estimated Total": inquiry.estimate,
+    "Extra Hours": inquiry.extraHours,
   };
 
   const row = headerValues.map((h) =>
@@ -288,6 +299,9 @@ function sendOwnerNotification_(i, received, sheetUrl) {
       detailsTable_([
         ["Service", i.service],
         ["Package", i.package],
+        ["Requested add-ons", i.addons || "None"],
+        ["Estimated total", i.estimate || "To be quoted"],
+        ["Extra hours", i.extraHours || "0"],
         ["Event date", eventDateText],
         ["Event type", i.type],
         ["Venue / location", i.location],
@@ -335,6 +349,9 @@ function sendOwnerNotification_(i, received, sheetUrl) {
     "",
     "Service: " + i.service,
     "Package: " + i.package,
+    "Add-ons: " + (i.addons || "None"),
+    "Estimated total: " + (i.estimate || "To be quoted"),
+    "Additional hours: " + (i.extraHours || "0"),
     "Venue / location: " + i.location,
     "Mobile / Messenger: " + i.contact,
     "Email: " + (i.email || "Not provided"),
@@ -376,6 +393,9 @@ function sendCustomerConfirmation_(i) {
       detailsTable_([
         ["Service", i.service],
         ["Package", i.package],
+        ["Requested add-ons", i.addons || "None"],
+        ["Estimated total", i.estimate || "To be quoted"],
+        ["Extra hours", i.extraHours || "0"],
         ["Event date", eventDateText],
         ["Event type", i.type],
         ["Venue / location", i.location],

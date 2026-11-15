@@ -55,33 +55,76 @@ const formHelp = document.querySelector("#formHelp");
 const submitBtn = form?.querySelector('button[type="submit"]');
 const packageSelect = document.querySelector("#packageSelect");
 
-const packageServices = {
-  "Photobooth 4R": "Classic Photobooth", "Photobooth Strip": "Classic Photobooth",
-  "Photobooth Dedication": "Classic Photobooth", "Photobooth Polaroid": "Classic Photobooth",
-  "Signature Booth": "Premium Photobooth", "Photoman Unlimited": "Photoman",
-  "Photoman Premium": "Photoman", "Studio Promo": "Onsite Photo Studio",
-  "360 Package": "360 Video Booth", "AI Photobooth": "AI Photobooth",
-  "Event Photography Inquiry": "Event Photography", "Trading Card Photobooth": "Trading Card Photobooth",
-  "Photoman + Free Video Guestbook": "Event Bundles",
-  "Photobooth + Event Photographer": "Event Bundles",
-  "360 Video Booth + Classic Photobooth": "Event Bundles",
-  "Photobooth + Free Video Guestbook": "Event Bundles",
-  "POSE Celebration — Classic Photobooth + Projector (₱5,999)": "Event Bundles",
-  "POSE Memories — Event Photography + Projector (₱5,999)": "Event Bundles",
-  "POSE Interactive — Photoman + Projector + Free Video Guestbook (₱7,999)": "Event Bundles",
-  "Projector Presentation Add-on (+₱2,500)": "Event Add-ons"
-};
-document.querySelectorAll("[data-package]").forEach((link) =>
-  link.addEventListener("click", () => {
-    if (packageSelect && link.dataset.package) {
-      const selected = link.dataset.package;
-      if (![...packageSelect.options].some(o => o.value === selected)) packageSelect.add(new Option(selected, selected));
-      packageSelect.value = selected;
-    }
-    const serviceSelect = form?.querySelector('[name="service"]');
-    if (serviceSelect) serviceSelect.value = link.dataset.service || packageServices[link.dataset.package] || "";
-  }),
-);
+// Single source of truth for inquiry categories, package choices and indicative pricing.
+// Keep the package IDs unchanged for compatibility with existing CTA links and inquiry backend.
+const POSE_PACKAGES = [
+  ['Photobooth 4R', 'Classic Photobooth', 2999, 1000, '4R Photobooth · ₱2,999'],
+  ['Photobooth Strip', 'Classic Photobooth', 3499, 1000, 'Strip Photobooth · ₱3,499'],
+  ['Photobooth Dedication', 'Classic Photobooth', 3499, 1000, 'Dedication Photobooth · ₱3,499'],
+  ['Photobooth Polaroid', 'Classic Photobooth', 3999, 1500, 'Polaroid Photobooth · ₱3,999'],
+  ['Signature Booth', 'Signature Photobooth', 6999, 1500, 'Signature Photobooth · ₱6,999'],
+  ['Photoman Unlimited', 'Photoman', 4999, 1500, 'Photoman Unlimited · ₱4,999'],
+  ['Photoman Premium', 'Photoman', 7499, 2000, 'Photoman Premium · ₱7,499'],
+  ['360 Package', '360 Video Booth', 12000, 2000, '360 Video Booth · ₱12,000'],
+  ['Trading Card Photobooth', 'Trading Card Photobooth', 9999, null, 'Trading Card Photobooth · ₱9,999'],
+  ['Event Photography Inquiry', 'Event Photography', 3000, null, 'Event Photography (up to 3 hrs) · ₱3,000'],
+  ['Studio Promo', 'On-site Photo Studio', 7999, 2000, 'On-site Photo Studio · ₱7,999'],
+  ['AI Photobooth', 'AI Photobooth', null, null, 'AI Photobooth · Price on request'],
+  ['Photoman + Free Video Guestbook', 'Event Bundles', 5500, null, 'Photoman + Free Video Guestbook · ₱5,500'],
+  ['Photobooth + Event Photographer', 'Event Bundles', 5000, null, 'Photobooth + Event Photography · ₱5,000'],
+  ['360 Video Booth + Classic Photobooth', 'Event Bundles', 15000, null, '360 + Classic Photobooth · ₱15,000'],
+  ['Photobooth + Free Video Guestbook', 'Event Bundles', 5000, null, 'Photobooth + Free Video Guestbook · ₱5,000'],
+  ['POSE Celebration — Classic Photobooth + Projector (₱5,999)', 'Event Bundles', 5999, null, 'POSE Celebration: Classic + Projector · ₱5,999'],
+  ['POSE Memories — Event Photography + Projector (₱5,999)', 'Event Bundles', 5999, null, 'POSE Memories: Photography + Projector · ₱5,999'],
+  ['POSE Interactive — Photoman + Projector + Free Video Guestbook (₱7,999)', 'Event Bundles', 7999, null, 'POSE Interactive: Photoman + Projector + Guestbook · ₱7,999'],
+  ['Help Me Choose', 'Not sure yet', null, null, 'Help me choose a package']
+].map(([id, category, price, extraHourRate, label]) => ({id, category, price, extraHourRate, label}));
+const posePackageById = new Map(POSE_PACKAGES.map(p => [p.id, p]));
+const packageServices = Object.fromEntries(POSE_PACKAGES.map(p => [p.id, p.category]));
+const serviceSelect = form?.querySelector('[name="service"]');
+const packageHint = document.getElementById('packageHint');
+function populatePackages(category, selectedId = '') {
+  if (!packageSelect) return;
+  packageSelect.replaceChildren();
+  const options = POSE_PACKAGES.filter(p => p.category === category);
+  if (!options.length) {
+    packageSelect.add(new Option('Choose a service category first', ''));
+    packageSelect.disabled = true;
+    if (packageHint) packageHint.textContent = 'Select a service above to view packages.';
+    packageSelect.dispatchEvent(new Event('change', {bubbles:true}));
+    return;
+  }
+  packageSelect.disabled = false;
+  packageSelect.add(new Option('Select a package', ''));
+  options.forEach(p => packageSelect.add(new Option(p.label, p.id)));
+  packageSelect.value = options.some(p=>p.id === selectedId) ? selectedId : (category === 'Not sure yet' ? 'Help Me Choose' : '');
+  if (packageHint) packageHint.textContent = category === 'Not sure yet'
+    ? 'Tell us about your event and POSE will recommend a package.'
+    : `${options.length} available ${options.length === 1 ? 'package' : 'packages'} for ${category}.`;
+  packageSelect.dispatchEvent(new Event('change', {bubbles:true}));
+}
+function selectPosePackage(id) {
+  const p = posePackageById.get(id);
+  if (!p || !serviceSelect) return false;
+  serviceSelect.value = p.category;
+  populatePackages(p.category, id);
+  return true;
+}
+serviceSelect?.addEventListener('change', () => populatePackages(serviceSelect.value));
+// CTA and finder links may be inserted dynamically; delegate clicks to preserve their selections.
+document.addEventListener('click', e => {
+  const link = e.target.closest('[data-package]');
+  if (!link) return;
+  if (link.dataset.package === 'Projector Presentation Add-on (+₱2,500)') {
+    // The projector is an add-on, not a standalone primary package.
+    if (packageHint) packageHint.textContent = 'Select a primary package, then tick the projector add-on below.';
+    document.getElementById('addonProjector')?.focus();
+    return;
+  }
+  selectPosePackage(link.dataset.package);
+});
+populatePackages(serviceSelect?.value || '');
+form?.addEventListener('reset', () => setTimeout(() => populatePackages(serviceSelect?.value || ''), 0));
 
 function setFormMessage(message, type = "info") {
   if (!formHelp) return;
@@ -96,9 +139,61 @@ function submissionId() {
   return "pose-" + Date.now() + "-" + Math.random().toString(16).slice(2);
 }
 
+// V2.3 review step: customers explicitly confirm their summary before the existing submission runs.
+const poseReviewDialog = document.getElementById('poseReviewDialog');
+const poseReviewFields = document.getElementById('poseReviewFields');
+let poseReviewApproved = false;
+const reviewFieldNames = [
+  ['name', 'Client'], ['contact', 'Mobile / Messenger'], ['email', 'Email'],
+  ['date', 'Event date'], ['type', 'Event type'], ['location', 'Venue / location'],
+  ['service', 'Service'], ['package', 'Selected package'], ['addons', 'Requested add-ons'],
+  ['extraHours', 'Extra hours']
+];
+function populatePoseReview() {
+  if (!form || !poseReviewFields) return;
+  const data = new FormData(form);
+  const rows = reviewFieldNames.map(([key, label]) => {
+    let value = String(data.get(key) || '').trim();
+    if (key === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const [year, month, day] = value.split('-').map(Number);
+      value = new Intl.DateTimeFormat('en-PH', {year:'numeric',month:'long',day:'numeric'}).format(new Date(year,month-1,day));
+    }
+    if (key === 'extraHours') value = value === '0' || !value ? 'None' : value;
+    if (key === 'addons' && !value) value = 'None';
+    if (!value) value = 'Not provided';
+    return [label, value];
+  });
+  poseReviewFields.replaceChildren();
+  rows.forEach(([label, value]) => {
+    const dt = document.createElement('dt'); dt.textContent = label;
+    const dd = document.createElement('dd'); dd.textContent = value;
+    poseReviewFields.append(dt, dd);
+  });
+  document.getElementById('poseReviewTotal').textContent = String(data.get('estimate') || 'Price on request');
+}
+form?.addEventListener('input', () => { poseReviewApproved = false; });
+form?.addEventListener('change', () => { poseReviewApproved = false; });
+document.getElementById('poseReviewEdit')?.addEventListener('click', () => poseReviewDialog?.close());
+document.getElementById('poseReviewConfirm')?.addEventListener('click', () => {
+  if (!form || !form.reportValidity()) { poseReviewDialog?.close(); return; }
+  poseReviewApproved = true;
+  poseReviewDialog?.close();
+  form.requestSubmit();
+});
+poseReviewDialog?.addEventListener('close', () => {
+  if (!poseReviewApproved) submitBtn?.focus();
+});
+
 form?.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!form.reportValidity()) return;
+  if (!poseReviewApproved && poseReviewDialog?.showModal) {
+    populatePoseReview();
+    poseReviewDialog.showModal();
+    poseTrack('pose_inquiry_review_opened', {package_name: packageSelect?.value || ''});
+    return;
+  }
+  poseReviewApproved = false; // A later attempt must always require a fresh review.
 
   const endpoint = window.POSE_INQUIRY?.endpoint?.trim();
   if (!endpoint) {
@@ -164,18 +259,6 @@ form?.addEventListener("submit", async (e) => {
   }
 });
 
-// Keep the service and package aligned whether selected from a CTA or directly.
-const serviceSelect = form?.querySelector('[name="service"]');
-serviceSelect?.addEventListener('change', () => {
-  if (!packageSelect) return;
-  const options = Object.entries(packageServices).filter(([, service]) => service === serviceSelect.value);
-  if (options.length === 1) packageSelect.value = options[0][0];
-  else if (packageServices[packageSelect.value] !== serviceSelect.value) packageSelect.value = '';
-});
-packageSelect?.addEventListener('change', () => {
-  if (serviceSelect && packageServices[packageSelect.value]) serviceSelect.value = packageServices[packageSelect.value];
-});
-
 // Small, client-side guide to help visitors choose existing packages.
 (() => {
   const goal = document.querySelector('#finderGoal');
@@ -197,14 +280,8 @@ packageSelect?.addEventListener('change', () => {
     inquire.dataset.service = packageServices[name] || (name === 'Event Photography Inquiry' ? 'Event Photography' : 'Event Bundles');
   };
   goal.addEventListener('change',update); budget.addEventListener('change',update); update();
-  inquire.addEventListener('click', () => {
-    if (packageSelect) {
-      if (![...packageSelect.options].some(o => o.value === inquire.dataset.package)) packageSelect.add(new Option(inquire.dataset.package,inquire.dataset.package));
-      packageSelect.value = inquire.dataset.package;
-    }
-    const serviceField = form?.querySelector('[name="service"]');
-    if (serviceField) serviceField.value = inquire.dataset.service;
-  });
+  // The delegated CTA listener handles synchronization for package recommendations.
+
 })();
 
 
@@ -238,3 +315,53 @@ document.querySelectorAll('[data-package]').forEach(link => link.addEventListene
 document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photobooth"]').forEach(link => {
   link.addEventListener('click', () => poseTrack('pose_messenger_click', {placement: link.className || 'link'}));
 });
+
+
+// V2.2: transparent, client-side indicative prices; not a payment or booking system.
+(() => {
+  const prices = Object.fromEntries(POSE_PACKAGES.map(p => [p.id, [p.price, p.extraHourRate]]));
+  const $ = id => document.getElementById(id);
+  const opt = { projector:$('addonProjector'), enclosure:$('addonEnclosure'), magnets:$('addonMagnets'), video:$('addonVideoGuestbook') };
+  const hours = $('quoteExtraHours');
+  const format = amount => '₱' + amount.toLocaleString('en-PH');
+  function updateQuote() {
+    const selected = packageSelect?.value || '';
+    const base = prices[selected];
+    const hasPublishedPrice = Number.isFinite(base?.[0]);
+    const is360 = selected === '360 Package';
+    const isPhotoman = selected === 'Photoman Unlimited' || selected === 'Photoman Premium';
+    const includesProjector = /Projector/.test(selected);
+    const includesGuestbook = /Video Guestbook/.test(selected);
+    const standaloneProjector = selected === 'Projector Presentation Add-on (+₱2,500)';
+    const setAvailable = (input, available) => {input.disabled = !available; if(!available) input.checked = false;};
+    setAvailable(opt.projector, Boolean(selected && hasPublishedPrice && !includesProjector));
+    setAvailable(opt.enclosure, is360);
+    setAvailable(opt.magnets, isPhotoman);
+    setAvailable(opt.video, Boolean(selected && hasPublishedPrice && !includesGuestbook && !standaloneProjector));
+    const hourRate = base?.[1];
+    hours.disabled = !Number.isFinite(hourRate);
+    if (hours.disabled) hours.value = '0';
+    $('quoteHourRate').textContent = Number.isFinite(hourRate)
+      ? `${format(hourRate)} per additional hour of the selected primary service.`
+      : 'Additional hours for this package are quoted on request.';
+    let total = hasPublishedPrice ? base[0] : null;
+    const additions = [];
+    if (opt.projector.checked) {total += 2500; additions.push('Projector presentation (4 hours): +₱2,500');}
+    if (opt.enclosure.checked) {total += 5000; additions.push('360 LED enclosure: +₱5,000');}
+    if (opt.magnets.checked) {total += 1000; additions.push('Photoman magnets / 50 prints: +₱1,000');}
+    if (opt.video.checked) additions.push('Video Guestbook: price on request');
+    const count = Number(hours.value) || 0;
+    if (count && Number.isFinite(hourRate)) {total += count * hourRate; additions.push(`${count} additional hour(s): +${format(count * hourRate)}`);}
+    $('quoteTotal').textContent = total == null ? (standaloneProjector ? 'Select a primary package' : selected ? 'Price on request' : 'Select a package') : format(total);
+    $('quoteDetails').textContent = total == null ? 'Choose a priced package to calculate an estimate.' : `${posePackageById.get(selected)?.label || selected}: ${format(base[0])}${additions.length ? ' · ' + additions.join(' · ') : ' · No extras selected'}`;
+    $('quoteAddonsField').value = additions.join('; ');
+    $('quoteEstimateField').value = total == null ? 'Price on request' : format(total) + (opt.video.checked ? ' + guestbook quote' : '');
+    $('quoteExtraHoursField').value = String(count);
+  }
+  packageSelect?.addEventListener('change', updateQuote);
+  Object.values(opt).forEach(el => el.addEventListener('change', updateQuote));
+  hours?.addEventListener('change', updateQuote);
+  // Finder buttons also populate the package; their handlers are registered earlier.
+  form?.addEventListener('reset', () => setTimeout(updateQuote, 0));
+  updateQuote();
+})();

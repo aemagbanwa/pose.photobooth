@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="assets/css/styles.css?v=carousel-20260918" />
     <link
       rel="stylesheet"
-      href="assets/css/modern-home.css?v=20261115-v21"
+      href="assets/css/modern-home.css?v=20261115-v22"
     />
     <script src="/assets/js/partials.js" defer></script>
     <link rel="stylesheet" href="/assets/css/shared-brand.css?v=20261102" />
@@ -1192,47 +1192,42 @@
                 required
             /></label>
             <label
-              >Interested in<select name="service" required>
-                <option value="">Select</option>
+              >Interested in<select name="service" id="serviceSelect" required>
+                <option value="">Select a service category</option>
                 <option>Classic Photobooth</option>
-                <option>Premium Photobooth</option>
+                <option>Signature Photobooth</option>
                 <option>Photoman</option>
-                <option>Onsite Photo Studio</option>
-                <option>Event Photography</option>
-                <option>Trading Card Photobooth</option>
-                <option>Event Bundles</option>
-                <option>Event Add-ons</option>
                 <option>360 Video Booth</option>
-                <option>AI Photobooth</option>
-                <option>Not sure yet</option>
-              </select></label
-            >
-            <label
-              >Package<select name="package" id="packageSelect" required>
-                <option value="">Select a package</option>
-                <option>Photobooth 4R</option>
-                <option>Photobooth Strip</option>
-                <option>Photobooth Dedication</option>
-                <option>Photobooth Polaroid</option>
-                <option>Signature Booth</option>
-                <option>Photoman Unlimited</option>
-                <option>Photoman Premium</option>
-                <option>Studio Promo</option>
-                <option>360 Package</option>
-                <option>AI Photobooth</option>
-                <option>Event Photography Inquiry</option>
                 <option>Trading Card Photobooth</option>
-                <option>Photoman + Free Video Guestbook</option>
-                <option>Photobooth + Event Photographer</option>
-                <option>360 Video Booth + Classic Photobooth</option>
-                <option>Photobooth + Free Video Guestbook</option>
-                <option>POSE Celebration — Classic Photobooth + Projector (₱5,999)</option>
-                <option>POSE Memories — Event Photography + Projector (₱5,999)</option>
-                <option>POSE Interactive — Photoman + Projector + Free Video Guestbook (₱7,999)</option>
-                <option>Projector Presentation Add-on (+₱2,500)</option>
+                <option>Event Photography</option>
+                <option>On-site Photo Studio</option>
+                <option>AI Photobooth</option>
+                <option>Event Bundles</option>
+                <option>Not sure yet</option>
+              </select></label>
+            <label>Package<select name="package" id="packageSelect" required disabled>
+                <option value="">Choose a service category first</option>
+              </select>
+              <small id="packageHint" aria-live="polite">Only packages for your selected service will appear.</small>
+            </label>
 
-              </select></label
-            >
+            <fieldset class="pose-quote-builder" id="quoteBuilder">
+              <legend>Customize your package</legend>
+              <p class="pose-quote-intro">Choose a package above, then add optional services. Your estimate updates automatically.</p>
+              <div class="pose-quote-options">
+                <label class="pose-quote-option"><input type="checkbox" id="addonProjector" /> <span>Projector presentation add-on <strong>+₱2,500</strong><small>Up to 4 hours; same event venue, subject to suitability and availability.</small></span></label>
+                <label class="pose-quote-option"><input type="checkbox" id="addonEnclosure" /> <span>360 LED enclosure <strong>+₱5,000</strong><small>Available with 360 Video Booth packages only.</small></span></label>
+                <label class="pose-quote-option"><input type="checkbox" id="addonMagnets" /> <span>Photoman magnets (per 50 prints) <strong>+₱1,000</strong><small>Available with standalone Photoman packages only.</small></span></label>
+                <label class="pose-quote-option"><input type="checkbox" id="addonVideoGuestbook" /> <span>Request a Video Guestbook <strong>Price on request</strong><small>Already included in qualifying Photoman bundles; otherwise separately quoted.</small></span></label>
+              </div>
+              <label class="pose-extra-hours" for="quoteExtraHours">Additional service hours <select id="quoteExtraHours"><option value="0">No additional hours</option><option value="1">+1 hour</option><option value="2">+2 hours</option><option value="3">+3 hours</option></select><small id="quoteHourRate">Available for selected packages with published extension rates.</small></label>
+              <div class="pose-quote-total" aria-live="polite" aria-atomic="true"><span>Indicative package total</span><strong id="quoteTotal">Select a package</strong></div>
+              <p class="pose-quote-details" id="quoteDetails">Select a package to see the estimated price.</p>
+              <p class="pose-quote-disclaimer">Estimate only, not a confirmed quotation or reservation. Transportation, venue requirements and special requests may change the final price. Add-ons depend on staff and equipment availability.</p>
+              <input type="hidden" name="addons" id="quoteAddonsField" value="" />
+              <input type="hidden" name="estimate" id="quoteEstimateField" value="" />
+              <input type="hidden" name="extraHours" id="quoteExtraHoursField" value="0" />
+            </fieldset>
             <div class="form-row">
               <label
                 >Name<input
@@ -1276,7 +1271,7 @@
               ></label
             >
             <button class="mt-btn mt-btn-gold mt-submit" type="submit">
-              Send Inquiry →
+              Review Inquiry →
             </button>
             <p class="form-help" id="formHelp" role="status" aria-live="polite">
               Your inquiry will be securely recorded and sent to the POSE team.
@@ -1361,6 +1356,18 @@
       <a class="pose-floating-messenger" href="https://www.facebook.com/pose.photobooth.2017" target="_blank" rel="noopener noreferrer" aria-label="Message POSE Photobooth on Facebook Messenger">Message POSE <span aria-hidden="true">↗</span></a>
     </main>
 
+    <!-- V2.3: local-only review; no details are sent until the customer confirms. -->
+    <dialog class="pose-review-dialog" id="poseReviewDialog" aria-labelledby="poseReviewTitle" aria-describedby="poseReviewIntro">
+      <div class="pose-review-inner">
+        <p class="pose-review-kicker">POSE PHOTOBOOTH · INQUIRY REVIEW</p>
+        <h2 id="poseReviewTitle">Review your event inquiry</h2>
+        <p id="poseReviewIntro" class="pose-review-lead">Please check your information before sending it to POSE.</p>
+        <dl id="poseReviewFields" class="pose-review-fields"></dl>
+        <div class="pose-review-estimate"><span>Indicative package total</span><strong id="poseReviewTotal">—</strong></div>
+        <p class="pose-review-terms">This is an estimate and inquiry only, not a formal quotation, payment request, availability confirmation, or reservation. Transportation, venue suitability, event requirements, staffing and optional services are subject to POSE confirmation. Any item listed as “price on request” is not included in the estimated amount.</p>
+        <div class="pose-review-actions"><button id="poseReviewEdit" type="button" class="pose-review-edit">← Edit details</button><button id="poseReviewConfirm" type="button" class="pose-review-confirm">Confirm &amp; Send Inquiry →</button></div>
+      </div>
+    </dialog>
     <div data-shared-footer></div>
     <a
       class="floating-chat"
@@ -1371,6 +1378,6 @@
       >Chat with POSE</a
     >
     <script src="assets/js/inquiry-config.js"></script>
-    <script src="assets/js/app.js?v=20261115-v21"></script>
+    <script src="assets/js/app.js?v=20261115-v24"></script>
   </body>
 </html>

@@ -84,3 +84,10 @@ The home page `#bundles` section includes three introductory projector combinati
 - POSE Interactive — 2-hour Photoman + free Video Guestbook + 4-hour projector service: ₱7,999
 
 A +₱2,500 projector add-on is presented for existing same-venue POSE bookings. It includes a projector, screen, laptop and dedicated presentation operator. Client-supplied presentation playback is included; editing, sound system and live projection are excluded. Confirm projector and venue suitability before accepting bookings. These prices are introductory proposals and should be approved against actual operating costs before public deployment.
+
+
+## Website V2.3
+See `V2.3-UPDATE-NOTES.md` for the new client-side review-before-submit interface.
+
+
+See V2.4-UPDATE-NOTES.md for dependent inquiry dropdown changes.
