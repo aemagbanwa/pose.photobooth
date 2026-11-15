@@ -63,3 +63,24 @@ Edit the partial files once to update both pages.
 
 ## Gallery scaling update (October 2026)
 See `README-GALLERY-SCALING.md`. After deploying the included Apps Script backend, run `setupGalleryIndex()` once before testing the optimized gallery.
+
+## November 2026: featured bundles
+
+The homepage now has a dedicated `#bundles` section and booking-form options for four confirmed packages:
+
+- Photoman (2 hours) + free Video Guestbook — PHP 5,500
+- Photobooth (2 hours) + Event Photographer (3 hours) — PHP 5,000
+- 360 Video Booth (3 hours) + Classic Photobooth (3 hours) — PHP 15,000
+- Photobooth (3 hours) + free Video Guestbook — PHP 5,000
+
+Bundle CTAs preselect `Event Bundles` and the named bundle in the inquiry form. Verify guestbook hours, print format, transport conditions, and availability with the customer rather than assuming unspecified inclusions.
+
+## November 2026 multimedia bundle additions
+
+The home page `#bundles` section includes three introductory projector combinations:
+
+- POSE Celebration — 2-hour Classic Photobooth + 4-hour projector service: ₱5,999
+- POSE Memories — up to 3-hour Event Photography + 4-hour projector service: ₱5,999
+- POSE Interactive — 2-hour Photoman + free Video Guestbook + 4-hour projector service: ₱7,999
+
+A +₱2,500 projector add-on is presented for existing same-venue POSE bookings. It includes a projector, screen, laptop and dedicated presentation operator. Client-supplied presentation playback is included; editing, sound system and live projection are excluded. Confirm projector and venue suitability before accepting bookings. These prices are introductory proposals and should be approved against actual operating costs before public deployment.

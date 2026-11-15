@@ -55,14 +55,31 @@ const formHelp = document.querySelector("#formHelp");
 const submitBtn = form?.querySelector('button[type="submit"]');
 const packageSelect = document.querySelector("#packageSelect");
 
+const packageServices = {
+  "Photobooth 4R": "Classic Photobooth", "Photobooth Strip": "Classic Photobooth",
+  "Photobooth Dedication": "Classic Photobooth", "Photobooth Polaroid": "Classic Photobooth",
+  "Signature Booth": "Premium Photobooth", "Photoman Unlimited": "Photoman",
+  "Photoman Premium": "Photoman", "Studio Promo": "Onsite Photo Studio",
+  "360 Package": "360 Video Booth", "AI Photobooth": "AI Photobooth",
+  "Event Photography Inquiry": "Event Photography", "Trading Card Photobooth": "Trading Card Photobooth",
+  "Photoman + Free Video Guestbook": "Event Bundles",
+  "Photobooth + Event Photographer": "Event Bundles",
+  "360 Video Booth + Classic Photobooth": "Event Bundles",
+  "Photobooth + Free Video Guestbook": "Event Bundles",
+  "POSE Celebration — Classic Photobooth + Projector (₱5,999)": "Event Bundles",
+  "POSE Memories — Event Photography + Projector (₱5,999)": "Event Bundles",
+  "POSE Interactive — Photoman + Projector + Free Video Guestbook (₱7,999)": "Event Bundles",
+  "Projector Presentation Add-on (+₱2,500)": "Event Add-ons"
+};
 document.querySelectorAll("[data-package]").forEach((link) =>
   link.addEventListener("click", () => {
-    if (packageSelect) packageSelect.value = link.dataset.package;
-    const serviceSelect = form?.querySelector('[name="service"]');
-    if (serviceSelect && link.dataset.service) serviceSelect.value = link.dataset.service;
-    else if (serviceSelect?.value === "AI Photobooth") {
-      serviceSelect.value = link.dataset.package.startsWith("Photoman") ? "Photoman" : link.dataset.package === "360 Package" ? "360 Video Booth" : link.dataset.package === "Studio Promo" ? "Onsite Photo Studio" : link.dataset.package === "Signature Booth" ? "Premium Photobooth" : "Classic Photobooth";
+    if (packageSelect && link.dataset.package) {
+      const selected = link.dataset.package;
+      if (![...packageSelect.options].some(o => o.value === selected)) packageSelect.add(new Option(selected, selected));
+      packageSelect.value = selected;
     }
+    const serviceSelect = form?.querySelector('[name="service"]');
+    if (serviceSelect) serviceSelect.value = link.dataset.service || packageServices[link.dataset.package] || "";
   }),
 );
 
@@ -127,9 +144,12 @@ form?.addEventListener("submit", async (e) => {
       await fetch(endpoint, { method: "POST", body: payload, mode: "no-cors" });
     }
 
+    // A no-cors response is opaque and cannot prove server acceptance.
+    const receiptStatus = response?.type === 'opaque' || !response ? 'unverified' : 'http_ok';
+    poseTrack('pose_inquiry_posted', {package_name: String(data.get('package') || ''), receipt_status: receiptStatus});
     form.reset();
     setFormMessage(
-      "Inquiry sent. Thank you! POSE has received your event details. If you provided an email address, a confirmation has also been sent there.",
+      "Your inquiry was submitted. If you don’t receive a confirmation, please message POSE on Facebook to verify receipt.",
       "success",
     );
   } catch (err) {
@@ -144,13 +164,77 @@ form?.addEventListener("submit", async (e) => {
   }
 });
 
-// Keep AI inquiries complete whether visitors use a CTA or the form directly.
+// Keep the service and package aligned whether selected from a CTA or directly.
 const serviceSelect = form?.querySelector('[name="service"]');
 serviceSelect?.addEventListener('change', () => {
-  if (serviceSelect.value === 'AI Photobooth' && packageSelect) packageSelect.value = 'AI Photobooth';
-  else if (packageSelect?.value === 'AI Photobooth') packageSelect.value = '';
+  if (!packageSelect) return;
+  const options = Object.entries(packageServices).filter(([, service]) => service === serviceSelect.value);
+  if (options.length === 1) packageSelect.value = options[0][0];
+  else if (packageServices[packageSelect.value] !== serviceSelect.value) packageSelect.value = '';
 });
 packageSelect?.addEventListener('change', () => {
-  if (packageSelect.value === 'AI Photobooth' && serviceSelect) serviceSelect.value = 'AI Photobooth';
-  else if (serviceSelect?.value === 'AI Photobooth') serviceSelect.value = '';
+  if (serviceSelect && packageServices[packageSelect.value]) serviceSelect.value = packageServices[packageSelect.value];
+});
+
+// Small, client-side guide to help visitors choose existing packages.
+(() => {
+  const goal = document.querySelector('#finderGoal');
+  const budget = document.querySelector('#finderBudget');
+  const result = document.querySelector('#finderResult');
+  const inquire = document.querySelector('#finderInquire');
+  if (!goal || !budget || !result || !inquire) return;
+  const options = {
+    prints: {low:['Photobooth 4R','₱2,999 · 2 hours'],mid:['Photobooth + Event Photographer','₱5,000 · 2 hrs photobooth + 3 hrs photography'],high:['360 Video Booth + Classic Photobooth','₱15,000 · 3 hrs each']},
+    roaming: {low:['Photoman Unlimited','See current standalone package'],mid:['Photoman + Free Video Guestbook','₱5,500 · 2 hours + video greetings'],high:['POSE Interactive — Photoman + Projector + Free Video Guestbook (₱7,999)','₱7,999 · Photoman, projector & video guestbook']},
+    coverage: {low:['Event Photography Inquiry','₱3,000 · up to 3 hours'],mid:['POSE Memories — Event Photography + Projector (₱5,999)','₱5,999 · Photography + multimedia'],high:['POSE Memories — Event Photography + Projector (₱5,999)','₱5,999 · Photography + multimedia']},
+    video: {low:['360 Package','360 video booth · ask about available options'],mid:['360 Package','360 video booth · ask about available options'],high:['360 Video Booth + Classic Photobooth','₱15,000 · 3 hrs each']}
+  };
+  const update = () => {
+    const [name, detail] = options[goal.value][budget.value];
+    result.querySelector('strong').textContent = name;
+    result.querySelector('span').textContent = detail;
+    inquire.dataset.package = name;
+    inquire.dataset.service = packageServices[name] || (name === 'Event Photography Inquiry' ? 'Event Photography' : 'Event Bundles');
+  };
+  goal.addEventListener('change',update); budget.addEventListener('change',update); update();
+  inquire.addEventListener('click', () => {
+    if (packageSelect) {
+      if (![...packageSelect.options].some(o => o.value === inquire.dataset.package)) packageSelect.add(new Option(inquire.dataset.package,inquire.dataset.package));
+      packageSelect.value = inquire.dataset.package;
+    }
+    const serviceField = form?.querySelector('[name="service"]');
+    if (serviceField) serviceField.value = inquire.dataset.service;
+  });
+})();
+
+
+// V2.1: optional conversion events. The website does not load GA4/Meta Pixel by default.
+// If an analytics platform is configured with the appropriate privacy notice/consent,
+// it may listen for these dataLayer or custom events. No contact information is emitted.
+function poseTrack(eventName, parameters = {}) {
+  const detail = {event: eventName, ...parameters};
+  window.dispatchEvent(new CustomEvent('pose:analytics', {detail}));
+  if (Array.isArray(window.dataLayer)) window.dataLayer.push(detail);
+}
+
+// Accessible portfolio category buttons (the old category labels were non-interactive).
+const poseGalleryFilters = document.querySelectorAll('[data-gallery-filter]');
+poseGalleryFilters.forEach(button => button.addEventListener('click', () => {
+  const category = button.dataset.galleryFilter;
+  poseGalleryFilters.forEach(item => {
+    const selected = item === button;
+    item.classList.toggle('active', selected);
+    item.setAttribute('aria-pressed', String(selected));
+  });
+  document.querySelectorAll('[data-gallery-category]').forEach(card => {
+    card.hidden = category !== 'all' && card.dataset.galleryCategory !== category;
+  });
+  poseTrack('pose_gallery_filter', {category});
+}));
+
+document.querySelectorAll('[data-package]').forEach(link => link.addEventListener('click', () => {
+  poseTrack('pose_package_inquiry_click', {package_name: link.dataset.package || 'unspecified'});
+}));
+document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photobooth"]').forEach(link => {
+  link.addEventListener('click', () => poseTrack('pose_messenger_click', {placement: link.className || 'link'}));
 });
