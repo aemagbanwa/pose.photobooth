@@ -121,7 +121,14 @@ document.addEventListener('click', e => {
     document.getElementById('addonProjector')?.focus();
     return;
   }
-  selectPosePackage(link.dataset.package);
+  const selected = selectPosePackage(link.dataset.package);
+  if (selected && link.dataset.souvenir) {
+    const souvenir = document.getElementById('quoteSouvenir');
+    if (souvenir && !souvenir.disabled) {
+      souvenir.value = link.dataset.souvenir;
+      souvenir.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+  }
 });
 populatePackages(serviceSelect?.value || '');
 form?.addEventListener('reset', () => setTimeout(() => populatePackages(serviceSelect?.value || ''), 0));
@@ -322,6 +329,9 @@ document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photoboo
   const prices = Object.fromEntries(POSE_PACKAGES.map(p => [p.id, [p.price, p.extraHourRate]]));
   const $ = id => document.getElementById(id);
   const opt = { projector:$('addonProjector'), enclosure:$('addonEnclosure'), magnets:$('addonMagnets'), video:$('addonVideoGuestbook') };
+  const souvenir = $('quoteSouvenir');
+  const souvenirPrices = {keychain50:2500,keychain100:4000,magnet50:3000,magnet100:5000};
+  const souvenirLabels = {keychain50:'50 acrylic keychain souvenir sets',keychain100:'100 acrylic keychain souvenir sets',magnet50:'50 magnetic strip + acrylic keychain souvenir sets',magnet100:'100 magnetic strip + acrylic keychain souvenir sets'};
   const hours = $('quoteExtraHours');
   const format = amount => '₱' + amount.toLocaleString('en-PH');
   function updateQuote() {
@@ -338,6 +348,23 @@ document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photoboo
     setAvailable(opt.enclosure, is360);
     setAvailable(opt.magnets, isPhotoman);
     setAvailable(opt.video, Boolean(selected && hasPublishedPrice && !includesGuestbook && !standaloneProjector));
+    const isStrip = selected === 'Photobooth Strip';
+    // Hide unrelated add-ons entirely rather than displaying disabled controls.
+    const visibleOptions = {
+      projector: Boolean(selected && hasPublishedPrice && !includesProjector),
+      enclosure: is360,
+      magnets: isPhotoman,
+      video: Boolean(selected && hasPublishedPrice && !includesGuestbook && !standaloneProjector)
+    };
+    Object.entries(opt).forEach(([key, input]) => { input.closest('.pose-quote-option').hidden = !visibleOptions[key]; });
+    const relevant = $('poseRelevantAddons');
+    if (relevant) relevant.hidden = !Object.values(visibleOptions).some(Boolean);
+    $('souvenirQuoteWrap').hidden = !isStrip;
+    $('souvenirQuantityPolicy').hidden = !(isStrip && souvenir.value);
+    $('poseExtraHoursWrap').hidden = !Number.isFinite(base?.[1]);
+    souvenir.disabled = !isStrip;
+    if (!isStrip) souvenir.value = '';
+    $('souvenirQuantityPolicy').hidden = !(isStrip && souvenir.value);
     const hourRate = base?.[1];
     hours.disabled = !Number.isFinite(hourRate);
     if (hours.disabled) hours.value = '0';
@@ -350,6 +377,11 @@ document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photoboo
     if (opt.enclosure.checked) {total += 5000; additions.push('360 LED enclosure: +₱5,000');}
     if (opt.magnets.checked) {total += 1000; additions.push('Photoman magnets / 50 prints: +₱1,000');}
     if (opt.video.checked) additions.push('Video Guestbook: price on request');
+    if (isStrip && souvenirPrices[souvenir.value]) {
+      const cost = souvenirPrices[souvenir.value];
+      total += cost;
+      additions.push(`${souvenirLabels[souvenir.value]}: +${format(cost)}`);
+    }
     const count = Number(hours.value) || 0;
     if (count && Number.isFinite(hourRate)) {total += count * hourRate; additions.push(`${count} additional hour(s): +${format(count * hourRate)}`);}
     $('quoteTotal').textContent = total == null ? (standaloneProjector ? 'Select a primary package' : selected ? 'Price on request' : 'Select a package') : format(total);
@@ -361,6 +393,7 @@ document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photoboo
   packageSelect?.addEventListener('change', updateQuote);
   Object.values(opt).forEach(el => el.addEventListener('change', updateQuote));
   hours?.addEventListener('change', updateQuote);
+  souvenir?.addEventListener('change', updateQuote);
   // Finder buttons also populate the package; their handlers are registered earlier.
   form?.addEventListener('reset', () => setTimeout(updateQuote, 0));
   updateQuote();

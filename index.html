@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="assets/css/styles.css?v=carousel-20260918" />
     <link
       rel="stylesheet"
-      href="assets/css/modern-home.css?v=20261115-v22"
+      href="assets/css/modern-home.css?v=20261116-v27"
     />
     <script src="/assets/js/partials.js" defer></script>
     <link rel="stylesheet" href="/assets/css/shared-brand.css?v=20261102" />
@@ -97,6 +97,65 @@
         </div>
       </section>
 
+
+      <!-- V2.7: three featured experiences immediately after the hero. -->
+      <section class="pose-new-experiences" aria-labelledby="pose-new-title">
+        <div class="wrap">
+          <div class="pose-new-heading">
+            <p class="mt-kicker">FEATURED AT POSE</p>
+            <h2 id="pose-new-title">More ways to <span>keep the moment.</span></h2>
+            <p>Discover collectible trading cards, personalized acrylic keychain souvenirs, and video greetings included with selected bundles.</p>
+          </div>
+          <div class="pose-new-grid">
+            <article class="pose-new-card pose-new-trading">
+              <div class="pose-new-art"><img src="assets/images/trading-card-photobooth.webp" alt="Trading Card Photobooth sample cards and event setup" width="720" height="460" loading="lazy" /></div>
+              <div class="pose-new-content">
+                <span class="pose-new-tag">NEW · STANDALONE EVENT EXPERIENCE</span>
+                <h3>Trading Card <em>Photobooth</em></h3>
+                <p>Pose, personalize, and take home your very own collectible trading card with a protective case.</p>
+                <div class="pose-new-price">₱9,999 <small>3 hours · up to 75 finished cards</small></div>
+                <p class="pose-new-details">Up to 4 designs · Green screen · Personalized cards</p>
+                <div class="pose-new-actions"><a class="mt-btn mt-btn-gold" href="#trading-cards">Explore Trading Cards <span>→</span></a><a class="pose-new-link" href="#availability" data-package="Trading Card Photobooth" data-service="Trading Card Photobooth">Inquire Now ↗</a></div>
+              </div>
+            </article>
+            <article class="pose-new-card pose-new-keychain">
+              <div class="pose-new-art pose-new-souvenir-art" aria-label="Concept illustration of a photo strip and acrylic keychain">
+                <img src="assets/images/strip.webp" alt="Sample POSE photo strip" width="360" height="460" loading="lazy" />
+                <div class="pose-spotlight-keychain" aria-hidden="true"><span class="pose-spotlight-ring"></span><span class="pose-spotlight-disc">POSE<span>PHOTO<br />KEEPSAKE</span></span><span class="pose-spotlight-tassel"></span></div>
+                <span class="pose-new-art-note">Illustrative keychain · Actual designs vary</span>
+              </div>
+              <div class="pose-new-content">
+                <span class="pose-new-tag">NEW · CLASSIC STRIP ADD-ON</span>
+                <h3>Acrylic Keychain <em>Souvenirs</em></h3>
+                <p>Upgrade your Classic Strip Photobooth with a personalized 45 mm photo keychain and leather tassel.</p>
+                <div class="pose-new-price">+₱2,500 <small>50 souvenir sets · 100 sets +₱4,000</small></div>
+                <p class="pose-new-details">Added to Classic Strip Photobooth · ₱3,499 / 2 hours</p>
+                <div class="pose-new-actions"><a class="mt-btn mt-btn-gold" href="#souvenir-addons">Explore Souvenir Add-Ons <span>→</span></a><a class="pose-new-link" href="#availability" data-package="Photobooth Strip" data-souvenir="keychain50">Build My Package ↗</a></div>
+              </div>
+            </article>
+            <article class="pose-new-card pose-new-guestbook">
+              <div class="pose-new-art pose-new-guestbook-art" role="img" aria-label="Illustration of an iPad-style video guestbook station recording a guest greeting, with a microphone symbol">
+                <div class="pose-guestbook-sparkle pose-guestbook-sparkle-one" aria-hidden="true">✦</div>
+                <div class="pose-guestbook-tablet" aria-hidden="true">
+                  <div class="pose-guestbook-camera"></div>
+                  <div class="pose-guestbook-screen"><div class="pose-guestbook-heart">♥</div><span>LEAVE A MESSAGE</span><div class="pose-guestbook-rec"><i></i> REC</div></div>
+                </div>
+                <div class="pose-guestbook-mic" aria-hidden="true">🎙</div>
+                <span class="pose-new-art-note">Illustrative setup · Actual setup may vary</span>
+              </div>
+              <div class="pose-new-content">
+                <span class="pose-new-tag">FREE BONUS · SELECTED BUNDLES</span>
+                <h3>Video <em>Guestbook</em></h3>
+                <p>Let your guests record heartfelt greetings, fun wishes, and memorable messages to treasure after the celebration.</p>
+                <div class="pose-new-price pose-guestbook-free">FREE <small>Included with eligible Photoman and Photobooth bundles</small></div>
+                <p class="pose-new-details">Touchscreen video greetings · Digital keepsakes · Not a standalone package</p>
+                <div class="pose-new-actions"><a class="mt-btn mt-btn-gold" href="#guestbook-bundles">View Eligible Bundles <span>→</span></a><a class="pose-new-link" href="#availability" data-package="Photoman + Free Video Guestbook" data-service="Event Bundles">Inquire About a Bundle ↗</a></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section class="mt-section pose-bundles" id="bundles" aria-labelledby="bundles-title">
         <div class="wrap">
           <div class="mt-section-head">
@@ -107,7 +166,7 @@
             </div>
             <a class="mt-btn mt-btn-ghost" href="#availability">Check Your Date <span>→</span></a>
           </div>
-          <div class="pose-bundle-grid">
+          <div class="pose-bundle-grid" id="guestbook-bundles">
             <article class="pose-bundle-card">
               <p class="pose-bundle-badge">FREE VIDEO GUESTBOOK</p>
               <h3>Photoman + Video Guestbook</h3>
@@ -733,6 +792,23 @@
       </section>
 
 
+      <section class="pose-souvenirs mt-section" id="souvenir-addons" aria-labelledby="souvenir-heading">
+        <div class="pose-souvenir-header">
+          <div><p class="mt-kicker">NEW · CLASSIC STRIP PHOTOBOOTH ADD-ONS</p>
+            <h2 id="souvenir-heading">Turn photo strips into keepsakes</h2>
+            <p>Upgrade your <strong>Classic Strip Photobooth (₱3,499 / 2 hours)</strong> with personalized 45 mm round acrylic keychains and optional magnetic photo strips.</p>
+          </div>
+          <div class="pose-souvenir-badge">1 photo strip <span>+</span> 1 acrylic keychain <small>per souvenir set</small></div>
+        </div>
+        <div class="pose-souvenir-grid">
+          <article class="pose-souvenir-card"><p class="pose-souvenir-eyebrow">Photo strip + acrylic keychain</p><h3>50 Souvenir Sets</h3><p class="pose-souvenir-price">+₱2,500</p><p>50 personalized photo strips, 50 round 45 mm acrylic photo keychains and leather tassels.</p><a class="pill block" href="#availability" data-package="Photobooth Strip" data-souvenir="keychain50">Add 50 Keychains</a></article>
+          <article class="pose-souvenir-card"><p class="pose-souvenir-eyebrow">Photo strip + acrylic keychain</p><h3>100 Souvenir Sets</h3><p class="pose-souvenir-price">+₱4,000</p><p>100 personalized photo strips, 100 round 45 mm acrylic photo keychains and leather tassels.</p><a class="pill block" href="#availability" data-package="Photobooth Strip" data-souvenir="keychain100">Add 100 Keychains</a></article>
+          <article class="pose-souvenir-card pose-souvenir-card-featured"><p class="pose-souvenir-eyebrow">FEATURED UPGRADE · Magnetic strip + acrylic keychain</p><h3>50 Magnetic Souvenir Sets</h3><p class="pose-souvenir-price">+₱3,000</p><p>50 magnetic photo strips plus 50 personalized 45 mm acrylic keychains with leather tassels.</p><a class="pill block" href="#availability" data-package="Photobooth Strip" data-souvenir="magnet50">Choose Magnetic 50</a></article>
+          <article class="pose-souvenir-card"><p class="pose-souvenir-eyebrow">Magnetic strip + acrylic keychain</p><h3>100 Magnetic Souvenir Sets</h3><p class="pose-souvenir-price">+₱5,000</p><p>100 magnetic photo strips plus 100 personalized 45 mm acrylic keychains with leather tassels.</p><a class="pill block" href="#availability" data-package="Photobooth Strip" data-souvenir="magnet100">Choose Magnetic 100</a></article>
+        </div>
+        <p class="pose-souvenir-note">Add-on prices are on top of the ₱3,499 Classic Strip Photobooth package. Each allocated souvenir set replaces the usual two-strip print with one 2×6-inch strip and one acrylic keychain photo insert. Magnetic backing applies to the specified souvenir strips only. Other sessions keep the standard strip output. Keychain quantities are per booking, not per hour: an additional photobooth hour does not increase the included keychains. Limited to the purchased quantity; on-site assembly is subject to event flow and production capacity.</p>
+      </section>
+
       <section class="pose-compare mt-section" id="compare-packages" aria-labelledby="pose-compare-title">
         <div class="wrap">
           <p class="mt-kicker">COMPARE YOUR OPTIONS</p>
@@ -824,8 +900,9 @@
                 </ul>
                 <div class="package-addons">
                   <strong>Add-ons</strong><span>Extension: +₱1,000/hour</span
-                  ><span>Magnet: +₱500/booked hour</span>
+                  ><span>Magnet: +₱500/booked hour</span><span>Acrylic keychain souvenirs: from +₱2,500</span>
                 </div>
+                <a class="pose-souvenir-inline-link" href="#souvenir-addons">See souvenir add-ons →</a>
                 <a
                   class="pill block"
                   href="#availability"
@@ -1214,13 +1291,25 @@
             <fieldset class="pose-quote-builder" id="quoteBuilder">
               <legend>Customize your package</legend>
               <p class="pose-quote-intro">Choose a package above, then add optional services. Your estimate updates automatically.</p>
-              <div class="pose-quote-options">
+              <div class="pose-souvenir-quote-option" id="souvenirQuoteWrap" hidden>
+                <label for="quoteSouvenir">Classic Strip souvenir add-on</label>
+                <select id="quoteSouvenir" disabled>
+                  <option value="">No souvenir add-on</option>
+                  <option value="keychain50">50 acrylic keychains + photo strips · +₱2,500</option>
+                  <option value="keychain100">100 acrylic keychains + photo strips · +₱4,000</option>
+                  <option value="magnet50">50 magnetic strips + acrylic keychains · +₱3,000</option>
+                  <option value="magnet100">100 magnetic strips + acrylic keychains · +₱5,000</option>
+                </select>
+                <small>Available only with Classic Strip Photobooth. Select one option; magnetic souvenir bundles already include keychains and magnetic backing. Selected sets receive one strip + one keychain rather than the standard two strips.</small>
+              </div>
+              <p class="pose-souvenir-quantity-policy" id="souvenirQuantityPolicy" hidden>Souvenir quantities are fixed per booking, not per hour. Extending the photobooth does not add more keychains. After the selected quantity is used, standard strip printing continues.</p>
+              <div class="pose-quote-options" id="poseRelevantAddons">
                 <label class="pose-quote-option"><input type="checkbox" id="addonProjector" /> <span>Projector presentation add-on <strong>+₱2,500</strong><small>Up to 4 hours; same event venue, subject to suitability and availability.</small></span></label>
                 <label class="pose-quote-option"><input type="checkbox" id="addonEnclosure" /> <span>360 LED enclosure <strong>+₱5,000</strong><small>Available with 360 Video Booth packages only.</small></span></label>
                 <label class="pose-quote-option"><input type="checkbox" id="addonMagnets" /> <span>Photoman magnets (per 50 prints) <strong>+₱1,000</strong><small>Available with standalone Photoman packages only.</small></span></label>
                 <label class="pose-quote-option"><input type="checkbox" id="addonVideoGuestbook" /> <span>Request a Video Guestbook <strong>Price on request</strong><small>Already included in qualifying Photoman bundles; otherwise separately quoted.</small></span></label>
               </div>
-              <label class="pose-extra-hours" for="quoteExtraHours">Additional service hours <select id="quoteExtraHours"><option value="0">No additional hours</option><option value="1">+1 hour</option><option value="2">+2 hours</option><option value="3">+3 hours</option></select><small id="quoteHourRate">Available for selected packages with published extension rates.</small></label>
+              <label class="pose-extra-hours" for="quoteExtraHours" id="poseExtraHoursWrap">Additional service hours <select id="quoteExtraHours"><option value="0">No additional hours</option><option value="1">+1 hour</option><option value="2">+2 hours</option><option value="3">+3 hours</option></select><small id="quoteHourRate">Available for selected packages with published extension rates.</small></label>
               <div class="pose-quote-total" aria-live="polite" aria-atomic="true"><span>Indicative package total</span><strong id="quoteTotal">Select a package</strong></div>
               <p class="pose-quote-details" id="quoteDetails">Select a package to see the estimated price.</p>
               <p class="pose-quote-disclaimer">Estimate only, not a confirmed quotation or reservation. Transportation, venue requirements and special requests may change the final price. Add-ons depend on staff and equipment availability.</p>
@@ -1378,6 +1467,6 @@
       >Chat with POSE</a
     >
     <script src="assets/js/inquiry-config.js"></script>
-    <script src="assets/js/app.js?v=20261115-v24"></script>
+    <script src="assets/js/app.js?v=20261116-v27"></script>
   </body>
 </html>

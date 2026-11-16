@@ -1837,3 +1837,108 @@
 .pose-review-confirm {color:#fff;background:#c51672;border:1px solid #c51672}
 .pose-review-actions button:focus-visible {outline:3px solid #1c7da9;outline-offset:3px}
 @media(max-width:460px){.pose-review-fields{grid-template-columns:1fr;gap:4px}.pose-review-fields dd{margin-bottom:10px}.pose-review-estimate{align-items:flex-start;flex-direction:column}}
+
+/* Classic Strip Photobooth souvenir add-ons */
+.modern-home .pose-souvenirs{scroll-margin-top:95px}
+.pose-souvenir-header{display:flex;justify-content:space-between;gap:28px;align-items:center;margin-bottom:23px}
+.pose-souvenir-header h2{margin:7px 0 12px}
+.pose-souvenir-header p{max-width:710px}
+.pose-souvenir-badge{flex:0 0 auto;text-align:center;padding:20px 24px;border:1px solid rgba(238,35,139,.42);border-radius:18px;background:linear-gradient(125deg,rgba(224,20,122,.2),rgba(224,20,122,.06));font-weight:800;color:#fff}
+.pose-souvenir-badge span{color:#f36eaf;padding:0 4px}
+.pose-souvenir-badge small{display:block;font-size:.76rem;font-weight:500;opacity:.8;margin-top:5px}
+.pose-souvenir-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.pose-souvenir-card{display:flex;flex-direction:column;padding:24px 19px;border:1px solid rgba(255,255,255,.2);border-radius:18px;background:linear-gradient(150deg,#172332,#0c1420);min-width:0}
+.pose-souvenir-card-featured{border-color:#ea2a92;box-shadow:0 0 0 1px rgba(234,42,146,.2)}
+.pose-souvenir-eyebrow{color:#f37db9;text-transform:uppercase;letter-spacing:.08em;font-size:.7rem;font-weight:800}
+.pose-souvenir-card h3{font-size:1.2rem;line-height:1.25;margin:8px 0}
+.pose-souvenir-price{font-size:2rem;font-weight:850;color:#fff;margin:4px 0 12px}
+.pose-souvenir-card>p:not(.pose-souvenir-price):not(.pose-souvenir-eyebrow){font-size:.88rem;line-height:1.55;opacity:.83;flex:1}
+.pose-souvenir-card .pill{margin-top:18px;text-align:center}
+.pose-souvenir-note{font-size:.83rem;line-height:1.6;opacity:.78;margin-top:20px}
+.pose-souvenir-inline-link{display:inline-block;margin:8px 0 14px;font-size:.85rem;color:#f37db9;font-weight:700}
+.pose-souvenir-quote-option{padding:15px;border-radius:12px;background:#152331;border:1px solid rgba(235,37,135,.35);margin:16px 0}
+.pose-souvenir-quote-option label{display:block;color:#fff;font-weight:750;margin-bottom:8px}
+.pose-souvenir-quote-option select{display:block;width:100%;max-width:100%;padding:11px;border-radius:8px}
+.pose-souvenir-quote-option small{display:block;margin-top:8px;color:#aebdce;font-size:.79rem;line-height:1.4}
+@media(max-width:1050px){.pose-souvenir-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.pose-souvenir-grid{grid-template-columns:1fr}.pose-souvenir-header{display:block}.pose-souvenir-badge{margin-top:14px}}
+
+/* V2.5 — souvenir spotlight, mobile responsive, branded and intentionally illustrative. */
+.pose-souvenir-spotlight{padding:clamp(42px,6vw,84px) 0;background:radial-gradient(circle at 85% 10%,rgba(237,59,148,.18),transparent 46%),linear-gradient(145deg,#191522,#101a28);color:#fff;border-bottom:1px solid rgba(255,255,255,.11)}
+.pose-souvenir-spotlight-inner{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr);gap:clamp(28px,6vw,85px);align-items:center}
+.pose-spotlight-tag{display:inline-block;background:#e3298a;color:#fff;padding:8px 13px;border-radius:999px;font-weight:800;letter-spacing:.08em;font-size:.74rem}
+.pose-souvenir-spotlight h2{font-size:clamp(2.05rem,4.2vw,4.1rem);line-height:1.07;margin:18px 0;color:#fff;max-width:700px}
+.pose-souvenir-spotlight h2 em{color:#ff9bc9;font-style:normal}
+.pose-souvenir-spotlight-copy>p{font-size:clamp(.98rem,1.6vw,1.13rem);line-height:1.6;color:#e0dce7;max-width:610px}
+.pose-spotlight-prices{display:flex;flex-wrap:wrap;gap:14px;margin:24px 0}
+.pose-spotlight-prices>span{display:flex;flex-direction:column;padding:15px 22px;border-radius:14px;background:#fff;color:#1c2433;min-width:158px}
+.pose-spotlight-prices strong{font-size:clamp(1.5rem,3vw,2rem);line-height:1.12}
+.pose-spotlight-prices small{font-size:.85rem;color:#565e70;margin-top:6px}
+.pose-souvenir-spotlight .pose-spotlight-base{font-size:.92rem;color:#cfc9d6}
+.pose-spotlight-base b{color:#fff}
+.pose-spotlight-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+.pose-souvenir-spotlight-art{min-height:350px;position:relative;display:flex;align-items:center;justify-content:center;isolation:isolate}
+.pose-souvenir-spotlight-art>img{height:310px;width:auto;max-width:48%;object-fit:contain;border-radius:10px;transform:rotate(-9deg) translateX(-25px);box-shadow:0 18px 40px #0009}
+.pose-spotlight-keychain{position:relative;display:flex;align-items:center;justify-content:center;width:170px;height:170px;border-radius:50%;background:linear-gradient(150deg,#fff,#d5d7df);border:10px solid #eff0f4;box-shadow:0 12px 32px #0007, inset 0 0 0 2px #9d9faa;transform:rotate(12deg) translateX(-20px);flex-shrink:0}
+.pose-spotlight-ring{position:absolute;width:42px;height:42px;border:6px solid #d2d5df;border-radius:50%;top:-54px;left:calc(50% - 21px);box-shadow:inset 0 0 0 2px #9297a2}
+.pose-spotlight-disc{display:grid;place-content:center;text-align:center;width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#e51a83,#85226f);color:#fff;font-weight:900;font-size:1.4rem;letter-spacing:.03em}
+.pose-spotlight-disc span{font-size:.54rem;letter-spacing:.13em;line-height:1.3;margin-top:4px}
+.pose-spotlight-tassel{position:absolute;top:-70px;right:-15px;height:81px;width:17px;border-radius:5px;background:repeating-linear-gradient(90deg,#e7b78f 0 3px,#bb815d 3px 5px);transform:rotate(-37deg)}
+.pose-spotlight-art-caption{position:absolute;bottom:0;color:#b8b6c0;font-size:.72rem;text-align:center}
+.modern-home .pose-quote-option[hidden],.modern-home .pose-souvenir-quote-option[hidden],.modern-home .pose-quote-options[hidden],.modern-home .pose-extra-hours[hidden],.pose-souvenir-quantity-policy[hidden]{display:none!important}
+.pose-souvenir-quantity-policy{padding:12px 15px;background:rgba(220,33,125,.13);border-left:3px solid #e3298a;border-radius:7px;color:#e9dbe6;font-size:.83rem;line-height:1.6;margin:9px 0}
+#souvenir-addons{scroll-margin-top:100px}
+@media(max-width:800px){.pose-souvenir-spotlight-inner{grid-template-columns:1fr}.pose-souvenir-spotlight-art{min-height:280px;order:-1}.pose-souvenir-spotlight-art>img{height:235px}.pose-spotlight-keychain{width:125px;height:125px}.pose-spotlight-ring{top:-46px}.pose-spotlight-tassel{height:60px;top:-57px}}
+@media(max-width:480px){.pose-spotlight-prices>span{flex:1;min-width:130px;padding:13px 16px}.pose-spotlight-actions>*{width:100%;justify-content:center}.pose-souvenir-spotlight-art{min-height:265px}}
+
+/* V2.6 — balanced launch spotlight for trading cards and souvenir add-ons */
+.pose-new-experiences{padding:clamp(48px,6vw,88px) 0;background:linear-gradient(145deg,#141924,#201626 60%,#171927);color:#fff}
+.pose-new-heading{text-align:center;margin-bottom:30px}
+.pose-new-heading h2{font-size:clamp(1.9rem,3.5vw,3.2rem);line-height:1.12;color:#fff;margin:10px 0}
+.pose-new-heading h2 span{color:#ff88bf}
+.pose-new-heading>p:last-child{color:#d6cede;line-height:1.55}
+.pose-new-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:stretch}
+.pose-new-card{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 20px 42px #0004;display:flex;flex-direction:column;color:#20243a}
+.pose-new-art{height:230px;background:linear-gradient(140deg,#49152f,#a12b68);overflow:hidden;position:relative}
+.pose-new-trading .pose-new-art img{width:100%;height:100%;object-fit:cover;display:block}
+.pose-new-souvenir-art{display:flex;align-items:center;justify-content:center;gap:25px;background:radial-gradient(circle at 55% 40%,#f8d7e7,#a23c78 85%)}
+.pose-new-souvenir-art>img{height:190px;max-width:42%;width:auto;object-fit:contain;transform:rotate(-8deg);box-shadow:0 9px 25px #43152d70;border-radius:8px}
+.pose-new-souvenir-art .pose-spotlight-keychain{width:125px;height:125px;transform:rotate(11deg);border-width:7px}
+.pose-new-souvenir-art .pose-spotlight-disc{font-size:1rem}
+.pose-new-souvenir-art .pose-spotlight-ring{top:-42px}
+.pose-new-souvenir-art .pose-spotlight-tassel{top:-53px;height:61px}
+.pose-new-art-note{position:absolute;right:12px;bottom:8px;font-size:.65rem;color:#fff;background:#271329a8;padding:4px 8px;border-radius:5px}
+.pose-new-content{padding:clamp(20px,3vw,32px);display:flex;flex-direction:column;flex:1}
+.pose-new-tag{color:#ae175f;letter-spacing:.08em;font-size:.72rem;font-weight:900}
+.pose-new-content h3{font-size:clamp(1.6rem,2.5vw,2.25rem);line-height:1.1;margin:11px 0;color:#1e2130}
+.pose-new-content h3 em{font-style:normal;color:#c51f78}
+.pose-new-content>p{font-size:.95rem;line-height:1.55;color:#515369}
+.pose-new-price{font-size:clamp(1.9rem,3vw,2.5rem);font-weight:900;color:#a91963;margin:8px 0}
+.pose-new-price small{display:block;font-size:.85rem;font-weight:600;color:#555b6d;margin-top:4px}
+.pose-new-content .pose-new-details{font-size:.79rem;color:#596174;margin-bottom:20px}
+.pose-new-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:auto}
+.pose-new-actions .mt-btn{font-size:.84rem;padding:12px 16px}
+.pose-new-link{font-size:.85rem;font-weight:800;color:#aa1e67;text-decoration:underline;text-underline-offset:4px}
+#trading-cards,#souvenir-addons{scroll-margin-top:100px}
+@media(max-width:850px){.pose-new-grid{grid-template-columns:1fr}.pose-new-art{height:240px}}
+@media(max-width:480px){.pose-new-art{height:200px}.pose-new-actions .mt-btn{width:100%;justify-content:center}.pose-new-actions{justify-content:center}.pose-new-content{padding:20px}.pose-new-heading{text-align:left}}
+
+/* V2.7 — three balanced feature cards and illustrated Video Guestbook (no fabricated product photos) */
+.pose-new-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.pose-new-grid .pose-new-content{padding:clamp(18px,2vw,28px)}
+.pose-new-grid .pose-new-content h3{font-size:clamp(1.5rem,2vw,2rem)}
+.pose-new-grid .pose-new-actions .mt-btn{font-size:.78rem;padding:11px 12px}
+.pose-new-guestbook-art{display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 48% 28%,#f9d1e7,#7e2457 80%)}
+.pose-guestbook-tablet{position:relative;height:184px;width:142px;border:9px solid #272c38;background:#272c38;border-radius:17px;box-shadow:0 14px 24px #260e2c70;transform:rotate(-5deg)}
+.pose-guestbook-camera{position:absolute;top:-6px;left:50%;width:4px;height:4px;border-radius:50%;background:#8497ad}
+.pose-guestbook-screen{height:100%;border-radius:7px;background:linear-gradient(160deg,#402a57,#ba3982);display:flex;align-items:center;flex-direction:column;justify-content:center;gap:8px;color:#fff}
+.pose-guestbook-heart{font-size:3.4rem;line-height:1;color:#fff}
+.pose-guestbook-screen>span{font-size:.58rem;font-weight:900;letter-spacing:.07em}
+.pose-guestbook-rec{background:#28152c99;border-radius:15px;padding:4px 9px;font-size:.56rem;font-weight:800;letter-spacing:.06em}
+.pose-guestbook-rec i{display:inline-block;background:#ff5963;width:6px;height:6px;border-radius:50%;margin-right:3px}
+.pose-guestbook-mic{font-size:3.6rem;position:absolute;right:16%;bottom:20%;filter:drop-shadow(0 7px 8px #240a2966)}
+.pose-guestbook-sparkle{color:#fff;font-size:2.4rem;position:absolute;left:17%;top:15%}
+.pose-guestbook-free{color:#aa1462}
+#guestbook-bundles{scroll-margin-top:100px}
+@media(max-width:1100px){.pose-new-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pose-new-guestbook{grid-column:1/-1}.pose-new-guestbook .pose-new-art{height:220px}}
+@media(max-width:700px){.pose-new-grid{grid-template-columns:1fr}.pose-new-guestbook{grid-column:auto}.pose-new-guestbook .pose-new-art{height:220px}}
