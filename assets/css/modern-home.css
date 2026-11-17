@@ -6,10 +6,10 @@
   --mt-line: rgba(255, 255, 255, 0.1);
   --mt-text: #f5f7fb;
   --mt-muted: #9ca8b8;
-  --mt-gold: #f0bf68;
-  --mt-violet: #7a5cff;
-  --mt-cyan: #00d8ff;
-  --mt-pink: #ff35c8;
+  --mt-gold: #f02b91;
+  --mt-violet: #d4147a;
+  --mt-cyan: #e6489a;
+  --mt-pink: #d4147a;
   background: var(--mt-bg);
   color: var(--mt-text);
 }
@@ -1940,5 +1940,246 @@
 .pose-guestbook-sparkle{color:#fff;font-size:2.4rem;position:absolute;left:17%;top:15%}
 .pose-guestbook-free{color:#aa1462}
 #guestbook-bundles{scroll-margin-top:100px}
+.pose-ai-package-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.pose-ai-package-choices article{display:flex;flex-direction:column;gap:7px;padding:16px;border:1px solid rgba(255,255,255,.23);border-radius:14px;background:rgba(255,255,255,.07)}
+.pose-ai-package-choices strong{color:#fff;font-size:1.12rem}
+.pose-ai-package-choices span{color:#dce1e9;font-size:.86rem;line-height:1.5}
+.pose-ai-package-choices a{color:#ffaccd;font-weight:800;margin-top:7px}
+@media(max-width:620px){.pose-ai-package-choices{grid-template-columns:1fr}}
+.modern-home #signatureLayoutsWrap[hidden]{display:none!important}
 @media(max-width:1100px){.pose-new-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pose-new-guestbook{grid-column:1/-1}.pose-new-guestbook .pose-new-art{height:220px}}
 @media(max-width:700px){.pose-new-grid{grid-template-columns:1fr}.pose-new-guestbook{grid-column:auto}.pose-new-guestbook .pose-new-art{height:220px}}
+
+/* V3.0 — full souvenir packages plus optional Classic Strip add-ons */
+.pose-souvenir-subhead { margin: 2rem 0 .85rem; color: #26212b; font-weight: 800; font-size: clamp(1.2rem,2.3vw,1.55rem); }
+.pose-souvenir-subhead small { display: block; font-size: .86rem; font-weight: 500; margin-top: .2rem; color: #695b68; }
+.pose-souvenir-addon-prices { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .75rem; margin-bottom: 1.25rem; }
+.pose-souvenir-addon-prices a { display:flex; gap: .3rem; justify-content:space-between; flex-wrap:wrap; align-items:center; padding: 1.05rem; border:1px solid #f3b8d6; border-radius: 14px; background:#fff7fb; text-decoration:none; color:#54223b; font-weight:650; }
+.pose-souvenir-addon-prices a strong { color:#c30a70; white-space:nowrap; font-size:1.08rem; }
+.pose-souvenir-addon-prices a:hover, .pose-souvenir-addon-prices a:focus-visible { background:#ffe6f3; outline:2px solid #db1680; outline-offset:2px; }
+@media(max-width:900px){.pose-souvenir-addon-prices { grid-template-columns:repeat(2,minmax(0,1fr)); }}
+@media(max-width:520px){.pose-souvenir-addon-prices { grid-template-columns:1fr; } .pose-souvenir-subhead{margin-top:1.5rem;} }
+
+/* V3.3: one transparent projector add-on instead of discontinued fixed-price bundles */
+.pose-projector-addon-feature{margin-top:20px;align-items:center;gap:30px}
+.pose-projector-addon-feature h3{color:#fff;font-size:clamp(1.35rem,2.4vw,2rem);line-height:1.2;margin:.45rem 0 1rem}
+.pose-projector-addon-feature .pose-bundle-badge{margin-bottom:.4rem}
+.pose-projector-rate{display:inline-block;color:#ffb8df;white-space:nowrap;margin-left:.3rem}
+.pose-projector-addon-feature p{margin:.55rem 0;color:#eee2eb;max-width:750px}
+.pose-projector-addon-feature p strong{display:inline;color:#fff;font-size:inherit;margin:0}
+@media(max-width:700px){.pose-projector-addon-feature h3{font-size:1.4rem}.pose-projector-rate{display:block;margin:.5rem 0 0}}
+
+/* V3.4: Services + Add-On experience */
+.pose-addon-showcase{padding:68px 0;background:linear-gradient(180deg,#fff6fa 0%,#fff 100%)}
+.pose-addon-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.pose-addon-card{background:#fff;border:1px solid #f6b4d0;border-radius:20px;padding:24px 20px;box-shadow:0 12px 32px rgba(74,9,43,.08);display:flex;flex-direction:column;gap:12px}
+.pose-addon-card h3{font-size:1.35rem;line-height:1.2;margin:0;color:#260c1a}
+.pose-addon-card p{margin:0;line-height:1.55;color:#483343}
+.pose-addon-mark{font-size:.76rem;letter-spacing:.08em;font-weight:800;color:#bd075c}
+.pose-addon-price{color:#cb075f!important;font-size:2rem;font-weight:900;line-height:1.15!important}
+.pose-addon-price small{display:block;font-weight:600;color:#5b4552;font-size:.76rem;margin-top:8px}
+.pose-addon-card .pill{margin-top:auto;text-align:center}
+.pose-addon-note{margin:20px 0 0;font-size:.88rem;color:#5d4855;line-height:1.6}
+#addons{scroll-margin-top:95px}
+@media(max-width:1000px){.pose-addon-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.pose-addon-cards{grid-template-columns:1fr}.pose-addon-showcase{padding:48px 0}}
+
+/* V3.5: responsive detailed service highlight system */
+.pose-service-highlights{background:linear-gradient(165deg,#fff 0%,#fff8fb 60%,#fff 100%);color:#1b1420}
+.pose-service-highlights .mt-section-head h2{color:#17131b}
+.pose-feature-jump{display:flex;flex-wrap:wrap;gap:.65rem;margin:0 0 2rem}
+.pose-feature-jump a{border:1px solid #eec8da;color:#8f1558;padding:.55rem .9rem;border-radius:999px;background:#fff;font-weight:750;font-size:.9rem;text-decoration:none}
+.pose-feature-jump a:hover,.pose-feature-jump a:focus-visible{background:#d4147a;color:#fff}
+.pose-feature-list{display:grid;gap:1.6rem}
+.pose-service-feature{display:grid;grid-template-columns:minmax(0, .85fr) minmax(0,1.15fr);background:#fff;border:1px solid #f4d7e4;border-radius:24px;box-shadow:0 15px 36px rgba(75,15,49,.08);overflow:hidden;scroll-margin-top:95px}
+.pose-service-feature:nth-child(even) .pose-feature-visual{order:2}
+.pose-feature-visual{min-height:360px;background:#f8e9f0;position:relative;overflow:hidden}
+.pose-feature-visual img{width:100%;height:100%;min-height:360px;object-fit:cover;display:block}
+.pose-feature-copy{padding:clamp(1.3rem,3vw,2.6rem)}
+.pose-feature-eyebrow{color:#d4147a;font-size:.75rem;letter-spacing:.14em;font-weight:850;text-transform:uppercase;margin:0 0 .5rem}
+.pose-feature-copy h3{color:#16131a;font-size:clamp(1.5rem,2.5vw,2.15rem);line-height:1.15;margin:.2rem 0 .45rem}
+.pose-feature-headline{font-size:1.13rem;font-weight:800;color:#a70f60;margin:.2rem 0 .55rem}
+.pose-feature-lead{font-size:.97rem;color:#49414a;line-height:1.55;margin:.3rem 0 1rem}
+.pose-feature-points{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));list-style:none;gap:.65rem 1rem;padding:0;margin:1rem 0}
+.pose-feature-points li{position:relative;padding-left:1.45rem;color:#302c35;font-size:.9rem;line-height:1.45}
+.pose-feature-points li:before{content:'✓';position:absolute;left:0;top:0;color:#d4147a;font-weight:900}
+.pose-feature-bottom{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-top:1px solid #f3d5e2;padding-top:1rem;margin-top:1.2rem}
+.pose-feature-price{font-size:1.45rem;font-weight:900;color:#b40e62;margin:0}
+.pose-feature-price span{font-size:.82rem;font-weight:600;color:#6d5d69}
+.pose-feature-actions .mt-btn{white-space:normal;text-align:center}
+.pose-feature-details{border-top:1px solid #f3d5e2;margin-top:1rem;padding-top:.7rem}
+.pose-feature-details summary{color:#8b1255;font-weight:800;cursor:pointer;padding:.45rem 0}
+.pose-feature-details summary:focus-visible{outline:2px solid #d4147a;outline-offset:3px}
+.pose-feature-details h4{color:#21121d;margin:.8rem 0 .4rem}
+.pose-feature-details ul{margin:.2rem 0 .4rem;padding-left:1.3rem;color:#45404b;line-height:1.65}
+@media(max-width:800px){.pose-service-feature{grid-template-columns:1fr}.pose-service-feature:nth-child(even) .pose-feature-visual{order:0}.pose-feature-visual,.pose-feature-visual img{min-height:220px;max-height:360px}.pose-feature-points{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.pose-feature-points{grid-template-columns:1fr}.pose-feature-copy{padding:1.15rem}.pose-feature-bottom{align-items:stretch}.pose-feature-actions,.pose-feature-actions .mt-btn{width:100%}}
+
+/* V3.7 — consistent POSE branded actions, legibility and rhythm */
+.modern-home .site-header .pill,
+.modern-home .mt-btn-gold,
+.modern-home .mt-card-btn {background:linear-gradient(135deg,#ed1685,#c10d69); color:#fff; box-shadow:0 9px 24px rgba(212,20,122,.18)}
+.modern-home .mt-btn-gold:hover,.modern-home .mt-card-btn:hover,.modern-home .site-header .pill:hover {background:linear-gradient(135deg,#fa329c,#d4147a);color:#fff}
+.modern-home .mt-service-grid {gap:22px}
+.modern-home .mt-service-card {display:flex;flex-direction:column;border-radius:18px;border-color:rgba(255,255,255,.13)}
+.modern-home .mt-service-card:hover {border-color:rgba(240,43,145,.65)}
+.modern-home .mt-service-featured {border-color:rgba(240,43,145,.28);box-shadow:0 18px 40px rgba(0,0,0,.16)}
+.modern-home .mt-service-body {display:flex;flex:1;flex-direction:column;padding:21px;gap:0}
+.modern-home .mt-service-body h3 {font-size:20px;line-height:1.25;margin-bottom:10px}
+.modern-home .mt-service-body p {font-size:14px;line-height:1.55;min-height:0;flex:1;color:#b8c2d0;margin-bottom:16px}
+.modern-home .mt-service-body small {font-size:12px;line-height:1.35;color:#aab6c6;margin-bottom:4px}
+.modern-home .mt-price {font-size:28px;line-height:1.2;margin:3px 0 18px}
+.modern-home .mt-card-btn {font-size:14px;min-height:46px;padding:12px 16px;gap:8px}
+.modern-home .mt-section {scroll-margin-top:90px}
+.modern-home .mt-kicker {font-size:12px;letter-spacing:.12em}
+.modern-home .pose-comparison-seven {min-width:740px;font-size:14px}
+.modern-home .pose-comparison-seven th,.modern-home .pose-comparison-seven td {padding:14px 16px;line-height:1.5}
+.modern-home .pose-comparison-seven tbody th {color:#f8a4cc}
+.modern-home .pose-souvenir-legacy {margin:20px 0 24px;border:1px solid rgba(212,20,122,.25);border-radius:18px;padding:16px;background:rgba(212,20,122,.045)}
+.modern-home .pose-souvenir-legacy summary {cursor:pointer;font-weight:800;color:#d4147a;font-size:16px;line-height:1.45}
+.modern-home .pose-souvenir-legacy > p {font-size:14px;line-height:1.5}
+.modern-home .pose-addon-card .pill {min-height:44px}
+@media(max-width:1100px){.modern-home .mt-service-grid {gap:18px}}
+@media(max-width:640px){.modern-home .wrap{width:min(calc(100% - 30px),1180px)}.modern-home .mt-service-grid{gap:16px}.modern-home .mt-service-body{padding:18px}.modern-home .mt-service-body h3{font-size:19px}.modern-home .mt-service-body p{font-size:14px}.modern-home .mt-card-btn{font-size:14px}}
+
+/* V3.8: consistent Trading Card & AI Photobooth showcases */
+.pose-experience-spotlight{padding-block:clamp(28px,4vw,58px)}
+.pose-experience-spotlight + .pose-experience-spotlight{padding-top:0}
+.pose-experience-card{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);overflow:hidden;background:#111923;border:1px solid rgba(212,20,122,.36);border-radius:22px;box-shadow:0 14px 40px rgba(0,0,0,.19)}
+.pose-experience-media{background:#0a0f17;min-height:420px;display:flex;align-items:stretch;justify-content:center}
+.pose-experience-media img{display:block;width:100%;height:100%;max-height:620px;object-fit:cover;object-position:center}
+.pose-experience-content{padding:clamp(24px,3vw,44px);display:flex;flex-direction:column;gap:14px;min-width:0}
+.pose-experience-label{color:#ff66b3;letter-spacing:.11em;font-size:12px;font-weight:750;margin:0}
+.pose-experience-content h2{font-size:clamp(30px,3.3vw,43px);line-height:1.12;color:#f7f8fb;margin:0}
+.pose-experience-content h2 span{color:#ef288c}
+.pose-experience-tagline{font-size:18px;font-weight:700;color:#fff;margin:0}
+.pose-experience-description{font-size:15px;line-height:1.65;color:#c1cad5;margin:0}
+.pose-experience-price{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-block:1px solid rgba(255,255,255,.10);padding-block:14px}
+.pose-experience-price strong{font-size:clamp(27px,3vw,36px);color:#fff;line-height:1.1}
+.pose-experience-price span{font-size:13px;color:#b9c4d2}
+.pose-experience-highlights{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0;padding:0;list-style:none}
+.pose-experience-highlights li{position:relative;padding-left:20px;font-size:13px;line-height:1.5;color:#dce3ed}
+.pose-experience-highlights li::before{content:'✓';position:absolute;left:0;color:#fa3697;font-weight:900}
+.pose-experience-tiers{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pose-experience-tiers > div{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px;background:rgba(255,255,255,.035)}
+.pose-experience-tiers strong{display:block;font-size:14px;color:#fff;margin-bottom:5px}
+.pose-experience-tiers span{font-size:12px;line-height:1.5;color:#b9c4d2}
+.pose-experience-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px}
+.pose-experience-actions .mt-btn{min-height:45px}
+.pose-experience-details{border-top:1px solid rgba(255,255,255,.12);padding-top:13px;margin-top:2px}
+.pose-experience-details summary{cursor:pointer;color:#ff86c3;font-weight:700;font-size:14px}
+.pose-experience-details div{font-size:13px;line-height:1.7;color:#cad3df;margin-top:12px}
+@media(max-width:850px){.pose-experience-card{grid-template-columns:1fr}.pose-experience-media{min-height:0;max-height:390px}.pose-experience-media img{height:clamp(220px,52vw,390px);object-fit:cover}}
+@media(max-width:520px){.pose-experience-highlights,.pose-experience-tiers{grid-template-columns:1fr}.pose-experience-content{padding:22px}.pose-experience-price{gap:8px}.pose-experience-actions .mt-btn{width:100%;text-align:center;justify-content:center}}
+
+/* V3.9 — Seven unified POSE service highlights */
+.pose-service-highlights{background:#090d14;color:#f5f7fb;padding-block:clamp(42px,5vw,72px)}
+.pose-service-highlights .mt-section-head h2{color:#f5f7fb}
+.pose-service-highlights .mt-section-head p{color:#b8c2d0}
+.pose-service-highlights .mt-section-head .mt-kicker{color:#ff6bb2}
+.pose-feature-jump{margin:22px 0 32px;gap:10px}
+.pose-feature-jump a{background:#131c28;color:#e3e8f0;border:1px solid rgba(255,255,255,.15);font-size:13px;padding:10px 16px}
+.pose-feature-jump a:hover,.pose-feature-jump a:focus-visible{background:#d4147a;color:#fff;border-color:#d4147a}
+.pose-unified-list{display:grid;gap:24px}
+.pose-unified-card{scroll-margin-top:95px}
+.pose-unified-card .pose-experience-media{min-height:390px}
+.pose-unified-card .pose-experience-media img{max-height:none;min-height:390px;object-fit:cover}
+.pose-unified-card .pose-experience-content{justify-content:center}
+.pose-unified-card .pose-experience-content h2{font-weight:850}
+.pose-unified-card .pose-experience-price{margin-top:2px}
+.pose-unified-card .pose-experience-details h4{color:#fff;margin:4px 0 8px;font-size:15px}
+.pose-unified-card .pose-experience-details ul{padding-left:20px;margin:0;color:#cbd5e2}
+.pose-unified-card .pose-experience-details li{margin:5px 0}
+.pose-unified-card .pose-experience-highlights li{font-size:14px}
+.pose-unified-card .pose-experience-actions a{background:linear-gradient(135deg,#ed1685,#c10d69);color:#fff}
+@media(max-width:850px){.pose-unified-list{gap:18px}.pose-unified-card .pose-experience-media{min-height:0}.pose-unified-card .pose-experience-media img{min-height:0;height:clamp(220px,52vw,390px)}}
+@media(max-width:520px){.pose-unified-card .pose-experience-content{padding:22px}.pose-feature-jump a{padding:9px 12px}}
+
+
+/* V4.0 — Customize Your Experience visually follows unified dark POSE highlights */
+.modern-home .pose-addon-showcase {
+  background:#090d14; color:#f5f7fb;
+  padding-block:clamp(44px,5.5vw,76px);
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.modern-home .pose-addon-showcase .mt-section-head {align-items:center;gap:24px;margin-bottom:30px}
+.modern-home .pose-addon-showcase .mt-section-head .mt-kicker {color:#ff6bb2;letter-spacing:.12em}
+.modern-home .pose-addon-showcase .mt-section-head h2 {color:#f5f7fb;line-height:1.12}
+.modern-home .pose-addon-showcase .mt-section-head p:not(.mt-kicker) {color:#b8c2d0;font-size:15px;line-height:1.65;max-width:730px}
+.modern-home .pose-addon-showcase .mt-section-head > .mt-btn {white-space:nowrap;min-height:46px}
+.modern-home .pose-addon-cards {gap:20px;align-items:stretch}
+.modern-home .pose-addon-card {
+  min-width:0; padding:25px 23px 23px; gap:13px;
+  background:linear-gradient(165deg,#151f2b 0%,#111923 80%);
+  border:1px solid rgba(212,20,122,.32);border-radius:20px;
+  box-shadow:0 14px 40px rgba(0,0,0,.19);
+  transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.modern-home .pose-addon-card:hover {border-color:rgba(240,43,145,.7);transform:translateY(-3px);box-shadow:0 20px 46px rgba(0,0,0,.28)}
+.modern-home .pose-addon-card h3 {font-size:clamp(20px,1.45vw,23px);line-height:1.25;color:#f7f8fb;font-weight:800}
+.modern-home .pose-addon-card p:not(.pose-addon-price) {color:#c1cad5;font-size:14px;line-height:1.65}
+.modern-home .pose-addon-mark {color:#ff86c3;font-size:12px;letter-spacing:.07em;line-height:1.5}
+.modern-home .pose-addon-price {font-size:clamp(29px,2.5vw,35px);color:#fff!important;line-height:1.14!important;margin:3px 0!important}
+.modern-home .pose-addon-price small {color:#b8c2d0;font-size:13px;line-height:1.45;margin-top:7px}
+.modern-home .pose-addon-card .pill {
+  display:flex;align-items:center;justify-content:center;min-height:47px;
+  padding:12px 14px;background:linear-gradient(135deg,#ed1685,#c10d69);
+  color:#fff;border:1px solid rgba(255,255,255,.06);border-radius:999px;
+  font-size:14px;font-weight:800;line-height:1.35;text-decoration:none;
+  margin-top:auto;box-shadow:0 9px 24px rgba(212,20,122,.2);
+}
+.modern-home .pose-addon-card .pill:hover,.modern-home .pose-addon-card .pill:focus-visible {background:linear-gradient(135deg,#fa329c,#d4147a);color:#fff}
+.modern-home .pose-addon-showcase a:focus-visible {outline:3px solid #ff86c3;outline-offset:3px}
+.modern-home .pose-addon-note {color:#aebaca;font-size:13px;line-height:1.65;margin-top:23px;max-width:1100px}
+@media(max-width:1000px){.modern-home .pose-addon-cards {grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+  .modern-home .pose-addon-showcase .mt-section-head {align-items:flex-start;flex-direction:column;gap:19px}
+  .modern-home .pose-addon-showcase .mt-section-head > .mt-btn {width:100%;justify-content:center}
+}
+@media(max-width:620px){
+  .modern-home .pose-addon-cards {grid-template-columns:1fr;gap:16px}
+  .modern-home .pose-addon-card {padding:23px 20px}
+  .modern-home .pose-addon-showcase {padding-block:48px}
+}
+@media(prefers-reduced-motion:reduce){.modern-home .pose-addon-card {transition:none}.modern-home .pose-addon-card:hover {transform:none}}
+
+
+/* V4.1 — Souvenir Add-Ons matches the unified dark service/add-on theme */
+.modern-home .pose-souvenirs {
+  scroll-margin-top:95px; background:#090d14; color:#f5f7fb;
+  padding:clamp(44px,5.5vw,76px) 0; border-top:1px solid rgba(255,255,255,.06);
+}
+.modern-home .pose-souvenirs .pose-souvenir-inner {max-width:1180px;margin-inline:auto}
+.modern-home .pose-souvenir-header {display:flex;align-items:center;gap:24px;margin-bottom:30px}
+.modern-home .pose-souvenir-header .mt-kicker {color:#ff6bb2;letter-spacing:.12em}
+.modern-home .pose-souvenir-header h2 {color:#f5f7fb;line-height:1.12;font-size:clamp(30px,3.6vw,46px)}
+.modern-home .pose-souvenir-header p:not(.mt-kicker) {font-size:15px;line-height:1.65;color:#b8c2d0;max-width:730px}
+.modern-home .pose-souvenir-badge {background:linear-gradient(165deg,#151f2b,#111923);border:1px solid rgba(212,20,122,.38);box-shadow:0 14px 40px rgba(0,0,0,.19);border-radius:20px;color:#f5f7fb}
+.modern-home .pose-souvenir-badge small {color:#b8c2d0;opacity:1}
+.modern-home .pose-souvenir-subhead {color:#f5f7fb;font-size:clamp(20px,1.45vw,23px);line-height:1.3;margin:26px 0 16px}
+.modern-home .pose-souvenir-subhead small {color:#b8c2d0}
+.modern-home .pose-souvenir-addon-prices {gap:20px}
+.modern-home .pose-souvenir-addon-prices a {
+  display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:16px;min-height:147px;
+  background:linear-gradient(165deg,#151f2b 0%,#111923 80%);
+  border:1px solid rgba(212,20,122,.32);border-radius:20px;
+  color:#f5f7fb;font-size:17px;line-height:1.35;font-weight:800;
+  padding:24px 22px;box-shadow:0 14px 40px rgba(0,0,0,.19);
+  transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.modern-home .pose-souvenir-addon-prices a strong {font-size:clamp(28px,2.5vw,35px);color:#fff;line-height:1.1}
+.modern-home .pose-souvenir-addon-prices a:hover {background:linear-gradient(165deg,#192536,#141e2c);border-color:rgba(240,43,145,.7);transform:translateY(-3px);box-shadow:0 20px 46px rgba(0,0,0,.28)}
+.modern-home .pose-souvenir-addon-prices a:focus-visible {outline:3px solid #ff86c3;outline-offset:3px}
+.modern-home .pose-souvenir-note {font-size:13px;line-height:1.65;color:#aebaca;opacity:1;max-width:1100px}
+.modern-home .pose-souvenir-note strong {color:#e5eaf1}
+.modern-home .pose-souvenir-legacy {background:linear-gradient(165deg,#151f2b,#111923);border:1px solid rgba(212,20,122,.32);border-radius:20px;padding:20px 22px;color:#c1cad5}
+.modern-home .pose-souvenir-legacy summary {color:#ff86c3;font-size:15px;line-height:1.5}
+.modern-home .pose-souvenir-legacy > p {color:#b8c2d0}
+.modern-home .pose-souvenir-grid {gap:20px}
+.modern-home .pose-souvenir-card {border:1px solid rgba(212,20,122,.32);border-radius:20px;box-shadow:0 14px 40px rgba(0,0,0,.19);padding:23px}
+.modern-home .pose-souvenir-card h3 {color:#f5f7fb;font-size:20px}
+.modern-home .pose-souvenir-card .pill {background:linear-gradient(135deg,#ed1685,#c10d69);color:#fff;border-radius:999px;min-height:47px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+.modern-home .pose-souvenir-card .pill:hover {background:linear-gradient(135deg,#fa329c,#d4147a)}
+@media(max-width:850px){.modern-home .pose-souvenir-header {flex-direction:column;align-items:flex-start}.modern-home .pose-souvenir-badge {width:100%}}
+@media(max-width:620px){.modern-home .pose-souvenirs {padding-block:48px}.modern-home .pose-souvenir-addon-prices {gap:16px}.modern-home .pose-souvenir-addon-prices a {min-height:110px;padding:20px}.modern-home .pose-souvenir-header {margin-bottom:24px}}
+@media(prefers-reduced-motion:reduce){.modern-home .pose-souvenir-addon-prices a {transition:none}.modern-home .pose-souvenir-addon-prices a:hover {transform:none}}

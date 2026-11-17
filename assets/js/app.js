@@ -60,23 +60,20 @@ const packageSelect = document.querySelector("#packageSelect");
 const POSE_PACKAGES = [
   ['Photobooth 4R', 'Classic Photobooth', 2999, 1000, '4R Photobooth · ₱2,999'],
   ['Photobooth Strip', 'Classic Photobooth', 3499, 1000, 'Strip Photobooth · ₱3,499'],
+  ['Strip Souvenir 50', 'Classic Photobooth', 5999, 1000, 'Souvenir Bundle · Strip + 50 Keychains · ₱5,999'],
+  ['Strip Souvenir 100', 'Classic Photobooth', 7499, 1000, 'Souvenir Bundle · Strip + 100 Keychains · ₱7,499'],
+  ['Strip Magnetic Souvenir 50', 'Classic Photobooth', 6499, 1000, 'Souvenir Bundle · Strip + 50 Magnetic Sets · ₱6,499'],
+  ['Strip Magnetic Souvenir 100', 'Classic Photobooth', 8499, 1000, 'Souvenir Bundle · Strip + 100 Magnetic Sets · ₱8,499'],
   ['Photobooth Dedication', 'Classic Photobooth', 3499, 1000, 'Dedication Photobooth · ₱3,499'],
   ['Photobooth Polaroid', 'Classic Photobooth', 3999, 1500, 'Polaroid Photobooth · ₱3,999'],
-  ['Signature Booth', 'Signature Photobooth', 6999, 1500, 'Signature Photobooth · ₱6,999'],
+  ['Signature Booth', 'Signature Photobooth', 4999, 1500, 'Signature Photobooth · ₱4,999'],
   ['Photoman Unlimited', 'Photoman', 4999, 1500, 'Photoman Unlimited · ₱4,999'],
   ['Photoman Premium', 'Photoman', 7499, 2000, 'Photoman Premium · ₱7,499'],
   ['360 Package', '360 Video Booth', 12000, 2000, '360 Video Booth · ₱12,000'],
   ['Trading Card Photobooth', 'Trading Card Photobooth', 9999, null, 'Trading Card Photobooth · ₱9,999'],
-  ['Event Photography Inquiry', 'Event Photography', 3000, null, 'Event Photography (up to 3 hrs) · ₱3,000'],
-  ['Studio Promo', 'On-site Photo Studio', 7999, 2000, 'On-site Photo Studio · ₱7,999'],
-  ['AI Photobooth', 'AI Photobooth', null, null, 'AI Photobooth · Price on request'],
-  ['Photoman + Free Video Guestbook', 'Event Bundles', 5500, null, 'Photoman + Free Video Guestbook · ₱5,500'],
-  ['Photobooth + Event Photographer', 'Event Bundles', 5000, null, 'Photobooth + Event Photography · ₱5,000'],
-  ['360 Video Booth + Classic Photobooth', 'Event Bundles', 15000, null, '360 + Classic Photobooth · ₱15,000'],
-  ['Photobooth + Free Video Guestbook', 'Event Bundles', 5000, null, 'Photobooth + Free Video Guestbook · ₱5,000'],
-  ['POSE Celebration — Classic Photobooth + Projector (₱5,999)', 'Event Bundles', 5999, null, 'POSE Celebration: Classic + Projector · ₱5,999'],
-  ['POSE Memories — Event Photography + Projector (₱5,999)', 'Event Bundles', 5999, null, 'POSE Memories: Photography + Projector · ₱5,999'],
-  ['POSE Interactive — Photoman + Projector + Free Video Guestbook (₱7,999)', 'Event Bundles', 7999, null, 'POSE Interactive: Photoman + Projector + Guestbook · ₱7,999'],
+  ['Studio Promo', 'On-site Photo Studio', 8000, 2000, 'On-site Photo Studio · ₱8,000'],
+  ['AI Essential', 'AI Photobooth', 7499, null, 'AI Essential · 2 hours · Up to 75 AI portraits · ₱7,499'],
+  ['AI Premium', 'AI Photobooth', 9999, null, 'AI Premium · 3 hours · Up to 150 AI portraits · ₱9,999'],
   ['Help Me Choose', 'Not sure yet', null, null, 'Help me choose a package']
 ].map(([id, category, price, extraHourRate, label]) => ({id, category, price, extraHourRate, label}));
 const posePackageById = new Map(POSE_PACKAGES.map(p => [p.id, p]));
@@ -104,6 +101,7 @@ function populatePackages(category, selectedId = '') {
   packageSelect.dispatchEvent(new Event('change', {bubbles:true}));
 }
 function selectPosePackage(id) {
+  if (id === 'AI Photobooth') id = 'AI Essential'; // Legacy homepage links.
   const p = posePackageById.get(id);
   if (!p || !serviceSelect) return false;
   serviceSelect.value = p.category;
@@ -113,15 +111,25 @@ function selectPosePackage(id) {
 serviceSelect?.addEventListener('change', () => populatePackages(serviceSelect.value));
 // CTA and finder links may be inserted dynamically; delegate clicks to preserve their selections.
 document.addEventListener('click', e => {
-  const link = e.target.closest('[data-package]');
+  const link = e.target.closest('[data-package], [data-addon]');
   if (!link) return;
-  if (link.dataset.package === 'Projector Presentation Add-on (+₱2,500)') {
-    // The projector is an add-on, not a standalone primary package.
-    if (packageHint) packageHint.textContent = 'Select a primary package, then tick the projector add-on below.';
-    document.getElementById('addonProjector')?.focus();
+  if (link.dataset.addon) {
+    const checkbox = document.getElementById({video:'addonVideoGuestbook',projector:'addonProjector',photography:'addonPhotography'}[link.dataset.addon]);
+    if (checkbox && !checkbox.disabled) {
+      checkbox.checked = true;
+      checkbox.dispatchEvent(new Event('change', {bubbles:true}));
+      if (packageHint) packageHint.textContent = 'Add-on selected. Review your estimated total below.';
+    } else if (packageHint) {
+      packageHint.textContent = 'Select your main POSE service and package first, then choose this add-on.';
+    }
+    checkbox?.focus();
     return;
   }
   const selected = selectPosePackage(link.dataset.package);
+  if (selected && link.dataset.addPhotography === 'true') {
+    const photography = document.getElementById('addonPhotography');
+    if (photography && !photography.disabled) {photography.checked = true; photography.dispatchEvent(new Event('change', {bubbles:true}));}
+  }
   if (selected && link.dataset.souvenir) {
     const souvenir = document.getElementById('quoteSouvenir');
     if (souvenir && !souvenir.disabled) {
@@ -274,17 +282,18 @@ form?.addEventListener("submit", async (e) => {
   const inquire = document.querySelector('#finderInquire');
   if (!goal || !budget || !result || !inquire) return;
   const options = {
-    prints: {low:['Photobooth 4R','₱2,999 · 2 hours'],mid:['Photobooth + Event Photographer','₱5,000 · 2 hrs photobooth + 3 hrs photography'],high:['360 Video Booth + Classic Photobooth','₱15,000 · 3 hrs each']},
-    roaming: {low:['Photoman Unlimited','See current standalone package'],mid:['Photoman + Free Video Guestbook','₱5,500 · 2 hours + video greetings'],high:['POSE Interactive — Photoman + Projector + Free Video Guestbook (₱7,999)','₱7,999 · Photoman, projector & video guestbook']},
-    coverage: {low:['Event Photography Inquiry','₱3,000 · up to 3 hours'],mid:['POSE Memories — Event Photography + Projector (₱5,999)','₱5,999 · Photography + multimedia'],high:['POSE Memories — Event Photography + Projector (₱5,999)','₱5,999 · Photography + multimedia']},
-    video: {low:['360 Package','360 video booth · ask about available options'],mid:['360 Package','360 video booth · ask about available options'],high:['360 Video Booth + Classic Photobooth','₱15,000 · 3 hrs each']}
+    prints: {low:['Photobooth 4R','₱2,999 · 2 hours'],mid:['Photobooth Strip','₱3,499 · 2 hours; add souvenirs'],high:['Signature Booth','₱4,999 · 2 hours; one layout']},
+    roaming: {low:['Photoman Unlimited','₱4,999 · 2 hours'],mid:['Photoman Unlimited','₱4,999 · optional Video Guestbook +₱1,000'],high:['Photoman Premium','₱7,499 · 2 hours']},
+    coverage: {low:['Photobooth 4R','₱2,999 · add Event Photography +₱2,500'],mid:['Photobooth Strip','₱3,499 · add Event Photography +₱2,500'],high:['Signature Booth','₱4,999 · add Event Photography +₱2,500']},
+    video: {low:['360 Package','₱12,000 · 3 hours'],mid:['360 Package','₱12,000 · 3 hours'],high:['360 Package','₱12,000 · 3 hours']}
   };
   const update = () => {
     const [name, detail] = options[goal.value][budget.value];
     result.querySelector('strong').textContent = name;
     result.querySelector('span').textContent = detail;
     inquire.dataset.package = name;
-    inquire.dataset.service = packageServices[name] || (name === 'Event Photography Inquiry' ? 'Event Photography' : 'Event Bundles');
+    inquire.dataset.service = packageServices[name] || 'Not sure yet';
+    if (goal.value === 'coverage') inquire.dataset.addPhotography = 'true'; else delete inquire.dataset.addPhotography;
   };
   goal.addEventListener('change',update); budget.addEventListener('change',update); update();
   // The delegated CTA listener handles synchronization for package recommendations.
@@ -328,8 +337,10 @@ document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photoboo
 (() => {
   const prices = Object.fromEntries(POSE_PACKAGES.map(p => [p.id, [p.price, p.extraHourRate]]));
   const $ = id => document.getElementById(id);
-  const opt = { projector:$('addonProjector'), enclosure:$('addonEnclosure'), magnets:$('addonMagnets'), video:$('addonVideoGuestbook') };
+  const opt = { projector:$('addonProjector'), enclosure:$('addonEnclosure'), magnets:$('addonMagnets'), video:$('addonVideoGuestbook'), photography:$('addonPhotography') };
   const souvenir = $('quoteSouvenir');
+  const signatureLayouts = $('quoteSignatureLayouts');
+  const signatureFormat = $('quoteSignatureFormat');
   const souvenirPrices = {keychain50:2500,keychain100:4000,magnet50:3000,magnet100:5000};
   const souvenirLabels = {keychain50:'50 acrylic keychain souvenir sets',keychain100:'100 acrylic keychain souvenir sets',magnet50:'50 magnetic strip + acrylic keychain souvenir sets',magnet100:'100 magnetic strip + acrylic keychain souvenir sets'};
   const hours = $('quoteExtraHours');
@@ -340,31 +351,39 @@ document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photoboo
     const hasPublishedPrice = Number.isFinite(base?.[0]);
     const is360 = selected === '360 Package';
     const isPhotoman = selected === 'Photoman Unlimited' || selected === 'Photoman Premium';
-    const includesProjector = /Projector/.test(selected);
-    const includesGuestbook = /Video Guestbook/.test(selected);
-    const standaloneProjector = selected === 'Projector Presentation Add-on (+₱2,500)';
+    const includesGuestbook = false;
     const setAvailable = (input, available) => {input.disabled = !available; if(!available) input.checked = false;};
-    setAvailable(opt.projector, Boolean(selected && hasPublishedPrice && !includesProjector));
+    setAvailable(opt.projector, Boolean(selected && hasPublishedPrice));
     setAvailable(opt.enclosure, is360);
     setAvailable(opt.magnets, isPhotoman);
-    setAvailable(opt.video, Boolean(selected && hasPublishedPrice && !includesGuestbook && !standaloneProjector));
-    const isStrip = selected === 'Photobooth Strip';
+    setAvailable(opt.video, Boolean(selected && hasPublishedPrice && !includesGuestbook));
+    setAvailable(opt.photography, Boolean(selected && hasPublishedPrice));
+    const isStrip = selected === 'Photobooth Strip' || (selected === 'Signature Booth' && signatureFormat.value === 'Strip');
+    const isSouvenirBundle = /^(Strip Souvenir (50|100)|Strip Magnetic Souvenir (50|100))$/.test(selected);
+    const isSignature = selected === 'Signature Booth';
+    $('signatureLayoutsWrap').hidden = !isSignature;
+    $('signatureFormatWrap').hidden = !isSignature;
+    signatureFormat.disabled = !isSignature;
+    if (!isSignature) signatureFormat.value = '4R';
+    signatureLayouts.disabled = !isSignature;
+    if (!isSignature) signatureLayouts.value = '0';
     // Hide unrelated add-ons entirely rather than displaying disabled controls.
     const visibleOptions = {
-      projector: Boolean(selected && hasPublishedPrice && !includesProjector),
+      projector: Boolean(selected && hasPublishedPrice),
       enclosure: is360,
       magnets: isPhotoman,
-      video: Boolean(selected && hasPublishedPrice && !includesGuestbook && !standaloneProjector)
+      video: Boolean(selected && hasPublishedPrice && !includesGuestbook),
+      photography: Boolean(selected && hasPublishedPrice)
     };
     Object.entries(opt).forEach(([key, input]) => { input.closest('.pose-quote-option').hidden = !visibleOptions[key]; });
     const relevant = $('poseRelevantAddons');
     if (relevant) relevant.hidden = !Object.values(visibleOptions).some(Boolean);
     $('souvenirQuoteWrap').hidden = !isStrip;
-    $('souvenirQuantityPolicy').hidden = !(isStrip && souvenir.value);
+    $('souvenirQuantityPolicy').hidden = !((isStrip && souvenir.value) || isSouvenirBundle);
     $('poseExtraHoursWrap').hidden = !Number.isFinite(base?.[1]);
     souvenir.disabled = !isStrip;
     if (!isStrip) souvenir.value = '';
-    $('souvenirQuantityPolicy').hidden = !(isStrip && souvenir.value);
+    $('souvenirQuantityPolicy').hidden = !((isStrip && souvenir.value) || isSouvenirBundle);
     const hourRate = base?.[1];
     hours.disabled = !Number.isFinite(hourRate);
     if (hours.disabled) hours.value = '0';
@@ -373,27 +392,37 @@ document.querySelectorAll('a[href*="m.me/"], a[href*="facebook.com/pose.photoboo
       : 'Additional hours for this package are quoted on request.';
     let total = hasPublishedPrice ? base[0] : null;
     const additions = [];
-    if (opt.projector.checked) {total += 2500; additions.push('Projector presentation (4 hours): +₱2,500');}
+    if (isSouvenirBundle) additions.push('Souvenir allocation included in bundle price; quantity remains fixed on extension');
+    if (opt.projector.checked) {total += 2000; additions.push('Projector presentation (up to 4 hours): +₱2,000');}
     if (opt.enclosure.checked) {total += 5000; additions.push('360 LED enclosure: +₱5,000');}
     if (opt.magnets.checked) {total += 1000; additions.push('Photoman magnets / 50 prints: +₱1,000');}
-    if (opt.video.checked) additions.push('Video Guestbook: price on request');
+    if (opt.video.checked) {total += 1000; additions.push('Video Guestbook (standard screen, digital recordings): +₱1,000');}
+    if (opt.photography.checked) {total += 2500; additions.push('Event Photography (up to 3 hours): +₱2,500');}
     if (isStrip && souvenirPrices[souvenir.value]) {
       const cost = souvenirPrices[souvenir.value];
       total += cost;
       additions.push(`${souvenirLabels[souvenir.value]}: +${format(cost)}`);
     }
+    if (isSignature) additions.push(`Signature print format: ${signatureFormat.value}`);
+    if (isSignature && Number(signatureLayouts.value) > 0) {
+      const extraLayouts = Number(signatureLayouts.value);
+      total += extraLayouts * 500;
+      additions.push(`${extraLayouts} additional Signature layout(s): +${format(extraLayouts * 500)}`);
+    }
     const count = Number(hours.value) || 0;
     if (count && Number.isFinite(hourRate)) {total += count * hourRate; additions.push(`${count} additional hour(s): +${format(count * hourRate)}`);}
-    $('quoteTotal').textContent = total == null ? (standaloneProjector ? 'Select a primary package' : selected ? 'Price on request' : 'Select a package') : format(total);
+    $('quoteTotal').textContent = total == null ? (selected ? 'Price on request' : 'Select a package') : format(total);
     $('quoteDetails').textContent = total == null ? 'Choose a priced package to calculate an estimate.' : `${posePackageById.get(selected)?.label || selected}: ${format(base[0])}${additions.length ? ' · ' + additions.join(' · ') : ' · No extras selected'}`;
     $('quoteAddonsField').value = additions.join('; ');
-    $('quoteEstimateField').value = total == null ? 'Price on request' : format(total) + (opt.video.checked ? ' + guestbook quote' : '');
+    $('quoteEstimateField').value = total == null ? 'Price on request' : format(total);
     $('quoteExtraHoursField').value = String(count);
   }
   packageSelect?.addEventListener('change', updateQuote);
   Object.values(opt).forEach(el => el.addEventListener('change', updateQuote));
   hours?.addEventListener('change', updateQuote);
   souvenir?.addEventListener('change', updateQuote);
+  signatureLayouts?.addEventListener('change', updateQuote);
+  signatureFormat?.addEventListener('change', updateQuote);
   // Finder buttons also populate the package; their handlers are registered earlier.
   form?.addEventListener('reset', () => setTimeout(updateQuote, 0));
   updateQuote();

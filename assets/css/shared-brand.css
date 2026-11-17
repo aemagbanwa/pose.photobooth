@@ -34,11 +34,11 @@
     display: block; color: #f5f7fb; padding: 12px 10px; min-height: 44px; border-radius: 8px;
   }
   .site-header nav#primary-nav > a:not(.pill):hover,
-  .site-header nav#primary-nav > a:not(.pill):focus-visible { background: #202d3b; color: #f0bf68; }
+  .site-header nav#primary-nav > a:not(.pill):focus-visible { background: #202d3b; color: #f02b91; }
   .site-header nav#primary-nav > .pill { margin-top: 12px; }
 }
 @media (max-width: 640px) {
   .site-header .nav, .modern-home .site-header .nav { height: 68px; }
   .site-header .brand img, .modern-home .site-header .brand img { width: 112px; height: 46px; }
 }
-.site-header nav#primary-nav a[aria-current="page"] { color: #f0bf68; }
+.site-header nav#primary-nav a[aria-current="page"] { color: #f02b91; }
