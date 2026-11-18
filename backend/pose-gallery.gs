@@ -495,7 +495,9 @@ function unlockEvent_(folderId, suppliedPin, params) {
 }
 
 // ZIP responses stay private: no public temporary Drive files are created.
-// Bound each request's memory/runtime; larger albums become independent ZIP parts.
+// Apps Script returns base64 JSON, so retain a conservative 20 MiB per-part
+// budget. Oversize media are offered as individual original-quality links
+// instead of preventing the remaining album from being downloaded.
 function albumZip_(folder, settings, params) {
   if (settings.downloadsEnabled === false) {
     return jsonResponse_({ ok: false, message: 'Downloads are disabled for this album.' });
@@ -507,9 +509,6 @@ function albumZip_(folder, settings, params) {
     const file = iterator.next();
     if (!/^(image|video)\//.test(file.getMimeType())) continue;
     const size = file.getSize();
-    if (size > maxBytes) {
-      return jsonResponse_({ ok: false, message: 'This album contains a file larger than 20 MB. Please download large files individually using the photo/video download button.' });
-    }
     files.push({ file: file, id: file.getId(), size: size, name: file.getName(), modified: file.getLastUpdated().toISOString() });
   }
   files.sort(function (a, b) { return a.id.localeCompare(b.id); });
@@ -520,6 +519,7 @@ function albumZip_(folder, settings, params) {
     Utilities.Charset.UTF_8
   ));
   const parts = [];
+  const largeFiles = [];
   let current = [], bytes = 0;
   files.forEach(function (entry, index) {
     if (current.length && (bytes + entry.size > maxBytes || current.length >= 40)) {
@@ -527,12 +527,17 @@ function albumZip_(folder, settings, params) {
     }
     // Prefix guarantees unique, safe filenames even when Drive names repeat.
     entry.zipName = String(index + 1).padStart(4, '0') + '_' + entry.name.replace(/[\\/\x00-\x1f<>:"|?*]/g, '_');
+    if (entry.size > maxBytes) {
+      largeFiles.push({ name: entry.name, size: entry.size,
+        url: 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(entry.id) });
+      return;
+    }
     current.push(entry); bytes += entry.size;
   });
   if (current.length) parts.push(current);
   const title = String(settings.eventName || folder.getName() || 'POSE Album').replace(/[\\/\x00-\x1f<>:"|?*]/g, '_').slice(0, 100);
   if (params.zipPart === undefined || params.zipPart === '') {
-    return jsonResponse_({ ok: true, albumZip: { title: title, signature: signature, fileCount: files.length, partCount: parts.length } });
+    return jsonResponse_({ ok: true, albumZip: { title: title, signature: signature, fileCount: files.length, zipFileCount: files.length - largeFiles.length, partCount: parts.length, largeFiles: largeFiles } });
   }
   if (params.zipSignature !== signature) {
     return jsonResponse_({ ok: false, message: 'The album changed. Close this window and prepare the album again.' });
