@@ -2,10 +2,19 @@
  * Deploy independently from the inquiry backend. See PARTNERS-SETUP.md.
  * Execute as owner; access Anyone. Only admin email can mutate protected records.
  */
-const PARTNER_VERSION='1.5.0';
-const PARTNER_SHEETS={notifications:['Notification ID','Created At','Affiliate ID','Type','Title','Message','Reference','Read At'],inquiries:['Submission ID','Received','Affiliate ID','Affiliate Code','Service','Package','Event Date','Status','Linked Booking ID','Last Sync'],affiliates:['ID','Registered','Name','Email','Phone','City','Type','Facebook','Status','Code','Payment Method','Payment Name','Payment Number','QR File ID'],payouts:['Payout ID','Created','Affiliate ID','Amount','Status','Method','Account Name','Account Number','Reference','Paid At','Processed By','Booking IDs','Receipt File ID'],bookings:['Booking ID','Recorded','Affiliate ID','Affiliate Code','Package Key','Event Date','Status','Paid Amount','Paid At'],audit:['Timestamp','Actor','Action','Reference','Detail']};
-const BASE_RATES={classic4r:100,classicstrip:150,signature:200,photoman:200,photography:100,studio:300,booth360:500,photoBundle:200,bundle360:600};
-const BASE_NAMES={classic4r:'Classic 4R',classicstrip:'Classic Strip',signature:'Signature Photobooth',photoman:'Photoman Unlimited',photography:'Event Photography',studio:'On-site Photo Studio',booth360:'360 Video Booth',photoBundle:'Photobooth + Photographer',bundle360:'360 + Classic Bundle'};
+const PARTNER_VERSION='1.7.0';
+const PARTNER_SHEETS={notifications:['Notification ID','Created At','Affiliate ID','Type','Title','Message','Reference','Read At'],inquiries:['Submission ID','Received','Affiliate ID','Affiliate Code','Service','Package','Event Date','Status','Linked Booking ID','Last Sync'],affiliates:['ID','Registered','Name','Email','Phone','City','Type','Facebook','Status','Code','Payment Method','Payment Name','Payment Number','QR File ID'],payouts:['Payout ID','Created','Affiliate ID','Amount','Status','Method','Account Name','Account Number','Reference','Paid At','Processed By','Booking IDs','Receipt File ID'],bookings:['Booking ID','Recorded','Affiliate ID','Affiliate Code','Package Key','Event Date','Status','Paid Amount','Paid At','Base Commission'],audit:['Timestamp','Actor','Action','Reference','Detail']};
+// New commission rates apply only to NEW service bookings. Historical rows without
+// a Base Commission snapshot retain their previous commission schedule.
+const BASE_RATES={classic:150,signature:250,photoman:250,studio:400,ai:500,tradingcard:500,booth360:600};
+const LEGACY_BASE_RATES={classic4r:100,classicstrip:150,signature:200,photoman:200,photography:100,studio:300,booth360:500,photoBundle:200,bundle360:600};
+const BASE_NAMES={classic:'Classic Photobooth',signature:'Signature Photobooth',photoman:'Photoman',studio:'On-site Photo Studio',ai:'AI Photobooth',tradingcard:'Trading Card Photobooth',booth360:'360 Video Booth',classic4r:'Classic 4R (legacy)',classicstrip:'Classic Strip (legacy)',photography:'Event Photography (legacy)',photoBundle:'Photobooth + Photographer (legacy)',bundle360:'360 + Classic (legacy)'};
+function partnerBaseCommission_(booking){
+ const snap=booking['Base Commission'];
+ if(snap!==''&&snap!==null&&snap!==undefined&&Number.isFinite(Number(snap)))return Number(snap);
+ return LEGACY_BASE_RATES[booking['Package Key']]||0;
+}
+function partnerInquiryIdForBooking_(bookingId){return String(bookingId||'').replace(/__SVC_[A-Za-z0-9]+$/,'');}
 function setupPartners(){
  const props=PropertiesService.getScriptProperties();
  if(!props.getProperty('PARTNERS_ADMIN_EMAIL')) throw Error('Set PARTNERS_ADMIN_EMAIL in Script Properties before setup.');
@@ -183,8 +192,8 @@ function partnerMonth_(date){return String(date||'').slice(0,7);}
 function partnerDate_(date){let d=String(date||'');if(!/^\d{4}-\d\d-\d\d$/.test(d)||isNaN(Date.parse(d+'T00:00:00Z')))throw Error('Enter a valid event date.');return d;}
 function partnerFigures_(bookings,id){
  const completed=bookings.filter(b=>b['Affiliate ID']===id&&b.Status==='Completed');
- const counts={};completed.forEach(b=>{let k=partnerMonth_(b['Event Date']);counts[k]=(counts[k]||0)+1;});
- const rows=bookings.filter(b=>b['Affiliate ID']===id).map(b=>{const month=partnerMonth_(b['Event Date']),tier=partnerTier_(counts[month]||0),base=b.Status==='Completed'?(BASE_RATES[b['Package Key']]||0):0,bonus=Math.round(base*tier.rate*100)/100,current=base+bonus;
+ const counts={},unique={};completed.forEach(b=>{let k=partnerMonth_(b['Event Date']);(unique[k]||(unique[k]=new Set())).add(partnerInquiryIdForBooking_(partnerUnquote_(b['Booking ID'])));});Object.keys(unique).forEach(k=>counts[k]=unique[k].size);
+ const rows=bookings.filter(b=>b['Affiliate ID']===id).map(b=>{const month=partnerMonth_(b['Event Date']),tier=partnerTier_(counts[month]||0),base=b.Status==='Completed'?partnerBaseCommission_(b):0,bonus=Math.round(base*tier.rate*100)/100,current=base+bonus;
  return {id:partnerUnquote_(b['Booking ID']),date:b['Event Date'],month,package:BASE_NAMES[b['Package Key']]||b['Package Key'],status:b.Status,base,bonus,total:b.Status==='Completed'?(b['Paid At']!==''&&b['Paid At']!=null?Number(b['Paid Amount']):current):0,payout:b['Paid At']?'Paid':'Unpaid',tier:tier.name};});
  return {rows,counts};
 }
@@ -249,27 +258,38 @@ function partnerSetInquiry_(auth,p){
  return {message:'Inquiry status updated.'};
 }
 function partnerUpdateLinkedInquiry_(id,status){
- const row=partnerRows_('inquiries').find(r=>partnerUnquote_(r['Linked Booking ID'])===id);
+ const inquiryId=partnerInquiryIdForBooking_(id);
+ const row=partnerRows_('inquiries').find(r=>partnerUnquote_(r['Submission ID'])===inquiryId);
  if(!row)return;
- partnerSheet_('inquiries').getRange(row._row,8).setValue(
-  status==='Completed'?'Completed':status==='Cancelled'?'Cancelled':'Confirmed Booking');
+ const services=partnerRows_('bookings').filter(b=>partnerInquiryIdForBooking_(partnerUnquote_(b['Booking ID']))===inquiryId);
+ const next=services.some(b=>b.Status==='Pending')?'Confirmed Booking':services.some(b=>b.Status==='Completed')?'Completed':'Cancelled';
+ partnerSheet_('inquiries').getRange(row._row,8).setValue(next);
 }
-function partnerRecordBooking_(auth,p){let id=partnerClean_(p.bookingId,120),code=partnerClean_(p.affiliateCode,30).toUpperCase(),pkg=partnerClean_(p.packageKey,40),date=partnerDate_(p.eventDate),status=partnerClean_(p.status||'Pending',20);
- if(!id||!Object.prototype.hasOwnProperty.call(BASE_RATES,pkg)||!['Pending','Completed','Cancelled'].includes(status))throw Error('Invalid booking details.');
- if(partnerRows_('bookings').some(x=>x['Booking ID']===id))throw Error('This booking reference already exists.');
-  const affiliate=partnerRows_('affiliates').find(x=>x.Code===code&&x.Status==='Approved');if(!affiliate)throw Error('Affiliate code is not approved.');
-  const linked=partnerRows_('inquiries').find(r=>partnerUnquote_(r['Submission ID'])===id);
-  if(!linked)throw Error('Inquiry not synced. Run syncRecentPartnerInquiries() in inquiry Apps Script.');
-  if(linked['Affiliate ID']!==affiliate.ID)throw Error('Inquiry referral does not match affiliate.');
-  if(linked['Linked Booking ID'])throw Error('Inquiry already linked to a booking.');
-  if(linked.Status==='Cancelled')throw Error('Reopen cancelled inquiry before booking.');
-  if(partnerDate_(linked['Event Date'])!==date)throw Error('Event date must match the inquiry.');
- partnerSheet_('bookings').appendRow([partnerSafe_(id),new Date(),affiliate.ID,code,pkg,date,status,'','']);partnerSheet_('inquiries').getRange(linked._row,8,1,2).setValues([[status==='Completed'?'Completed':status==='Cancelled'?'Cancelled':'Confirmed Booking',partnerSafe_(id)]]);
- partnerAudit_(auth.email,'record_booking',id,code+' '+status);
- partnerNewNotification_(affiliate.ID,status==='Cancelled'?'booking_cancelled':'confirmed',status==='Cancelled'?'Booking cancelled':'Referral booking confirmed',
-  'Booking '+id+' · '+(BASE_NAMES[pkg]||pkg)+' · '+(status==='Completed'?'Completed':status)+'.',id);
- if(status!=='Cancelled')partnerNotify_(affiliate,'confirmed',id,{service:BASE_NAMES[pkg]||pkg,eventDate:date});
- return {message:'Booking recorded and inquiry linked.'};
+function partnerRecordBooking_(auth,p){
+ const inquiryId=partnerClean_(p.bookingId,120),code=partnerClean_(p.affiliateCode,30).toUpperCase(),service=partnerClean_(p.packageKey,40),date=partnerDate_(p.eventDate),status=partnerClean_(p.status||'Pending',20);
+ if(!inquiryId||inquiryId.length>95||!Object.prototype.hasOwnProperty.call(BASE_RATES,service)||!['Pending','Completed','Cancelled'].includes(status))throw Error('Invalid service booking details.');
+ const affiliate=partnerRows_('affiliates').find(x=>x.Code===code&&x.Status==='Approved');
+ if(!affiliate)throw Error('Affiliate code is not approved.');
+ const linked=partnerRows_('inquiries').find(r=>partnerUnquote_(r['Submission ID'])===inquiryId);
+ if(!linked)throw Error('Inquiry not synced. Run syncRecentPartnerInquiries() in inquiry Apps Script.');
+ if(linked['Affiliate ID']!==affiliate.ID)throw Error('Inquiry referral does not match affiliate.');
+ if(linked.Status==='Cancelled')throw Error('Cannot book a cancelled inquiry.');
+ if(partnerDate_(linked['Event Date'])!==date)throw Error('Event date must match the inquiry.');
+ const existing=partnerRows_('bookings').filter(b=>partnerInquiryIdForBooking_(partnerUnquote_(b['Booking ID']))===inquiryId);
+ if(existing.some(b=>b['Affiliate ID']!==affiliate.ID||b['Event Date']!==date))throw Error('Existing inquiry booking has conflicting attribution or event date.');
+ // One commission per distinct service per inquiry; no bundle or addon options.
+ if(existing.some(b=>b['Package Key']===service||((service==='classic')&&['classic4r','classicstrip'].includes(b['Package Key']))))throw Error('This service is already recorded for this inquiry.');
+ if(existing.some(b=>['classic4r','classicstrip'].includes(service)&&b['Package Key']==='classic'))throw Error('Classic service already recorded.');
+ const bookingId=existing.length?inquiryId+'__SVC_'+service.toUpperCase():inquiryId;
+ if(partnerRows_('bookings').some(b=>partnerUnquote_(b['Booking ID'])===bookingId))throw Error('Booking identifier already exists.');
+ partnerSheet_('bookings').appendRow([partnerSafe_(bookingId),new Date(),affiliate.ID,code,service,date,status,'','',BASE_RATES[service]]);
+ if(!linked['Linked Booking ID'])partnerSheet_('inquiries').getRange(linked._row,9).setValue(partnerSafe_(bookingId));
+ partnerUpdateLinkedInquiry_(bookingId,status);
+ partnerAudit_(auth.email,'record_service',bookingId,code+' '+service+' '+status+' base='+BASE_RATES[service]);
+ partnerNewNotification_(affiliate.ID,status==='Cancelled'?'booking_cancelled':'confirmed',status==='Cancelled'?'Service cancelled':'Referral service recorded',
+  'Booking '+bookingId+' · '+BASE_NAMES[service]+' · '+status+'.',bookingId);
+ if(status!=='Cancelled')partnerNotify_(affiliate,'confirmed',bookingId,{service:BASE_NAMES[service],eventDate:date});
+ return {message:'Service recorded at ₱'+BASE_RATES[service]+' base commission. Inquiry linked.'};
 }
 function partnerFindBooking_(id){return partnerRows_('bookings').find(x=>String(x['Booking ID']).replace(/^'/,'')===id);}
 function partnerSetBooking_(auth,p){let id=partnerClean_(p.id,120),status=partnerClean_(p.status,20);if(!['Pending','Completed','Cancelled'].includes(status))throw Error('Invalid status.');let row=partnerFindBooking_(id);if(!row)throw Error('Booking not found.');

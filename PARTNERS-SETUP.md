@@ -120,3 +120,29 @@
 **Upgrade from v1.4:** Replace the existing Partners Apps Script code with `backend/pose-partners.gs` and run `setupPartners()`; redeploy a new web app version. Publish `partners/dashboard.html`, `partners/admin.html`, `assets/js/partners.js`, and `assets/css/partners.css`. Keep existing script properties and `/exec` URL. No inquiry-backend change required. Test two affiliates for cross-account isolation, read-state persistence, and a payout confirmation. Older events are not backfilled as notifications; they remain visible in the bookings/inquiries tables.
 
 **Status:** Source-level implementation only. A real Apps Script account and deployed website are required to test end-to-end.
+
+
+## v1.6 — Troubleshooting affiliate inquiries that do not appear
+
+The normal website inquiry is stored in the separate **POSE Website Inquiries** spreadsheet. Only a submission with an **approved affiliate's exact POSEXXXXXXXX referral code** is copied into the **POSE Partners - Affiliate Registry → inquiries** tab; it will not be inserted in the affiliates tab.
+
+1. In the **Inquiry** Apps Script project, replace `backend/pose inquiry.gs`, run `setup()`, and redeploy the **existing web app deployment as a new version**. Do not create a new deployment unless you also update the public website inquiry endpoint.
+2. Ensure Inquiry Script Properties include `PARTNERS_SYNC_ENDPOINT` (the deployed Partners `/exec` URL) and `PARTNERS_SYNC_SECRET` (same 32+ character secret as the Partners project).
+3. Ensure Partners script runs v1.5 or higher, `setupPartners()` ran, Partners `PARTNERS_SYNC_SECRET` matches, and the referring affiliate's Status is `Approved`.
+4. From the Inquiry script editor run `diagnosePartnerSync()`. Read the execution log; it reports whether the endpoint/secret/columns exist and the last 20 inquiry sync statuses **without printing any secrets**.
+5. Run `syncRecentPartnerInquiries()` in the Inquiry script editor to retry the last 300 eligible submissions. Failed or unapproved referrals now show a short reason in **Affiliate Sync** rather than an empty cell.
+6. Submit a brand-new inquiry using a full affiliate link `https://poseph.com/?ref=POSEXXXXXXXX`, or manually enter an approved referral code in the Partner referral code field. Confirm **POSE Website Inquiries → Inquiries → Affiliate Code and Affiliate Sync**, then **POSE Partners - Affiliate Registry → inquiries**.
+7. A test inquiry without a referral code is **not supposed to create an affiliate registry entry**. Existing old inquiries can be retried only if the primary inquiry spreadsheet retained their affiliate code.
+
+**Security:** Never send or screenshot the secret, administrator OTP or private sheet data. This patch adds diagnostics and clearer errors; it does not change commission/payout logic. Live deployment remains necessary.
+
+## VERSION 1.7 — service-based commission migration (November 19, 2026)
+
+- New referral commission bases **per distinct eligible service**: Classic Photobooth ₱150; Signature Photobooth ₱250; Photoman ₱250; On-site Photo Studio ₱400; AI Photobooth ₱500; Trading Card Photobooth ₱500; 360 Video Booth ₱600. Bundle rates and Event Photography as a standalone service are not offered for **new** affiliate booking entry in this release.
+- Multiple different services may be recorded against one synchronized inquiry using the admin **Prepare booking / Add service** action. Enter the same original inquiry submission ID and submit once per qualifying service. Each is a separately tracked commission. Duplicate service entry is blocked. Additional hours, print formats, upgrades, transportation and add-ons do not earn another commission.
+- Performance tiers **still count distinct successful bookings/inquiries**, not distinct services (one event with three services counts as one booking toward the monthly threshold). All eligible service commissions earn the applicable monthly tier bonus.
+- Bookings recorded **before this update** have no `Base Commission` snapshot and continue using their original legacy base rate schedule, including already-approved and paid commissions. All new booking rows store the rate they received in the `Base Commission` column. Never manually populate that column for historical rows without confirming their original agreed rates.
+- Do not modify existing payout or payment evidence records. Historical paid amounts remain frozen. Existing monthly bonus recalculation for unpaid historical rows remains as in previous versions.
+- **Deployment:** Replace `backend/pose-partners.gs` in the existing *pose-partners* Apps Script project. Run `setupPartners()` once to add the `Base Commission` column to the bookings sheet without destroying historical rows. Deploy a **new version** of the same Partners Web App. Publish updated `partners/admin.html`, `partners/index.html`, `partners/terms.html`, and `assets/js/partners.js` (or the complete ZIP). The separate POSE Inquiry Backend does not require source changes for this commission change.
+- **Test:** First run a test approved affiliate, synchronized inquiry, and Classic service and verify ₱150 base; then add Signature to the same inquiry and verify ₱250 base without increasing the monthly booking count twice. Reopen the dashboard and confirm each service appears. Verify historical `signature` entries without snapshots still use ₱200 base. Verify an already-paid payout remains unchanged.
+- **Important:** The old admin booking interface only accepts one service per submission. The new interface supports adding a second service; it does not automatically infer multiple services from the inquiry package. Admin confirmation and payment verification are still required. No live Apps Script or website changes are made merely by downloading the ZIP.

@@ -8,7 +8,7 @@
  * visitor provides an email address—sends a simple confirmation email.
  */
 
-const SYSTEM_VERSION = "v23.0";
+const SYSTEM_VERSION = "v23.1-partner-sync-diagnostics";
 const NOTIFY_EMAIL = "adrian.magbanwa@gmail.com";
 const SPREADSHEET_NAME = "POSE Website Inquiries";
 const SHEET_NAME = "Inquiries";
@@ -91,8 +91,12 @@ function doPost(e) {
       try {
         const syncResult=syncPartnerInquiry_(inquiry, received);
         if(syncResult.accepted) setPartnerSyncStatus_(sheet,inquiry.submissionId,'Synced');
+        else if(inquiry.affiliateCode) setPartnerSyncStatus_(sheet,inquiry.submissionId,'Rejected: affiliate not approved or unknown');
       }
-      catch (syncErr) { console.error('Partner sync deferred for '+inquiry.submissionId+': '+syncErr); }
+      catch (syncErr) {
+        console.error('Partner sync deferred for '+inquiry.submissionId+': '+syncErr);
+        if(inquiry.affiliateCode) setPartnerSyncStatus_(sheet,inquiry.submissionId,'Failed: '+String(syncErr.message||syncErr).slice(0,140));
+      }
 
       const sheetUrl = sheet.getParent().getUrl();
       sendOwnerNotification_(inquiry, received, sheetUrl);
@@ -664,8 +668,9 @@ function syncRecentPartnerInquiries(){
      service:String(row[idx('Interested In')]||''),package:String(row[idx('Package')]||''),
      date
     },isNaN(received.getTime())?new Date():received);
-    if(result.accepted){sent++;setPartnerSyncStatus_(sh,String(row[idx('Submission ID')]),'Synced');}else failed++;
-   }catch(err){failed++;console.error('Retry '+row[idx('Submission ID')]+': '+err);}
+    if(result.accepted){sent++;setPartnerSyncStatus_(sh,String(row[idx('Submission ID')]),'Synced');}
+    else {failed++;setPartnerSyncStatus_(sh,String(row[idx('Submission ID')]),'Rejected: affiliate not approved or unknown');}
+   }catch(err){failed++;console.error('Retry '+row[idx('Submission ID')]+': '+err);setPartnerSyncStatus_(sh,String(row[idx('Submission ID')]),'Failed: '+String(err.message||err).slice(0,140));}
  });
  return 'Accepted/duplicate: '+sent+'; failed/unapproved: '+failed+'; no code: '+skipped;
 }
@@ -682,4 +687,29 @@ function setPartnerSyncStatus_(sheet,submissionId,status){
    sheet.getRange(start+i,syncCol).setValue(status);return;
  }
  throw Error('Inquiry row not located for affiliate sync acknowledgement.');
+}
+
+/** Read-only setup diagnostic. Run in Inquiry Apps Script editor; never share Script Properties. */
+function diagnosePartnerSync(){
+ const props=PropertiesService.getScriptProperties();
+ const endpoint=String(props.getProperty('PARTNERS_SYNC_ENDPOINT')||'');
+ const secret=String(props.getProperty('PARTNERS_SYNC_SECRET')||'');
+ const sheet=getInquirySheet_();
+ const headers=sheet.getRange(1,1,1,sheet.getLastColumn()).getDisplayValues()[0];
+ const last=sheet.getLastRow();
+ const idxCode=headers.indexOf('Affiliate Code'),idxSync=headers.indexOf('Affiliate Sync');
+ let recent=[];
+ if(last>1 && idxCode>=0 && idxSync>=0){
+  const start=Math.max(2,last-19),rows=sheet.getRange(start,1,last-start+1,sheet.getLastColumn()).getDisplayValues();
+  recent=rows.map((r,i)=>({row:start+i,hasAffiliateCode:!!r[idxCode],sync:r[idxSync]||'Not attempted'}));
+ }
+ const result={
+  inquirySheetUrl:sheet.getParent().getUrl(),
+  endpointConfigured:/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(endpoint),
+  secretConfigured:secret.length>=32,
+  affiliateCodeColumn:idxCode>=0,affiliateSyncColumn:idxSync>=0,
+  recentInquiries:recent
+ };
+ console.log(JSON.stringify(result,null,2));
+ return result;
 }
