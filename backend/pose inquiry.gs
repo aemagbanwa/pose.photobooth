@@ -8,7 +8,7 @@
  * visitor provides an email address—sends a simple confirmation email.
  */
 
-const SYSTEM_VERSION = "v22.0";
+const SYSTEM_VERSION = "v23.0";
 const NOTIFY_EMAIL = "adrian.magbanwa@gmail.com";
 const SPREADSHEET_NAME = "POSE Website Inquiries";
 const SHEET_NAME = "Inquiries";
@@ -32,6 +32,8 @@ const HEADERS = [
   "Requested Add-ons",
   "Estimated Total",
   "Extra Hours",
+  "Affiliate Code",
+  "Affiliate Sync",
 ];
 
 function doGet() {
@@ -63,6 +65,7 @@ function doPost(e) {
       addons: clean_(p.addons, 900),
       estimate: clean_(p.estimate, 100),
       extraHours: clean_(p.extraHours, 20),
+      affiliateCode: clean_(p.affiliateCode, 30).toUpperCase(),
       name: clean_(p.name, 120),
       contact: clean_(p.contact, 160),
       email: clean_(p.email, 180).toLowerCase(),
@@ -84,6 +87,12 @@ function doPost(e) {
       const received = new Date();
       appendInquiryRow_(sheet, inquiry, received);
       SpreadsheetApp.flush();
+      // Customer inquiries remain valid even if the affiliate sync fails.
+      try {
+        const syncResult=syncPartnerInquiry_(inquiry, received);
+        if(syncResult.accepted) setPartnerSyncStatus_(sheet,inquiry.submissionId,'Synced');
+      }
+      catch (syncErr) { console.error('Partner sync deferred for '+inquiry.submissionId+': '+syncErr); }
 
       const sheetUrl = sheet.getParent().getUrl();
       sendOwnerNotification_(inquiry, received, sheetUrl);
@@ -204,6 +213,8 @@ function appendInquiryRow_(sheet, inquiry, received) {
     "Requested Add-ons": inquiry.addons,
     "Estimated Total": inquiry.estimate,
     "Extra Hours": inquiry.extraHours,
+    "Affiliate Code": /^POSE[0-9A-F]{8}$/.test(inquiry.affiliateCode) ? inquiry.affiliateCode : "",
+    "Affiliate Sync": "",
   };
 
   const row = headerValues.map((h) =>
@@ -610,4 +621,65 @@ function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(
     ContentService.MimeType.JSON,
   );
+}
+
+
+/** Private backend-to-backend affiliate sync. Keep credentials in Script Properties. */
+function syncPartnerInquiry_(i,received){
+ const props=PropertiesService.getScriptProperties();
+ const endpoint=String(props.getProperty('PARTNERS_SYNC_ENDPOINT')||'');
+ const secret=String(props.getProperty('PARTNERS_SYNC_SECRET')||'');
+ if(!i.affiliateCode)return {skipped:true};
+ if(!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(endpoint))throw Error('Configure PARTNERS_SYNC_ENDPOINT');
+ if(secret.length<32)throw Error('Configure PARTNERS_SYNC_SECRET (minimum 32 characters)');
+ const fields={action:'syncInquiry',syncSecret:secret,submissionId:String(i.submissionId),
+   affiliateCode:String(i.affiliateCode),service:String(i.service||''),
+   package:String(i.package||''),eventDate:String(i.date||''),
+   received:Utilities.formatDate(received||new Date(),Session.getScriptTimeZone(),'yyyy-MM-dd')};
+ const resp=UrlFetchApp.fetch(endpoint,{method:'post',payload:fields,muteHttpExceptions:true,followRedirects:true});
+ if(resp.getResponseCode()!==200)throw Error('Partner endpoint HTTP '+resp.getResponseCode());
+ let result;
+ try{result=JSON.parse(resp.getContentText());}catch(err){throw Error('Partner endpoint returned invalid JSON');}
+ if(!result.ok)throw Error('Partner sync rejected: '+String(result.error||'unknown'));
+ return result;
+}
+/** Manually run or use a scheduled hourly trigger; resends up to last 300 rows. */
+function syncRecentPartnerInquiries(){
+ const sh=getInquirySheet_(),values=sh.getDataRange().getValues();
+ if(values.length<2)return 'No inquiries';
+ const h=values[0],idx=k=>h.indexOf(k);
+ const required=['Submission ID','Affiliate Code','Interested In','Package','Event Date','Received'];
+ if(required.some(k=>idx(k)<0))throw Error('Inquiry sheet missing required headers');
+ let sent=0,failed=0,skipped=0;
+ values.slice(Math.max(1,values.length-300)).forEach(row=>{
+   if(String(row[idx('Affiliate Sync')]||'')==='Synced'){skipped++;return;}
+   const code=String(row[idx('Affiliate Code')]||'').trim();
+   if(!/^POSE[0-9A-F]{8}$/.test(code)){skipped++;return;}
+   try{
+    const dateValue=row[idx('Event Date')];
+    const date=dateValue instanceof Date?Utilities.formatDate(dateValue,Session.getScriptTimeZone(),'yyyy-MM-dd'):String(dateValue||'').slice(0,10);
+    const recValue=row[idx('Received')],received=recValue instanceof Date?recValue:new Date(recValue);
+    const result=syncPartnerInquiry_({
+     submissionId:String(row[idx('Submission ID')]),affiliateCode:code,
+     service:String(row[idx('Interested In')]||''),package:String(row[idx('Package')]||''),
+     date
+    },isNaN(received.getTime())?new Date():received);
+    if(result.accepted){sent++;setPartnerSyncStatus_(sh,String(row[idx('Submission ID')]),'Synced');}else failed++;
+   }catch(err){failed++;console.error('Retry '+row[idx('Submission ID')]+': '+err);}
+ });
+ return 'Accepted/duplicate: '+sent+'; failed/unapproved: '+failed+'; no code: '+skipped;
+}
+
+/** Persist a sync acknowledgement without altering inquiry or booking status. */
+function setPartnerSyncStatus_(sheet,submissionId,status){
+ const headings=sheet.getRange(1,1,1,sheet.getLastColumn()).getDisplayValues()[0];
+ const idCol=headings.indexOf('Submission ID')+1,syncCol=headings.indexOf('Affiliate Sync')+1;
+ if(!idCol||!syncCol)throw Error('Affiliate sync columns missing.');
+ const last=sheet.getLastRow();
+ const start=Math.max(2,last-400);
+ const ids=sheet.getRange(start,idCol,last-start+1,1).getDisplayValues();
+ for(let i=ids.length-1;i>=0;i--)if(ids[i][0]===submissionId){
+   sheet.getRange(start+i,syncCol).setValue(status);return;
+ }
+ throw Error('Inquiry row not located for affiliate sync acknowledgement.');
 }
