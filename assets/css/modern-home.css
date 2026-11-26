@@ -2183,3 +2183,6 @@
 @media(max-width:850px){.modern-home .pose-souvenir-header {flex-direction:column;align-items:flex-start}.modern-home .pose-souvenir-badge {width:100%}}
 @media(max-width:620px){.modern-home .pose-souvenirs {padding-block:48px}.modern-home .pose-souvenir-addon-prices {gap:16px}.modern-home .pose-souvenir-addon-prices a {min-height:110px;padding:20px}.modern-home .pose-souvenir-header {margin-bottom:24px}}
 @media(prefers-reduced-motion:reduce){.modern-home .pose-souvenir-addon-prices a {transition:none}.modern-home .pose-souvenir-addon-prices a:hover {transform:none}}
+
+/* V4.6: three remaining standalone add-on cards. */
+@media(min-width:1001px){.modern-home .pose-addon-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
